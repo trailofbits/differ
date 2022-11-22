@@ -17,12 +17,11 @@ recovered:
 # List of traces to run and compare
 traces:
   # command line arguments (supports Jinja2 templates from variables)
-  - arguments: |
-      {{left}} + {{right}}
+  - arguments: '{{left}} + {{right}}'
 
+    # Fuzzing variables. The variables are generated and populated into the command line
+    # arguments and any template input files for each run.
     variables:
-      # Fuzzing variables. The variables are generated and populated into the command line
-      # arguments and any template input files
       left:
         type: int
         range:
