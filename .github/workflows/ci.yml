@@ -1,0 +1,83 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - '*'
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 'Install build chain'
+        run: |
+          # Python virtual env management
+          pipx install pipenv
+          npm install -g cspell
+
+      - name: 'Init Python'
+        run: |
+          pipenv sync --dev
+
+      - name: 'Lint'
+        run: |
+          pipenv run lint
+          pipenv run spell-check
+
+  # test:
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 1
+
+  #     - uses: actions/setup-python@v2
+  #       with:
+  #         python-version: '3.10'
+  #         cache: 'pipenv'
+
+  #     - name: 'Install build chain'
+  #       run: |
+  #         # Python virtual env management
+  #         pipx install pipenv
+
+  #     - name: 'Init Python'
+  #       run: |
+  #         pipenv sync --dev
+
+  #     - name: 'Unit Tests'
+  #       run: |
+  #         pipenv run test
+
+  # pip-audit:
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 1
+
+  #     - uses: actions/setup-python@v2
+  #       with:
+  #         python-version: '3.10'
+
+  #     - name: 'Generate requirements.txt'
+  #       run: |
+  #         pipx run pipfile-requirements Pipfile.lock > requirements.txt
+
+  #     - uses: pypa/gh-action-pip-audit@v1.0.0
+  #       with:
+  #         inputs: requirements.txt

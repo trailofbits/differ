@@ -1,0 +1,9 @@
+{
+  "dictionaries": ["custom-words"],
+
+  "dictionaryDefinitions": [{
+      "name": "custom-words",
+      "path": "./cspell-words.txt",
+      "addWords": true
+  }]
+}

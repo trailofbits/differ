@@ -1,0 +1,16 @@
+{
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "editor.rulers": [
+        99
+    ],
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/__pycache__": true,
+        ".pytest_cache": true
+    },
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true,
+}

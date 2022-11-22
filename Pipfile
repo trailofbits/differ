@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pyyaml = "*"
+jinja2 = "*"
+
+[dev-packages]
+blue = "*"
+isort = "*"
+flake8 = "*"
+pyright = "*"
+invoke = "*"
+
+[requires]
+python_version = "3.9"
+
+[scripts]
+lint = "invoke lint"
+format = "invoke format"
+test = "invoke test"
+"build-docs" = "invoke build-docs"
+"spell-check" = "invoke spell-check"
+build = "invoke build"
