@@ -1,2 +1,5 @@
 debloater
+debloaters
+debloat
 debloated
+EEXIST

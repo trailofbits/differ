@@ -12,10 +12,11 @@ name: calculator
 
 # Path to the original binary
 original: /path/to/binary
-# List of recovered binaries to test against
-recovered:
-  - /path/to/debloated/binary
-  - /path/to/another/debloated/binary
+# List of debloated binaries to test against. The key is the debloater name and the value
+# is the path to the debloated version of the original binary.
+debloaters:
+  binrec: /path/to/binrec/binary
+  other_debloated: /path/to/other/debloated/binary
 
 # List of templates to generate, run, and compare against the original binary
 templates:
@@ -53,3 +54,7 @@ templates:
       # verify the exit code is identical
       - exit_code
 ```
+
+<!--
+spell-checker:ignore binrec
+-->
