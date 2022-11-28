@@ -10,7 +10,7 @@ class StringComparator(Comparator):
     def __init__(self, config: dict):
         super().__init__(config)
 
-    def get_strings(self, trace: Trace) -> tuple[str, bytes, bytes]:
+    def get_strings(self, original: Trace, debloated: Trace) -> tuple[str, bytes, bytes]:
         """
         Get the original and recovered strings to compare against. Subclasses must implement this.
 
@@ -18,12 +18,12 @@ class StringComparator(Comparator):
         """
         raise NotImplementedError()
 
-    def compare(self, trace: Trace) -> ComparisonResult:
-        name, original, recovered = self.get_strings(trace)
+    def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
+        name, orig_str, debloated_str = self.get_strings(original, debloated)
 
-        if original != recovered:
-            return ComparisonResult.error(self, f'{name} content does not match')
-        return ComparisonResult.matches(self)
+        if orig_str != debloated_str:
+            return ComparisonResult.error(debloated, self, f'{name} content does not match')
+        return ComparisonResult.success(debloated, self)
 
 
 @register('stdout')
@@ -32,8 +32,8 @@ class StdoutComparator(StringComparator):
     Standard output content comparator.
     """
 
-    def get_strings(self, trace: Trace) -> tuple[str, bytes, bytes]:
-        return 'stdout', trace.original.stdout, trace.recovered.stdout
+    def get_strings(self, original: Trace, debloated: Trace) -> tuple[str, bytes, bytes]:
+        return 'stdout', original.read_stdout(), debloated.read_stdout()
 
 
 @register('stderr')
@@ -42,8 +42,8 @@ class StderrComparator(StringComparator):
     Standard error content comparator.
     """
 
-    def get_strings(self, trace: Trace) -> tuple[str, bytes, bytes]:
-        return 'stderr', trace.original.stderr, trace.recovered.stderr
+    def get_strings(self, original: Trace, debloated: Trace) -> tuple[str, bytes, bytes]:
+        return 'stderr', original.read_stderr(), debloated.read_stderr()
 
 
 @register('exit_code')
@@ -58,25 +58,24 @@ class ExitCodeComparator(Comparator):
           # the comparison. This is useful when the return value is non-deterministic. This is
           # disabled by default.
           coerce_bool: false
-
     """
 
     def __init__(self, config: dict):
         super().__init__(config)
         self.coerce_bool = config.get('coerce_bool', False)
 
-    def compare(self, trace: Trace) -> ComparisonResult:
+    def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
+        original_code = original.process.returncode  # type: ignore
+        recovered_code = debloated.process.returncode  # type: ignore
         if self.coerce_bool:
-            original_code = bool(trace.original.exit_code)
-            recovered_code = bool(trace.recovered.exit_code)
-        else:
-            original_code = trace.original.exit_code
-            recovered_code = trace.original.exit_code
+            original_code = int(bool(original_code))
+            recovered_code = int(bool(recovered_code))
 
         if original_code != recovered_code:
             return ComparisonResult.error(
+                debloated,
                 self,
                 f'exit codes do not match: {original_code} != {recovered_code}',
             )
 
-        return ComparisonResult.matches(self)
+        return ComparisonResult.success(debloated, self)

@@ -1,7 +1,7 @@
 import random
-from typing import Iterable, Optional
+from typing import Iterator, Optional
 
-from ..core import FuzzVariable, Trace
+from ..core import FuzzVariable, TraceTemplate
 from . import register
 
 
@@ -35,18 +35,18 @@ class IntVariable(FuzzVariable):
     def __init__(self, name: str, config: dict):
         super().__init__(name, config)
         range: Optional[dict] = config.get('range')
+        self.values: list[int] = config.get('values') or []
 
-        self.values = config.get('values') or []
         if range:
             self.minimum = range['minimum']
             self.maximum = range['maximum']
-            self.size = range.get('size') or self.DEFAULT_SAMPLE_SIZE
+            self.size = range.get('size', self.DEFAULT_SAMPLE_SIZE)
         else:
             self.minimum = 0
             self.maximum = 0
             self.size = 0
 
-    def generate_values(self, trace: Trace) -> Iterable[int]:
+    def generate_values(self, template: TraceTemplate) -> Iterator[int]:
         if self.values:
             yield from self.values
 

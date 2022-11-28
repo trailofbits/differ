@@ -1,9 +1,12 @@
+import subprocess
 from dataclasses import dataclass, field
 from enum import Enum
 from itertools import chain
 from pathlib import Path
-from typing import Any, Iterable, Union
+from typing import Any, Iterator, Optional, Union
+from uuid import uuid4
 
+import jinja2
 import yaml
 
 
@@ -16,13 +19,29 @@ class TraceHook:
         """
         Run any setup actions prior to executing a trace.
         """
-        pass
 
     def teardown(self, trace: 'Trace') -> None:
         """
         Run any teardown actions after a trace has completed.
         """
-        pass
+
+
+@dataclass
+class DebloatedBinary:
+    """
+    A debloated binary to evaluate.
+    """
+
+    #: Debloater engine name
+    engine: str
+    #: Debloated binary
+    binary: Path
+
+    @classmethod
+    def load_dict(cls, name: str, body: Union[str, dict]):
+        if isinstance(body, str):
+            return cls(name, Path(body))
+        return cls(name, Path(body['binary']))
 
 
 @dataclass
@@ -31,12 +50,14 @@ class Project:
     A fuzzing project containing the original binary and multiple recovered versions.
     """
 
+    #: Unique project name
+    name: str
     #: Original binary file path
     original: Path
-    #: List of recovered binary file paths to compare against the original
-    recovered: list[Path]
+    #: List of debloated binaries
+    debloaters: dict[str, DebloatedBinary] = field(default_factory=dict)
     #: List of the traces to run
-    traces: list['TraceTemplate']
+    templates: list['TraceTemplate'] = field(default_factory=list)
 
     @classmethod
     def load(cls, filename: Union[str, Path]) -> 'Project':
@@ -50,9 +71,17 @@ class Project:
     @classmethod
     def load_dict(cls, body: dict) -> 'Project':
         original = Path(body['original'])
-        recovered = [Path(item) for item in body['recovered']]
-        traces = [TraceTemplate.load_dict(item) for item in body['traces']]
-        return cls(original=original, recovered=recovered, traces=traces)
+        templates = [TraceTemplate.load_dict(item) for item in body['templates']]
+        debloaters = {
+            name: DebloatedBinary.load_dict(name, value)
+            for name, value in body['debloaters'].items()
+        }
+        return cls(
+            name=body['name'],
+            original=original,
+            debloaters=debloaters,
+            templates=templates,
+        )
 
 
 @dataclass
@@ -70,6 +99,19 @@ class TraceTemplate:
     #: Expect a successful run on both the original and the recovered binary. If this is ``False``,
     #: then the recovered binary is expected to fail.
     expect_success: bool = True
+
+    def __post_init__(self):
+        self._arguments_template = None
+
+    @property
+    def arguments_template(self) -> jinja2.Template:
+        if not self._arguments_template:
+            self._arguments_template = jinja2.Template(self.arguments)
+        return self._arguments_template
+
+    @property
+    def hooks(self) -> Iterator[TraceHook]:
+        yield from chain(self.variables.values(), self.comparators)
 
     @classmethod
     def load_dict(cls, body: dict) -> 'TraceTemplate':
@@ -107,86 +149,123 @@ class TraceTemplate:
 
 
 @dataclass
-class Trace:
+class TraceContext:
     """
-    A concrete run of a trace template.
+    Concrete parameters of a trace template.
     """
 
-    #: The original binary's output
-    original: 'TraceProcess'
-    #: The recovered binary's output
-    recovered: 'TraceProcess'
-    #: The trace template
     template: TraceTemplate
-    #: The command line arguments used in the trace
-    command_line: list[str]
-    #: The fuzzing variable values
+    arguments: str = ''
     values: dict[str, Any] = field(default_factory=dict)
-    #: The list of comparison results
-    results: list['ComparisonResult'] = field(default_factory=list)
+    id: str = ''
 
-    @property
-    def hooks(self) -> Iterable[TraceHook]:
-        """
-        :returns: the list of hooks to call
-        """
-        for item in chain(self.template.variables.values(), self.template.comparators):
-            yield item
-
-    def run_setup_hooks(self) -> None:
-        """
-        Run all setup hooks.
-        """
-        for hook in self.hooks:
-            hook.setup(self)
-
-    def run_teardown_hooks(self) -> None:
-        """
-        Run all teardown hooks.
-        """
-        for hook in self.hooks:
-            hook.teardown(self)
+    def __post_init__(self):
+        if not self.id:
+            self.id = str(uuid4())
 
 
 @dataclass
-class TraceProcess:
+class Trace:
     """
-    A completed trace process of either the original binary or a recovered binary.
+    A run of a binary with concrete parameters.
     """
 
-    #: Binary file path
+    #: Path to the binary
     binary: Path
-    #: Current working directory
-    cwd: str
-    #: Standard output content (bytes)
-    stdout: bytes = b''
-    #: Standard error content (bytes)
-    stderr: bytes = b''
-    #: The process exist code
-    exit_code: int = 0
+    #: Trace context, containing the concrete parameters.
+    context: TraceContext
+    #: The working directory where the sample is run
+    cwd: Path
+    #: The subprocess
+    process: Optional[subprocess.Popen] = None
+    #: Cache that is cleaned up when the trace is no longer needed. Comparators can use the cache
+    #: to store the results of an expensive task.
+    cache: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self):
+        if not self.id:
+            self.id = str(uuid4())
+
+    def setup(self) -> None:
+        """
+        Run all setup hooks.
+        """
+        for hook in self.context.template.hooks:
+            hook.setup(self)
+
+    def teardown(self) -> None:
+        """
+        Run all teardown hooks.
+        """
+        for hook in self.context.template.hooks:
+            hook.teardown(self)
+
+    def read_stdout(self, cache: bool = True) -> bytes:
+        if cache:
+            stdout = self.cache.get('stdout')
+            if stdout is not None:
+                return stdout
+
+        stdout = self.stdout_path.read_bytes()
+        if cache:
+            self.cache['stdout'] = stdout
+        return stdout
+
+    def read_stderr(self, cache: bool = True) -> bytes:
+        if cache:
+            stderr = self.cache.get('stderr')
+            if stderr is not None:
+                return stderr
+
+        stderr = self.stderr_path.read_bytes()
+        if cache:
+            self.cache['stderr'] = stderr
+        return stderr
+
+    @property
+    def stdout_path(self) -> Path:
+        """
+        :returns: the path to the process's standard output
+        """
+        return self.cwd / '__differ.stdout'
+
+    @property
+    def stderr_path(self) -> Path:
+        """
+        :returns: the path to the process's standard error
+        """
+        return self.cwd / '__differ.stderr'
+
+
+@dataclass
+class TraceGroup:
+    original: Trace
+    recovered: list[Trace] = field(default_factory=list)
+    comparisons: list['ComparisonResult'] = field(default_factory=list)
 
 
 class ComparisonStatus(Enum):
-    expected = 'match'
-    unexpected = 'unexpected'
+    success = 'success'
+    error = 'error'
 
 
 @dataclass
 class ComparisonResult:
+    trace: Trace
     comparator: 'Comparator'
     status: ComparisonStatus
     details: str
 
     @classmethod
-    def matches(cls, comparator: 'Comparator', details: str = ''):
-        return cls(comparator, ComparisonStatus.expected, details)
+    def success(cls, trace: Trace, comparator: 'Comparator', details: str = ''):
+        return cls(trace, comparator, ComparisonStatus.success, details)
 
     @classmethod
-    def error(cls, comparator: 'Comparator', details: str = ''):
-        return cls(comparator, ComparisonStatus.unexpected, details)
+    def error(cls, trace: Trace, comparator: 'Comparator', details: str = ''):
+        return cls(trace, comparator, ComparisonStatus.error, details)
 
     def __bool__(self) -> bool:
-        return self.status is ComparisonStatus.expected
+        return self.status is ComparisonStatus.success
 
 
 class FuzzVariable(TraceHook):
@@ -194,10 +273,9 @@ class FuzzVariable(TraceHook):
 
     def __init__(self, name: str, config: dict):
         self.name = name
-        self.values: list[Any] = config.get('values', [])
 
-    def generate_values(self, trace: Trace) -> Iterable[Any]:
-        return self.values
+    def generate_values(self, template: TraceTemplate) -> Iterator:
+        raise NotImplementedError()
 
 
 class Comparator(TraceHook):
@@ -206,7 +284,7 @@ class Comparator(TraceHook):
     def __init__(self, config: dict):
         pass
 
-    def compare(self, trace: Trace) -> ComparisonResult:
+    def compare(self, original: Trace, recovered: Trace) -> ComparisonResult:
         raise NotImplementedError()
 
 
