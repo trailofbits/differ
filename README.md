@@ -7,6 +7,9 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
 ```yaml
 # Sample project configuration file
 
+# Unique name
+name: calculator
+
 # Path to the original binary
 original: /path/to/binary
 # List of recovered binaries to test against
@@ -14,8 +17,8 @@ recovered:
   - /path/to/debloated/binary
   - /path/to/another/debloated/binary
 
-# List of traces to run and compare
-traces:
+# List of templates to generate, run, and compare against the original binary
+templates:
   # command line arguments (supports Jinja2 templates from variables)
   - arguments: '{{left}} + {{right}}'
 
@@ -25,12 +28,14 @@ traces:
       left:
         type: int
         range:
+          # generate 5 integers in the range of 0-99 (inclusive)
           minimum: 0
           maximum: 99
           size: 5
 
       right:
         type: int
+        # Use the following 3 int values
         values:
           - -1
           - 0
