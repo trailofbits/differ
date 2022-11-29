@@ -112,7 +112,7 @@ class Project:
             'trace_directory': str(trace.cwd),
             'results': docs,
             'arguments': args,
-            'binary': str(trace.binary.readlink())
+            'binary': str(trace.binary.readlink()),
         }
         for result in results:
             doc = {
