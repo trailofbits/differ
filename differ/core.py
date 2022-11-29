@@ -106,7 +106,13 @@ class Project:
         :param results: trace comparison results
         """
         docs = []
-        args = trace.process.args[1:] if trace.process else shlex.split(trace.context.arguments)
+        if trace.process:
+            # The process has already executed
+            args = trace.process.args[1:]  # type: ignore
+        else:
+            # The process did not execute. This should not happen and is here as a fallback
+            args = shlex.split(trace.context.arguments)
+
         body = {
             'values': trace.context.values,
             'trace_directory': str(trace.cwd),
