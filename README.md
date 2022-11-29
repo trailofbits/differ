@@ -5,18 +5,18 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
 **Sample Project Configuration**
 
 ```yaml
-# Sample project configuration file
+# Sample project configuration file: project.yml
 
 # Unique name
-name: calculator
+name: coreutils_echo
 
 # Path to the original binary
-original: /path/to/binary
+original: /usr/bin/echo
 # List of debloated binaries to test against. The key is the debloater name and the value
 # is the path to the debloated version of the original binary.
 debloaters:
-  binrec: /path/to/binrec/binary
-  other_debloated: /path/to/other/debloated/binary
+  # Replace this path to the debloated version
+  binrec: /usr/bin/echo
 
 # List of templates to generate, run, and compare against the original binary
 templates:
@@ -47,14 +47,25 @@ templates:
       # verify stdout matches
       - stdout
 
-      # verify stderr matches a regex pattern
+      # verify stderr matches
       - id: stderr
-        regex: "some_regex_pattern_here"
 
       # verify the exit code is identical
       - exit_code
 ```
 
+To run this project:
+
+```bash
+$ pipenv run python -m differ --verbose project.yml
+```
+
+The output is stored in the `./reports` directory by default and only errors are recorded. To change the output directory and output all reports, including successful runs:
+
+```bash
+$ pipenv run python -m differ --verbose --report-successes --report-dir ./output project.yml
+```
+
 <!--
-spell-checker:ignore binrec
+spell-checker:ignore binrec coreutils pipenv
 -->
