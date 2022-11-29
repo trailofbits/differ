@@ -106,12 +106,13 @@ class Project:
         :param results: trace comparison results
         """
         docs = []
-        args = trace.process.args if trace.process else shlex.split(trace.context.arguments)
+        args = trace.process.args[1:] if trace.process else shlex.split(trace.context.arguments)
         body = {
             'values': trace.context.values,
             'trace_directory': str(trace.cwd),
             'results': docs,
             'arguments': args,
+            'binary': str(trace.binary.readlink())
         }
         for result in results:
             doc = {
