@@ -3,3 +3,5 @@ debloaters
 debloat
 debloated
 EEXIST
+levelname
+strerror

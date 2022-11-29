@@ -125,7 +125,7 @@ class Executor:
         """
         Run a single trace.
         """
-        logger.debug('running trace for context %s: %s', trace.context.id, trace.binary)
+        logger.debug('running trace for context %s: %s', trace.context.id, trace.debloater_engine)
         hooks = list(trace.context.template.hooks)
 
         # Run setup hooks
@@ -164,7 +164,7 @@ class Executor:
         logger.debug(
             'comparing results for trace context %s: %s',
             original.context.id,
-            debloated.binary,
+            debloated.debloater_engine,
         )
         for comparator in comparators:
             result = comparator.compare(original, debloated)

@@ -41,7 +41,7 @@ class DebloatedBinary:
     @classmethod
     def load_dict(cls, name: str, body: Union[str, dict]) -> 'DebloatedBinary':
         """
-        Load the delobated binary from a dictionary.
+        Load the debloated binary from a dictionary.
 
         :param name: the debloater engine name
         :param body: debloated binary dictionary
@@ -255,7 +255,7 @@ class TraceContext:
     """
     Concrete parameters of a trace template. Each :class:`TraceTemplate` will create multiple trace
     context objects, where each context contains concrete values for each variable in a unique
-    permentation.
+    permutation.
     """
 
     #: Origin trace template
@@ -276,7 +276,7 @@ class TraceContext:
 class Trace:
     """
     A execution of a binary within a trace context. Each :class:`TraceContext` is executed once for
-    each deblaoted binary and once for the original binary.
+    each debloated binary and once for the original binary.
     """
 
     #: Path to the binary
@@ -350,9 +350,9 @@ class ComparisonStatus(Enum):
     binary match the original's.
     """
 
-    #: The comparsion was successful (e.g.- the debloated output matches the original's)
+    #: The comparison was successful (e.g.- the debloated output matches the original's)
     success = 'success'
-    #: The comparsion failed (e.g.- the debloated output does not match the original's)
+    #: The comparison failed (e.g.- the debloated output does not match the original's)
     error = 'error'
 
 
@@ -517,7 +517,7 @@ class Comparator(TraceHook):
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
         """
-        Compare a debloated binary's trace against the orginal and return a comparison result.
+        Compare a debloated binary's trace against the original and return a comparison result.
 
         :param original: the original trace
         :param debloated: the debloated trace
