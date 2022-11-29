@@ -2,6 +2,28 @@
 
 DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirements
 
+## Setup
+
+### Installing Dependencies
+
+1. Install Python 3.9. For Ubuntu 20.04, the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) can be used:
+   ```bash
+   $ sudo add-apt-repository ppa:deadsnakes/ppa
+   $ sudo apt update
+   $ sudo apt-get install python3.9 python3.9-venv
+   ```
+2. Install `pipenv`, which manages the virtual environment.
+   ```bash
+   $ python3.9 -m pip install pipenv
+   ```
+3. Create the virtual environment and install development dependencies:
+   ```bash
+   $ pipenv sync --dev
+   ```
+4. Install [Node.js](https://nodejs.org/en/), which is required by the type checker (pyright). On Linux, use the [node version manager](https://github.com/nvm-sh/nvm) and on Windows install Node.js 18+ and add `node.exe` to the `PATH`.
+
+## Running Differ
+
 **Sample Project Configuration**
 
 ```yaml
@@ -94,6 +116,48 @@ values:
 
 In this example, the stdout content did not match the original's.
 
+## Development
+
+### Formatting, Linting, and CI
+
+The CI pipeline runs multiple tools that can also be run locally:
+
+- **Formatting**
+  - [blue](https://github.com/grantjenks/blue) - code formatting
+  - [isort](https://github.com/PyCQA/isort) - import sorting
+- **Static Analysis**
+  - [pyright](https://github.com/microsoft/pyright) - type checking
+  - [flake8](https://github.com/PyCQA/flake8) - static code analysis
+- **Unit Tests**
+  - [pytest](https://docs.pytest.org) - unit testing
+  - [coverage](https://coverage.readthedocs.io) - code coverage
+- **Documentation**
+  - [sphinx](https://www.sphinx-doc.org/en/master/) - API documentation
+- **Spell Checking**
+  - [cspell](https://cspell.org/) - Code spell checker.
+    - This is a NodeJS package that must be installed, outside of `pipenv`, in a Node v14 or newer environment if you want to run this locally.
+      ```bash
+      $ npm install -g cspell
+      ```
+
+    - The custom dictionary is located in `./cspell-words.txt` and can be updated as needed.
+
+These tools can be run locally using `pipenv`:
+
+```bash
+# Run linting checks (static analysis)
+$ pipenv run lint
+
+# Format Python code
+$ pipenv run format
+
+# Run unit tests
+$ pipenv run test
+
+# Run spell checking (requires cspell)
+$ pipenv run spell-check
+```
+
 <!--
-spell-checker:ignore binrec coreutils pipenv
+spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest
 -->
