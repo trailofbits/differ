@@ -22,8 +22,8 @@ class StringComparator(Comparator):
         name, orig_str, debloated_str = self.get_strings(original, debloated)
 
         if orig_str != debloated_str:
-            return ComparisonResult.error(debloated, self, f'{name} content does not match')
-        return ComparisonResult.success(debloated, self)
+            return ComparisonResult.error(self, debloated, f'{name} content does not match')
+        return ComparisonResult.success(self, debloated)
 
 
 @register('stdout')
@@ -73,9 +73,9 @@ class ExitCodeComparator(Comparator):
 
         if original_code != recovered_code:
             return ComparisonResult.error(
-                debloated,
                 self,
+                debloated,
                 f'exit codes do not match: {original_code} != {recovered_code}',
             )
 
-        return ComparisonResult.success(debloated, self)
+        return ComparisonResult.success(self, debloated)
