@@ -66,6 +66,34 @@ The output is stored in the `./reports` directory by default and only errors are
 $ pipenv run python -m differ --verbose --report-successes --report-dir ./output project.yml
 ```
 
+Reports are stored in `{report_dir}/{project.name}/report-{engine}-[success|error]-{trace.id}.yml`. For example, a trace of the `binrec` debloater for the `coreutils_echo` project that failed would have a report located at:
+
+```
+$ cat ./reports/coreutils_echo/report-binrec-error-001.yml
+
+arguments:
+- '70'
+- +
+- '-1'
+binary: /usr/bin/echo-binrec
+results:
+- comparator: stdout
+  details: stdout content does not match
+  status: error
+- comparator: stderr
+  details: ''
+  status: success
+- comparator: exit_code
+  details: ''
+  status: success
+trace_directory: /home/user/Projects/differ/reports/coreutils_echo/trace-001/binrec
+values:
+  left: 70
+  right: -1
+```
+
+In this example, the stdout content did not match the original's.
+
 <!--
 spell-checker:ignore binrec coreutils pipenv
 -->
