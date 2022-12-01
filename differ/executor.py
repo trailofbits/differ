@@ -2,6 +2,7 @@ import errno
 import logging
 import os
 import shlex
+import shutil
 import subprocess
 from itertools import cycle
 from pathlib import Path
@@ -11,6 +12,7 @@ from .core import (
     ComparisonResult,
     CrashResult,
     FuzzVariable,
+    InputFile,
     Project,
     Trace,
     TraceContext,
@@ -127,6 +129,8 @@ class Executor:
         """
         logger.debug('running trace for context %s: %s', trace.context.id, trace.debloater_engine)
         hooks = list(trace.context.template.hooks)
+
+        self.copy_input_files(trace)
 
         # Run setup hooks
         for hook in hooks:
@@ -260,6 +264,46 @@ class Executor:
         logger.debug('generated %d value sets for template %s', len(values), template.id)
         return values
 
+    def copy_input_files(self, trace: Trace) -> None:
+        """
+        Copy input files from the template to the trace.
+        """
+        for input_file in trace.context.template.input_files:
+            if input_file.static:
+                # This is a static file that should not be modified
+                dest = input_file.get_destination(trace.cwd)
+                shutil.copy(str(input_file.source), str(dest))
+                self.set_input_file_permission(input_file, dest)
+            else:
+                self.generate_input_file(trace, input_file)
+
+    def generate_input_file(self, trace: Trace, input_file: InputFile) -> None:
+        """
+        Render an input file with the trace context variable values.
+        """
+        logger.debug(
+            'generating input file for trace %s: %s', trace.debloater_engine, input_file.source
+        )
+        dest = input_file.get_destination(trace.cwd)
+
+        content = input_file.template.render(**trace.context.values)
+        with open(dest, 'w') as file:
+            file.write(content)
+
+        self.set_input_file_permission(input_file, dest)
+
+    def set_input_file_permission(self, input_file: InputFile, destination: Path) -> None:
+        """
+        Set the copied input file permissions.
+        """
+        if not input_file.permission:
+            # copy source file permissions
+            perms = input_file.source.stat().st_mode & 0o777
+        else:
+            perms = int(input_file.permission, 8)
+
+        os.chmod(destination, perms)
+
 
 class VariableValueGenerator:
     """
@@ -272,18 +316,21 @@ class VariableValueGenerator:
     def __init__(self, template: TraceTemplate, variable: FuzzVariable):
         self.variable = variable
         self._iter = variable.generate_values(template)
+        self._current = next(self._iter)
         self._values = []
         self.exhausted = False
 
     def __next__(self) -> Any:
+        value = self._current
         try:
-            value = next(self._iter)
+            self._current = next(self._iter)
         except StopIteration:
             # Iterator has been exhausted, we now produce values from the cache
             self.exhausted = True
             self._iter = cycle(self._values)
-            value = next(self._iter)
+            self._current = next(self._iter)
         else:
             # Cache the value
             self._values.append(value)
-        return value
+
+        return self._current
