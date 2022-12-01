@@ -244,7 +244,7 @@ class InputFile:
         if self.destination.is_absolute():
             dest = self.destination
         else:
-            dest = (cwd / self.destination).absolute()
+            dest = (cwd / self.destination).resolve()
 
         if dest.exists() and dest.is_dir():
             dest = dest / self.source.name
