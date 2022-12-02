@@ -12,8 +12,8 @@ def lint(c):
     c.run('blue --check differ', **KWARGS)
     c.run('pyright differ', **KWARGS)
 
-    # c.run('isort --check test', **KWARGS)
-    # c.run('blue --check test', **KWARGS)
+    c.run('isort --check test', **KWARGS)
+    c.run('blue --check test', **KWARGS)
 
     c.run('isort --check tasks.py', **KWARGS)
     c.run('blue --check tasks.py', **KWARGS)
@@ -21,7 +21,7 @@ def lint(c):
 
 @task
 def format(c):
-    for dirname in ('differ', 'tasks.py'):
+    for dirname in ('differ', 'test', 'tasks.py'):
         c.run('blue {}'.format(dirname), **KWARGS)
         c.run('isort {}'.format(dirname), **KWARGS)
 

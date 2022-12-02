@@ -38,30 +38,30 @@ jobs:
           pipenv run lint
           pipenv run spell-check
 
-  # test:
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 1
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
 
-  #     - uses: actions/setup-python@v2
-  #       with:
-  #         python-version: '3.10'
-  #         cache: 'pipenv'
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          cache: 'pipenv'
 
-  #     - name: 'Install build chain'
-  #       run: |
-  #         # Python virtual env management
-  #         pipx install pipenv
+      - name: 'Install build chain'
+        run: |
+          # Python virtual env management
+          pipx install pipenv
 
-  #     - name: 'Init Python'
-  #       run: |
-  #         pipenv sync --dev
+      - name: 'Init Python'
+        run: |
+          pipenv sync --dev
 
-  #     - name: 'Unit Tests'
-  #       run: |
-  #         pipenv run test
+      - name: 'Unit Tests'
+        run: |
+          pipenv run test
 
   # pip-audit:
   #   runs-on: ubuntu-22.04
