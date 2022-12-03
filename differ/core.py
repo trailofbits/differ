@@ -506,7 +506,7 @@ class ComparisonResult:
 class CrashResult:
     """
     A crash or unexpected result produced by the binary. This class is used when the
-    original or deboated binary crashed or when the original binary did not behave as expected.
+    original or debloated binary crashed or when the original binary did not behave as expected.
     """
 
     #: The trace working directory for the original binary
