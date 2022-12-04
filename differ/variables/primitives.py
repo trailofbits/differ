@@ -4,6 +4,7 @@ from typing import Iterator, Optional
 from ..core import FuzzVariable, TraceTemplate
 from . import register
 
+import exrex
 
 @register('int')
 class IntVariable(FuzzVariable):
@@ -52,3 +53,41 @@ class IntVariable(FuzzVariable):
 
         if self.size:
             yield from random.sample(range(self.minimum, self.maximum + 1), k=self.size)
+
+@register('str')
+class StringVariable(FuzzVariable):
+    """
+    A string fuzzing variable. This accepts the following configuration options:
+
+    .. code-block:: yaml
+
+        - type: str
+          # There are two methods of specifying fuzzing inputs. They can be used together.
+          # A specific list of strings that must be used:
+          values:
+            - 'hello world'
+
+          # A regex pattern to create semi-random/random strings
+          regex:
+            # The regex pattern
+            pattern: 'hello [a-zA-Z0-9]{1,10}'
+            # The sample size (default: 5)
+            size: 3
+    """
+    DEFAULT_SAMPLE_SIZE = 5
+
+    def __init__(self, name: str, config: dict):
+        super().__init__(name, config)
+        self.values: list[int] = config.get('values') or []
+        self.regex: list[int] = config.get('regex') or []
+        self.size = self.regex.get('size', self.DEFAULT_SAMPLE_SIZE)
+
+    def generate_values(self, template: TraceTemplate) -> Iterator[str]:
+        if self.values:
+            yield from self.values
+
+        if self.regex:
+            yield from [self.generate_string(self.regex['pattern']) for _ in range(self.size)]
+
+    def generate_string(self, regex: str) -> str:
+        return exrex.getone(regex)

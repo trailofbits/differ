@@ -6,11 +6,11 @@ name = "pypi"
 [packages]
 pyyaml = "*"
 jinja2 = "*"
+exrex = "*"
 
 [dev-packages]
 blue = "*"
 isort = "*"
-flake8 = "*"
 pyright = "*"
 invoke = "*"
 coverage = "*"
