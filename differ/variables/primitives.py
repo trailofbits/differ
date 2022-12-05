@@ -26,11 +26,11 @@ class IntVariable(FuzzVariable):
             minimum: 0
             # The maximum value
             maximum: 100
-            # The sample size (default: 5)
-            size: 5
+            # The number of samples to generate (default: 5)
+            count: 5
     """
 
-    DEFAULT_SAMPLE_SIZE = 5
+    DEFAULT_SAMPLE_COUNT = 5
 
     def __init__(self, name: str, config: dict):
         super().__init__(name, config)
@@ -40,15 +40,15 @@ class IntVariable(FuzzVariable):
         if range:
             self.minimum = range['minimum']
             self.maximum = range['maximum']
-            self.size = range.get('size', self.DEFAULT_SAMPLE_SIZE)
+            self.count = range.get('count', self.DEFAULT_SAMPLE_COUNT)
         else:
             self.minimum = 0
             self.maximum = 0
-            self.size = 0
+            self.count = 0
 
     def generate_values(self, template: TraceTemplate) -> Iterator[int]:
         if self.values:
             yield from self.values
 
-        if self.size:
-            yield from random.sample(range(self.minimum, self.maximum + 1), k=self.size)
+        if self.count:
+            yield from random.sample(range(self.minimum, self.maximum + 1), k=self.count)
