@@ -28,6 +28,7 @@ if __name__ == '__main__':
         type=int,
         help='maximum number of variable permutations to run per template',
     )
+    parser.add_argument('-f', '--force', action='store_true', help='overwrite existing reports')
     parser.add_argument('project_filename', help='project YAML file to run')
 
     args = parser.parse_args()
@@ -36,6 +37,7 @@ if __name__ == '__main__':
         report_successes=args.report_successes,
         max_permutations=args.max_permutations,
         verbose=args.verbose,
+        overwrite_existing_report=args.force,
     )
     app.setup()
 

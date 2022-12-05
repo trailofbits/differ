@@ -505,16 +505,15 @@ class ComparisonResult:
 @dataclass
 class CrashResult:
     """
-    A crash or unexpected result produced by the original binary. This class is used when the
-    original binary crashed or otherwise did not behave as expected based on the trace template.
+    A crash or unexpected result produced by the binary. This class is used when the
+    original or debloated binary crashed or when the original binary did not behave as expected.
     """
 
     #: The trace working directory for the original binary
-    trace_directory: Path
-    #: Concrete variable values
-    values: dict
+    trace: Trace
     #: Additional details
     details: str = ''
+    comparator: Optional['Comparator'] = None
 
     def save(self, filename: Path) -> None:
         """
@@ -523,10 +522,13 @@ class CrashResult:
         :param filename: destination filename
         """
         body = {
-            'values': self.values,
-            'trace_directory': self.trace_directory,
+            'values': self.trace.context.values,
+            'trace_directory': str(self.trace.cwd),
             'details': self.details,
         }
+        if self.comparator:
+            body['comparator'] = self.comparator.id
+
         with open(filename, 'w') as file:
             file.write(yaml.safe_dump(body))
 
