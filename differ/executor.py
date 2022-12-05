@@ -142,13 +142,15 @@ class Executor:
         for hook in hooks:
             hook.setup(trace)
 
+        stdin_file = self.create_stdin_file(trace)
+
         args = [str(trace.binary)] + shlex.split(trace.context.arguments)
         trace.process = subprocess.Popen(
             args,
             cwd=str(trace.cwd),
-            stdout=trace.stdout_path.open('w'),
-            stderr=trace.stderr_path.open('w'),
-            stdin=subprocess.DEVNULL,
+            stdout=trace.stdout_path.open('wb'),
+            stderr=trace.stderr_path.open('wb'),
+            stdin=stdin_file.open('rb'),
         )
         trace.process.wait()
         logger.debug('process exited with code %d', trace.process.returncode)
@@ -225,7 +227,7 @@ class Executor:
         contexts = []
         for id, values in enumerate(self.generate_parameters(template), start=1):
             args = self.generate_arguments(template, values)
-            contexts.append(TraceContext(template, args, values, id=f'{id:03}'))
+            contexts.append(TraceContext(template, args, values, id=f'{template.id}-{id:03}'))
 
         logger.debug('generated %d trace contexts for template %s', len(contexts), template.id)
         return contexts
@@ -309,6 +311,32 @@ class Executor:
             perms = int(input_file.permission, 8)
 
         os.chmod(destination, perms)
+
+    def create_stdin_file(self, trace: Trace) -> Path:
+        """
+        Create the standard input file for a trace. This methods returns the file that contains
+        the standard input that can be piped into the trace subprocess. If the trace template
+        ``stdin`` is a Path, then the resolved path is returned. Otherwise, a new stdin file is
+        generated for the trace and returned.
+
+        :returns: the path to the standard input file
+        """
+        stdin = trace.context.template.stdin
+        if isinstance(stdin, Path):
+            # This is a path, which can either be an input file that is generated or any file on
+            # disk. We resolve the file against the trace working directory if it is relative.
+            if not stdin.is_absolute():
+                stdin = (trace.cwd / stdin).resolve()
+            return stdin
+
+        # stdin is either empty or a string that we need to generate based on the context values
+        filename = trace.default_stdin_path
+        with open(filename, 'wb') as file:
+            if template := trace.context.template.stdin_template:
+                content = template.render(**trace.context.values)
+                file.write(content.encode())
+
+        return filename
 
 
 class VariableValueGenerator:
