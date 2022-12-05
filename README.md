@@ -54,7 +54,7 @@ templates:
           # generate 5 integers in the range of 0-99 (inclusive)
           minimum: 0
           maximum: 99
-          size: 5
+          count: 5
 
       right:
         type: int
