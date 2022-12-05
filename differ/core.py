@@ -10,6 +10,8 @@ from uuid import uuid4
 import jinja2
 import yaml
 
+from .template import JINJA_ENVIRONMENT
+
 
 class TraceHook:
     """
@@ -209,7 +211,7 @@ class InputFile:
         :returns: the Jinja2 template object for the input file
         """
         if not self._template:
-            self._template = jinja2.Template(self.source.read_text())
+            self._template = JINJA_ENVIRONMENT.from_string(self.source.read_text())
         return self._template
 
     @classmethod
@@ -281,7 +283,7 @@ class TraceTemplate:
         :returns: the Jinja2 template object for the command line arguments
         """
         if not self._arguments_template:
-            self._arguments_template = jinja2.Template(self.arguments)
+            self._arguments_template = JINJA_ENVIRONMENT.from_string(self.arguments)
         return self._arguments_template
 
     @property
