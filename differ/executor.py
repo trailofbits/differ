@@ -33,6 +33,7 @@ class Executor:
         max_permutations: int = 100,
         report_successes: bool = False,
         verbose: bool = False,
+        overwrite_existing_report: bool = False
     ):
         """
         :param root: root directory to store results
@@ -45,6 +46,7 @@ class Executor:
         self.max_permutations = max_permutations
         self.report_successes = report_successes
         self.verbose = verbose
+        self.overwrite_existing_report = overwrite_existing_report
 
     def setup(self) -> None:
         """
@@ -73,8 +75,10 @@ class Executor:
         """
         logger.info('running project: %s', project.name)
         if project.directory.exists():
-            # The project directory must not exist
-            raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), str(project.directory))
+            if not self.overwrite_existing_report:
+                # The project directory must not exist
+                raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), str(project.directory))
+            shutil.rmtree(project.directory)
 
         project.directory.mkdir()
 
