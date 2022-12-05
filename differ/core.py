@@ -523,7 +523,7 @@ class CrashResult:
         """
         body = {
             'values': self.trace.context.values,
-            'trace_directory': self.trace.cwd,
+            'trace_directory': str(self.trace.cwd),
             'details': self.details,
         }
         if self.comparator:
