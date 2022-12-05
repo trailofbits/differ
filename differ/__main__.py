@@ -37,7 +37,7 @@ if __name__ == '__main__':
         report_successes=args.report_successes,
         max_permutations=args.max_permutations,
         verbose=args.verbose,
-        overwrite_existing_report=args.force
+        overwrite_existing_report=args.force,
     )
     app.setup()
 
