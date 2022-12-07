@@ -265,6 +265,7 @@ class TimeoutConstraint:
     The amount of time that each trace is allowed to execute and how to treat traces that exceed
     the timeout.
     """
+
     #: Number of seconds before a timeout occurs
     seconds: int = 60
     #: The timeout it expected and should not be treated as an error
