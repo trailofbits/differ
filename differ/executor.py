@@ -181,7 +181,7 @@ class Executor:
         running = True
         status = 0
         end_time = time.monotonic() + trace.context.template.timeout.seconds
-        while running and not time.monotonic() < end_time:
+        while running and time.monotonic() < end_time:
             time.sleep(0.001)  # copied from subprocess.wait
             pid, status = os.waitpid(trace.process.pid, os.WNOHANG)
             running = pid != trace.process.pid  # pid will be "0" if the process is still running
