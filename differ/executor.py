@@ -183,8 +183,7 @@ class Executor:
             pid, status = os.waitpid(trace.process.pid, os.WNOHANG)
             running = pid != trace.process.pid  # pid will be "0" if the process is still running
 
-        timeout = running
-        if timeout:
+        if running:
             # timeout reached
             logger.warning(
                 'process reached timeout; terminating: %s: %s',
