@@ -143,6 +143,9 @@ class Executor:
         if trace.timed_out and not trace.context.template.timeout.expected:
             return CrashResult(trace, 'Process was terminated because of an unexpected timeout')
 
+        if not trace.timed_out and trace.context.template.timeout.expected:
+            return CrashResult(trace, 'Process was expected to time out but exited early')
+
         crash = trace.crash_result
         if crash and not trace.timed_out:
             # An expected timeout will have a signal of SIGTERM because we had to terminate the
