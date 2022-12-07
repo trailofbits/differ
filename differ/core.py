@@ -1,4 +1,6 @@
+import os
 import shlex
+import signal
 import subprocess
 from dataclasses import dataclass, field
 from enum import Enum
@@ -82,11 +84,11 @@ class Project:
         """
         return self.context_directory(context) / debloater_engine
 
-    def crash_filename(self, context: 'TraceContext') -> Path:
+    def crash_filename(self, trace: 'Trace') -> Path:
         """
         :returns: the crash report filename when the original binary does not behave correctly
         """
-        return self.directory / f'crash-{context.id}.yml'
+        return self.directory / f'crash-{trace.debloater_engine}-{trace.context.id}.yml'
 
     def report_filename(self, trace: 'Trace', successful: bool) -> Path:
         """
@@ -408,9 +410,26 @@ class Trace:
     debloater_engine: str
     #: The subprocess
     process: Optional[subprocess.Popen] = None
+    #: Process status, populated after the process exits. See :func:`os.waitpid`.
+    process_status: int = 0
     #: Cache that is cleaned up when the trace is no longer needed. Comparators can use the cache
     #: to store the results of an expensive task.
     cache: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def crashed(self) -> bool:
+        return os.WIFSIGNALED(self.process_status)
+
+    @property
+    def crash_signal(self) -> Optional[signal.Signals]:
+        if self.crashed:
+            return signal.Signals(os.WTERMSIG(self.process_status))
+        return None
+
+    @property
+    def crash_result(self) -> Optional['CrashResult']:
+        if signal := self.crash_signal:
+            return CrashResult(self, f'process exit from signal {signal.name} ({signal.value})')
 
     def read_stdout(self, cache: bool = True) -> bytes:
         """
