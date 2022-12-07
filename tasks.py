@@ -40,7 +40,10 @@ def build_docs(c):
 @task
 def spell_check(c):
     patterns = '"differ/**/*"'  # "docs/source/**/*.rst"'
-    c.run(f'npx cspell lint --show-suggestions --no-progress README.md {patterns}', **KWARGS)
+    c.run(
+        f'npx cspell lint --show-suggestions --no-progress README.md project.template.yml {patterns}',
+        **KWARGS,
+    )
 
 
 # @task
