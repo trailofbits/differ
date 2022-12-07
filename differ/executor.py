@@ -4,6 +4,7 @@ import os
 import shlex
 import shutil
 import subprocess
+import time
 from itertools import cycle
 from pathlib import Path
 from typing import Any, Optional
@@ -106,7 +107,7 @@ class Executor:
         if crash := self.check_original_trace(project, original_trace):
             # The original did not behave as we expected and we can't trust the results of the
             # debloated binaries. Report the crash and quit.
-            crash.save(project.crash_filename(context))
+            crash.save(project.crash_filename(original_trace))
             return
 
         # Run each debloated binary and compare it against the original
@@ -117,6 +118,9 @@ class Executor:
                 # Results will not be empty if there were failures or report_successes is True.
                 project.save_report(trace, results)
 
+            if crash := trace.crash_result:
+                crash.save(project.crash_filename(trace))
+
     def check_original_trace(self, project: Project, trace: Trace) -> Optional[CrashResult]:
         """
         Check that the original trace behaved as expected and return a ``CrashResult`` if the
@@ -124,6 +128,9 @@ class Executor:
 
         :param trace: original binary trace
         """
+        if crash := trace.crash_result:
+            return crash
+
         for comparator in trace.context.template.comparators:
             if crash := comparator.verify_original(trace):
                 return crash
@@ -152,7 +159,15 @@ class Executor:
             stderr=trace.stderr_path.open('wb'),
             stdin=stdin_file.open('rb'),
         )
-        trace.process.wait()
+
+        running = True
+        while running:
+            time.sleep(0.001)  # copied from subprocess.wait
+            pid, status = os.waitpid(trace.process.pid, os.WNOHANG)
+            running = pid != trace.process.pid  # pid will be "0" if the process is still running
+
+        trace.process_status = status
+        trace.process.returncode = os.waitstatus_to_exitcode(status)
         logger.debug('process exited with code %d', trace.process.returncode)
 
         # Run teardown hooks
