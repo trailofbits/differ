@@ -279,7 +279,7 @@ class TimeoutConstraint:
         if isinstance(body, int):
             return cls(seconds=body)
 
-        return TimeoutConstraint(**body)
+        return cls(**body)
 
 
 @dataclass
