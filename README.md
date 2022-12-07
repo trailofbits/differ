@@ -1,5 +1,7 @@
 # DIFFER
 
+![](https://github.com/trailofbits/differ/actions/workflows/ci.yml/badge.svg)
+
 DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirements
 
 ## Setup
