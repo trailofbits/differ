@@ -161,6 +161,7 @@ class Executor:
         )
 
         running = True
+        status = 0
         while running:
             time.sleep(0.001)  # copied from subprocess.wait
             pid, status = os.waitpid(trace.process.pid, os.WNOHANG)
