@@ -118,22 +118,40 @@ class Executor:
                 # Results will not be empty if there were failures or report_successes is True.
                 project.save_report(trace, results)
 
-            if crash := trace.crash_result:
+            if crash := self.check_trace_crash(trace):
                 crash.save(project.crash_filename(trace))
 
     def check_original_trace(self, project: Project, trace: Trace) -> Optional[CrashResult]:
         """
         Check that the original trace behaved as expected and return a ``CrashResult`` if the
-        original trace deviated from expected output.
+        original trace deviated from expected output or crashed.
 
         :param trace: original binary trace
         """
-        if crash := trace.crash_result:
+        if crash := self.check_trace_crash(trace):
             return crash
 
         for comparator in trace.context.template.comparators:
             if crash := comparator.verify_original(trace):
                 return crash
+        return None
+
+    def check_trace_crash(self, trace: Trace) -> Optional[CrashResult]:
+        """
+        Check if the trash crashed and return a ``CrashResult`` if it did.
+        """
+        if trace.timed_out and not trace.context.template.timeout.expected:
+            return CrashResult(trace, 'Process was terminated because of an unexpected timeout')
+
+        if not trace.timed_out and trace.context.template.timeout.expected:
+            return CrashResult(trace, 'Process was expected to time out but exited early')
+
+        crash = trace.crash_result
+        if crash and not trace.timed_out:
+            # An expected timeout will have a signal of SIGTERM because we had to terminate the
+            # process. So, we only return a crash result on a signal if the process didn't timeout.
+            return crash
+
         return None
 
     def run_trace(self, project: Project, trace: Trace) -> None:
@@ -162,10 +180,22 @@ class Executor:
 
         running = True
         status = 0
-        while running:
+        end_time = time.monotonic() + trace.context.template.timeout.seconds
+        while running and time.monotonic() < end_time:
             time.sleep(0.001)  # copied from subprocess.wait
             pid, status = os.waitpid(trace.process.pid, os.WNOHANG)
             running = pid != trace.process.pid  # pid will be "0" if the process is still running
+
+        if running:
+            # timeout reached
+            logger.warning(
+                'process reached timeout; terminating: %s: %s',
+                trace.context.id,
+                trace.debloater_engine,
+            )
+            trace.process.terminate()
+            _, status = os.waitpid(trace.process.pid, 0)
+            trace.timed_out = True
 
         trace.process_status = status
         trace.process.returncode = os.waitstatus_to_exitcode(status)
