@@ -9,10 +9,14 @@ class TestExecutorRunTrace:
     @patch.object(executor.subprocess, 'Popen')
     @patch.object(executor.os, 'waitpid')
     @patch.object(executor.time, 'sleep')
-    def test_full_run(self, mock_sleep, mock_waitpid, mock_popen):
+    @patch.object(executor.subprocess, 'run')
+    def test_full_run(self, mock_run, mock_sleep, mock_waitpid, mock_popen):
         pid = mock_popen.return_value.pid = 100
+        setup = Path('/path/to/setup.sh')
+        teardown = Path('/path/to/teardown.sh')
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
+        app.write_hook_scripts = MagicMock(return_value=[setup, teardown])
         trace = MagicMock()
 
         hook = MagicMock()
@@ -39,6 +43,12 @@ class TestExecutorRunTrace:
         assert trace.process.returncode == 10
         hook.teardown.assert_called_once_with(trace)
 
+        app.write_hook_scripts.assert_called_once_with(trace)
+        assert mock_run.call_args_list == [
+            call([str(setup)], cwd=str(trace.cwd)),
+            call([str(teardown)], cwd=str(trace.cwd)),
+        ]
+
     @patch.object(executor.time, 'monotonic')
     @patch.object(executor.os, 'waitpid')
     @patch.object(executor.subprocess, 'Popen')
@@ -55,6 +65,7 @@ class TestExecutorRunTrace:
 
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
+        app.write_hook_scripts = MagicMock(return_value=(None, None))
 
         app.run_trace(MagicMock(), trace)
 

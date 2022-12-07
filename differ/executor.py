@@ -168,6 +168,14 @@ class Executor:
             hook.setup(trace)
 
         stdin_file = self.create_stdin_file(trace)
+        setup, teardown = self.write_hook_scripts(trace)
+
+        if setup:
+            # Run the trace setup script
+            logger.debug(
+                'running trace setup for context %s: %s', trace.context.id, trace.debloater_engine
+            )
+            subprocess.run([str(setup)], cwd=str(trace.cwd))
 
         args = [str(trace.binary)] + shlex.split(trace.context.arguments)
         trace.process = subprocess.Popen(
@@ -204,6 +212,15 @@ class Executor:
         # Run teardown hooks
         for hook in hooks:
             hook.teardown(trace)
+
+        if teardown:
+            # Run the trace teardown script
+            logger.debug(
+                'running trace teardown for context %s: %s',
+                trace.context.id,
+                trace.debloater_engine,
+            )
+            subprocess.run([str(teardown)], cwd=str(trace.cwd))
 
     def compare_trace(
         self, project: Project, original: Trace, debloated: Trace
@@ -383,6 +400,32 @@ class Executor:
                 file.write(content.encode())
 
         return filename
+
+    def write_hook_scripts(self, trace: Trace) -> tuple[Optional[Path], Optional[Path]]:
+        """
+        Generate Bash scripts for trace setup and teardown. If the hook has not body then the item
+        within the tuple is ``None``.
+
+        :returns: a tuple containing the paths to the ``setup`` and ``teardown`` scripts to execute
+        """
+        templates = [
+            (trace.context.template.setup_template, trace.setup_script_path),
+            (trace.context.template.teardown_template, trace.teardown_script_path),
+        ]
+        scripts: list[Optional[Path]] = []
+        for template, filename in templates:
+            if not template:
+                scripts.append(None)
+                continue
+
+            with open(filename, 'w') as file:
+                print('#!/bin/bash', file=file)
+                print(template.render(**trace.context.values), file=file)
+
+            os.chmod(filename, 0o755)
+            scripts.append(filename)
+
+        return tuple(scripts)
 
 
 class VariableValueGenerator:

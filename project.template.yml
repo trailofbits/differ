@@ -69,6 +69,23 @@ templates:
     # then any crashes or comparison failures are treated as successful (default: true).
     # expect_success: true
 
+    # Bash script commands to execute prior to launching each trace. The body is a Jinja2 template
+    # and can reference template variables. The script is run from the trace directory. The setup
+    # commands are run after input files are copied/generated so the script can reference these.
+    # This is optional.
+    #
+    # setup: |
+    #   touch ./empty_file
+    #   echo hello {{full_name}} > ./some_file
+
+    # Bash script commands to execute after a trace has completed. The body is a Jinja2 template
+    # and can reference template variables. The script is run from the trace directory. This is
+    # optional.
+    #
+    # teardown: |
+    #   rm ./empty_file
+    #   echo goodbye >> ./some_file
+
     # A set of variables that will be generated for each trace.
     variables:
       # The key is the variable name
