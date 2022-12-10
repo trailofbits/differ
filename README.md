@@ -161,5 +161,5 @@ $ pipenv run spell-check
 ```
 
 <!--
-spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest
+spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy
 -->

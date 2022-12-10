@@ -13,7 +13,7 @@ from . import register
 class FileComparator(Comparator):
     """
     File content comparator. This comparator accepts a filename in both the original trace and each
-    debloated trace. This file is compared and will error if the file content is too disimilar.
+    debloated trace. This file is compared and will error if the file content is too dissimilar.
     This comparator accepts the following configuration:
 
     .. code-block:: yaml
@@ -21,8 +21,8 @@ class FileComparator(Comparator):
         - id: file
           # The filename, relative to the trace directory to compare.
           filename: program_output.bin
-          # The minimmum similarity percentage. The comparison will fail if the files are more
-          # disimlar than this threshold. Internally, the comparator uses the ssdeep fuzzy hash
+          # The minimum similarity percentage. The comparison will fail if the files are more
+          # dissimilar than this threshold. Internally, the comparator uses the ssdeep fuzzy hash
           # algorithm to compare the file content. This is optional with the default value being
           # 100 (files must match exactly).
           # similarity: 100
