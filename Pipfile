@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pyyaml = "*"
 jinja2 = "*"
+ssdeep = "*"
 
 [dev-packages]
 blue = "*"
