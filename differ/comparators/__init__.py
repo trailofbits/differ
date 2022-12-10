@@ -13,6 +13,7 @@ def register(id: str) -> Callable[[type[Comparator]], type[Comparator]]:
 
 
 def load_comparators() -> list[type[Comparator]]:
+    from . import files  # noqa: F401
     from . import primitives  # noqa: F401
 
     return list(COMPARATOR_TYPE_REGISTRY.values())

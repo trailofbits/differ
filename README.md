@@ -8,11 +8,11 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
 
 ### Installing Dependencies
 
-1. Install Python 3.9. For Ubuntu 20.04, the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) can be used:
+1. Install Python 3.9 and dependencies. For Ubuntu 20.04, the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) can be used:
    ```bash
    $ sudo add-apt-repository ppa:deadsnakes/ppa
    $ sudo apt update
-   $ sudo apt-get install python3.9 python3.9-venv
+   $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev
    ```
 2. Install `pipenv`, which manages the virtual environment.
    ```bash
@@ -161,5 +161,5 @@ $ pipenv run spell-check
 ```
 
 <!--
-spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest
+spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy
 -->
