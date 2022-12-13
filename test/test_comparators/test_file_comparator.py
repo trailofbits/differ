@@ -59,9 +59,11 @@ class TestFileComparator:
         mock_hash_file.return_value = ('sha1', 'ssdeep')
 
         ext = files.FileComparator({'filename': 'filename'})
+        ext.check_file_type = MagicMock(return_value=None)
         result = ext.compare(original, debloated)
         assert result.status is ComparisonStatus.success
         assert result.comparator == ext.id
+        ext.check_file_type.assert_called_once_with(debloated, debloated.cwd / 'filename')
 
     @patch.object(files.ssdeep, 'compare')
     @patch.object(files.FileComparator, 'hash_file')
@@ -74,6 +76,7 @@ class TestFileComparator:
         mock_compare.return_value = 95
 
         ext = files.FileComparator({'filename': 'filename', 'similarity': 90})
+        ext.check_file_type = MagicMock(return_value=None)
         result = ext.compare(original, debloated)
         assert result.status is ComparisonStatus.success
         assert result.comparator == ext.id
@@ -90,6 +93,7 @@ class TestFileComparator:
         mock_compare.return_value = 89
 
         ext = files.FileComparator({'filename': 'filename', 'similarity': 90})
+        ext.check_file_type = MagicMock(return_value=None)
         result = ext.compare(original, debloated)
         assert result.status is ComparisonStatus.error
         assert result.comparator == ext.id
