@@ -29,6 +29,7 @@ class OctalRef(VariableRef):
 
 MODE_NO_CHECK = -1
 
+
 @register('file')
 class FileComparator(Comparator):
     """
@@ -99,7 +100,9 @@ class FileComparator(Comparator):
         if expected_mode != MODE_NO_CHECK and filename.exists():
             mode = filename.stat().st_mode & 0o777
             if expected_mode != mode:
-                return f'file mode does not match expected: mode={mode:o}, expected={expected_mode:o}'
+                return (
+                    f'file mode does not match expected: mode={mode:o}, expected={expected_mode:o}'
+                )
 
     @classmethod
     def hash_file(cls, filename: Path) -> tuple[str, str]:
