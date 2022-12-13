@@ -1,0 +1,111 @@
+name: coreutils_uniq
+original: bin/uniq.original
+debloaters:
+  chisel: bin/uniq.chisel
+
+templates:
+  ####################
+  # Desired Features #
+  ####################
+  - input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -c
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -d
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -u
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -i
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -f 5
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -s 10
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -w 10
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
