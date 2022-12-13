@@ -219,8 +219,8 @@ class InputFile:
     #: an absolute path. The source file is stored in the trace directory with the same basename if
     #: a destination is not specified.
     destination: Optional[Path] = None
-    #: The destination file permissions. The source file's permissions are copied if not specified.
-    permission: Optional[str] = None
+    #: The destination file mode. The source file's mode are copied if not specified.
+    mode: Optional[str] = None
     #: The file is static and should not be generated using the trace context variables.
     static: bool = False
 
@@ -258,10 +258,14 @@ class InputFile:
             return cls(Path(body))
 
         destination = body.get('destination')
+        mode = body.get('mode')
+        if isinstance(mode, int):
+            mode = str(mode)
+
         return cls(
             source=Path(body['source']),
             destination=Path(destination) if destination else None,
-            permission=body.get('permission'),
+            mode=mode,
             static=body.get('static', False),
         )
 

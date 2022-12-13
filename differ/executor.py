@@ -350,7 +350,7 @@ class Executor:
                         dest.parent.mkdir(parents=True)
 
                     shutil.copy(str(input_file.source), str(dest))
-                    self.set_input_file_permission(input_file, dest)
+                    self.set_input_file_mode(input_file, dest)
             else:
                 self.generate_input_file(trace, input_file)
 
@@ -369,17 +369,17 @@ class Executor:
         with open(dest, 'w') as file:
             file.write(content)
 
-        self.set_input_file_permission(input_file, dest)
+        self.set_input_file_mode(input_file, dest)
 
-    def set_input_file_permission(self, input_file: InputFile, destination: Path) -> None:
+    def set_input_file_mode(self, input_file: InputFile, destination: Path) -> None:
         """
-        Set the copied input file permissions.
+        Set the copied input file mode.
         """
-        if not input_file.permission:
-            # copy source file permissions
+        if not input_file.mode:
+            # copy source file mode
             perms = input_file.source.stat().st_mode & 0o777
         else:
-            perms = int(input_file.permission, 8)
+            perms = int(input_file.mode, 8)
 
         os.chmod(destination, perms)
 
