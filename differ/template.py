@@ -7,7 +7,7 @@ import shlex
 
 from jinja2 import Environment
 
-JINJA_ENVIRONMENT = Environment()
+JINJA_ENVIRONMENT = Environment(keep_trailing_newline=True)
 
 
 def quote_filter(s: str) -> str:
