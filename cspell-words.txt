@@ -11,3 +11,4 @@ WTERMSIG
 WIFSIGNALED
 SIGTERM
 ssdeep
+deref

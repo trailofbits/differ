@@ -786,7 +786,7 @@ class VariableRef:
 
     .. code-block:: yaml
 
-        name: coreutils_mkdir
+        name: mkdir
         original: /usr/bin/mkdir
 
         templates:
@@ -835,7 +835,7 @@ class VariableRef:
 
         :param potential_ref: potential variable reference to dereference or concrete value
         :param values: context variable values
-        :returns: the deferenced variable of the concrete value
+        :returns: the dereferences variable or the concrete value
         """
         if isinstance(potential_ref, cls):
             return potential_ref.get(values)

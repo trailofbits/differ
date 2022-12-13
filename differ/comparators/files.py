@@ -42,11 +42,34 @@ class FileComparator(Comparator):
         - id: file
           # The filename, relative to the trace directory to compare.
           filename: program_output.bin
+
           # The minimum similarity percentage. The comparison will fail if the files are more
           # dissimilar than this threshold. Internally, the comparator uses the ssdeep fuzzy hash
-          # algorithm to compare the file content. This is optional with the default value being
-          # 100 (files must match exactly).
+          # algorithm to compare the file content. This option is only honored if the path is a
+          # file (`type: file`) and the path must exist (`exists: true`). This is optional with the
+          # default value being 100 (files must match exactly).
           # similarity: 100
+
+          # The file must or must not exist. This is optional with the default value being `true`
+          # (the file must exist).
+          # exists: true
+
+          # The file type, either "file" or "directory". This is optional with the default value
+          # being "file" (the path must refer to a normal file).
+          # type: file
+
+          # The file mode in octal representation. When specified, the file must have the specified
+          # mode. The value can be a string, integer, or variable reference. This is optional with
+          # the default value being none.
+          # Mode as a string
+          # mode: "755"
+          #
+          # Mode as an integer
+          # mode: 755
+          #
+          # Mode as a variable reference
+          # mode:
+          #   variable: file_mode
     """
 
     def __init__(self, config: dict):
