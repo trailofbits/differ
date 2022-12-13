@@ -30,7 +30,9 @@ templates:
 
     # Input files
     input_files:
-      # Path to the file. This can be absolute or relative to the trace directory.
+      # Path to the file. This can be absolute or relative to the trace directory. This can be a
+      # directory if 'static: true' is set, in which case the entire directory is recursively
+      # copied to the destination.
       - source: /path/to/input_file
 
         # The destination path or filename for each trace. This can be absolute or relative to the

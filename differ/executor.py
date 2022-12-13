@@ -343,8 +343,14 @@ class Executor:
             if input_file.static:
                 # This is a static file that should not be modified
                 dest = input_file.get_destination(trace.cwd)
-                shutil.copy(str(input_file.source), str(dest))
-                self.set_input_file_permission(input_file, dest)
+                if input_file.source.is_dir():
+                    shutil.copytree(input_file.source, dest)
+                else:
+                    if not dest.parent.exists():
+                        dest.parent.mkdir(parents=True)
+
+                    shutil.copy(str(input_file.source), str(dest))
+                    self.set_input_file_permission(input_file, dest)
             else:
                 self.generate_input_file(trace, input_file)
 
@@ -356,6 +362,8 @@ class Executor:
             'generating input file for trace %s: %s', trace.debloater_engine, input_file.source
         )
         dest = input_file.get_destination(trace.cwd)
+        if not dest.parent.exists():
+            dest.parent.mkdir(parents=True)
 
         content = input_file.template.render(**trace.context.values)
         with open(dest, 'w') as file:
