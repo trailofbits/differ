@@ -458,6 +458,7 @@ class TraceTemplate:
             timeout=timeout,
             setup=body.get('setup', ''),
             teardown=body.get('teardown', ''),
+            expect_success=body.get('expect_success', True),
             **kwargs,
         )
 
