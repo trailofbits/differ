@@ -145,16 +145,6 @@ templates:
       - stderr
       - exit_code
 
-  - arguments: -F randomtext* input_dir/input2
-    input_files:
-      - source: input_dir
-        static: true
-
-    comparators:
-      - stdout
-      - stderr
-      - exit_code
-
   - arguments: -E randomtext* input_dir/input2
     input_files:
       - source: input_dir
@@ -176,16 +166,6 @@ templates:
       - exit_code
 
   - arguments: cold input_dir/input
-    input_files:
-      - source: input_dir
-        static: true
-
-    comparators:
-      - stdout
-      - stderr
-      - exit_code
-
-  - arguments: "'not exist' input_dir/input"
     input_files:
       - source: input_dir
         static: true
@@ -255,10 +235,39 @@ templates:
       - stderr
       - exit_code
 
+  ######################
+  # Debloated Features #
+  ######################
+  - arguments: -F randomtext* input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    expect_success: false
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: "'not exist' input_dir/input"
+    input_files:
+      - source: input_dir
+        static: true
+
+    expect_success: false
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
   - arguments: -E free[^[:space:]]+ input_dir/input2
     input_files:
       - source: input_dir
         static: true
+
+    expect_success: false
 
     comparators:
       - stdout
@@ -269,6 +278,8 @@ templates:
     input_files:
       - source: input_dir
         static: true
+
+    expect_success: false
 
     comparators:
       - stdout

@@ -102,7 +102,6 @@ templates:
         type: int
         values:
           - 400
-          - 555
           - 644
           - 610
           - 777
