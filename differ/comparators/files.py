@@ -105,6 +105,13 @@ class FileComparator(Comparator):
         trace.cache[f'{self.filename}_ssdeep'] = fuzzy
 
     def check_file_type(self, trace: Trace, filename: Path) -> Optional[str]:
+        """
+        Verify that the file type, existence, and mode are correct. This method enforces the
+        ``type``, ``exists``, and ``mode`` configuration options.
+
+        :param filename: path to the trace file being checked
+        :returns: an error message if the check failed or ``None`` if all checks passed
+        """
         if self.exists:
             if not filename.exists():
                 return f'file does not exist: {self.filename}'
