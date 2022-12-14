@@ -79,10 +79,8 @@ class FileComparator(Comparator):
         self.path_type = PathType(config.get('type', 'file'))
         mode = OctalRef.try_parse(config.get('mode'))
 
-        if isinstance(mode, int):
+        if isinstance(mode, (int, str)):
             self.mode = int(str(mode), 8)
-        elif isinstance(mode, str) and mode:
-            self.mode = int(mode, 8)
         elif isinstance(mode, OctalRef):
             self.mode = mode
         else:
