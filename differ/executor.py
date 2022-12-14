@@ -29,6 +29,7 @@ class ExecutorComparator(Comparator):
     """
     A dummy comparator class that is used when an internal trace comparison check fails.
     """
+
     id: str = '__executor__'
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
