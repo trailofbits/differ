@@ -162,6 +162,15 @@ class TestFileComparator:
         ext = files.FileComparator({'filename': 'asdf', 'exists': True, 'mode': {'variable': 'x'}})
         assert ext.check_file_type(trace, filename)
 
+    def test_check_file_type_mode_matches(self):
+        trace = MagicMock()
+        filename = MagicMock()
+        filename.exists.return_value = True
+        filename.is_file.return_value = True
+        filename.stat.return_value.st_mode = 0o744
+        ext = files.FileComparator({'filename': 'asdf', 'exists': True, 'mode': 744})
+        assert not ext.check_file_type(trace, filename)
+
     def test_compare_check_file_failed(self):
         original = MagicMock()
         debloated = MagicMock(cwd=Path('/'))
@@ -183,10 +192,7 @@ class TestFileComparator:
         ext.hash_file.assert_not_called()
 
 
-
-
 class TestOctalRef:
-
     def test_get(self):
         ref = files.OctalRef.parse({'variable': 'x'})
         assert files.OctalRef.deref(ref, {'x': 755}) == 0o755

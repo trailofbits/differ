@@ -61,3 +61,36 @@ class TestExecutorInputFiles:
         app.set_input_file_mode.assert_called_once_with(input_files[0], static_dest)
 
         app.generate_input_file.assert_called_once_with(trace, input_files[1])
+
+    @patch.object(executor.shutil, 'copytree')
+    def test_copy_input_files_static_directory(self, mock_copytree):
+        input_file = MagicMock(static=True)
+        input_file.source.is_dir.return_value = True
+        trace = MagicMock()
+        trace.context.template.input_files = [input_file]
+
+        app = executor.Executor(Path('/'))
+        app.copy_input_files(trace)
+
+        mock_copytree.assert_called_once_with(
+            input_file.source, input_file.get_destination.return_value
+        )
+
+    @patch.object(executor.shutil, 'copy')
+    def test_copy_input_files_mkdir(self, mock_copy):
+        input_file = MagicMock(static=True)
+        input_file.source.is_dir.return_value = False
+        dest = input_file.get_destination.return_value
+        dest.parent.exists.return_value = False
+
+        trace = MagicMock()
+        trace.context.template.input_files = [input_file]
+
+        ext = executor.Executor(Path('/'))
+        ext.set_input_file_mode = MagicMock()
+
+        ext.copy_input_files(trace)
+
+        dest.parent.mkdir.assert_called_once_with(parents=True)
+        mock_copy.assert_called_once_with(str(input_file.source), str(dest))
+        ext.set_input_file_mode.assert_called_once_with(input_file, dest)
