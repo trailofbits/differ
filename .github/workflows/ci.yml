@@ -61,9 +61,9 @@ jobs:
         run: |
           pipenv sync --dev
 
-      - name: 'Unit Tests'
+      - name: 'Tests'
         run: |
-          pipenv run test
+          pipenv run tests
 
   # pip-audit:
   #   runs-on: ubuntu-22.04
