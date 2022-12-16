@@ -10,7 +10,9 @@ from pathlib import Path
 from typing import Any, Optional
 
 from .core import (
+    Comparator,
     ComparisonResult,
+    ComparisonStatus,
     CrashResult,
     FuzzVariable,
     InputFile,
@@ -21,6 +23,24 @@ from .core import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class ExecutorComparator(Comparator):
+    """
+    A dummy comparator class that is used when an internal trace comparison check fails.
+    """
+
+    id: str = '__executor__'
+
+    def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
+        return ComparisonResult.success(self, debloated)
+
+    def verify_original(self, original: Trace) -> Optional[CrashResult]:
+        pass
+
+
+#: Singleton for the executor comparator
+EXECUTOR_COMPARATOR = ExecutorComparator({})
 
 
 class Executor:
@@ -68,7 +88,7 @@ class Executor:
         if not self.root.exists():
             self.root.mkdir()
 
-    def run_project(self, project: Project) -> None:
+    def run_project(self, project: Project) -> int:
         """
         Run a project.
 
@@ -85,12 +105,25 @@ class Executor:
 
         project.directory.mkdir()
 
+        error_count = 0
+        context_count = 0
         for template in project.templates:
             contexts = self.generate_contexts(project, template)
             for context in contexts:
-                self.run_context(project, context)
+                context_count += 1
+                error_count += self.run_context(project, context)
 
-    def run_context(self, project: Project, context: TraceContext) -> None:
+        trace_count = context_count * (len(project.debloaters) + 1)
+        if not error_count:
+            logger.info('project %s ran %d traces successfully', project.name, trace_count)
+        else:
+            logger.error(
+                'project %s ran %d traces with %d errors', project.name, trace_count, error_count
+            )
+
+        return error_count
+
+    def run_context(self, project: Project, context: TraceContext) -> int:
         """
         Run a trace context against the original binary and each debloated binary.
         """
@@ -108,18 +141,68 @@ class Executor:
             # The original did not behave as we expected and we can't trust the results of the
             # debloated binaries. Report the crash and quit.
             crash.save(project.crash_filename(original_trace))
-            return
+            return 1
 
+        error_count = 0
         # Run each debloated binary and compare it against the original
         for debloater in project.debloaters.values():
             trace = self.create_trace(project, context, debloater.binary, debloater.engine)
             self.run_trace(project, trace)
-            if results := self.compare_trace(project, original_trace, trace):
-                # Results will not be empty if there were failures or report_successes is True.
-                project.save_report(trace, results)
 
-            if crash := self.check_trace_crash(trace):
+            results = self.compare_trace(project, original_trace, trace)
+            crash = self.check_trace_crash(trace)
+            errors = self.get_errors(trace, results, crash)
+
+            # A crash is an error if we don't expect it (expect_success: true)
+            crash_is_error = crash and trace.context.template.expect_success
+            if not crash_is_error:
+                # ignore the crash, it was expected
+                crash = None
+
+            if errors or crash:
+                # update the error count
+                error_count += 1
+
+            reports = results if self.report_successes else errors
+            if reports:
+                project.save_report(trace, reports)
+
+            if crash:
                 crash.save(project.crash_filename(trace))
+
+        return error_count
+
+    def get_errors(
+        self, trace: Trace, results: list[ComparisonResult], crash: Optional[CrashResult]
+    ) -> list[ComparisonResult]:
+        """
+        Get the list of errors for the trace, honoring the template's ``expect_success``
+        configuration. When ``expect_success: false``, the trace will fail if there are not errors
+        and the trace did not crash.
+        """
+        errors = [item for item in results if not item]
+        if trace.context.template.expect_success:
+            # We expected the trace to be successful, return the list of errors
+            return errors
+
+        # We expected the trace to fail, determine if the trace was actually successful by failing
+        if errors or crash:
+            # The trace failed as we expected, flip all errors to successful and clear the error
+            # list
+            for err in errors:
+                err.status = ComparisonStatus.success
+                err.details += ' (expected error treated as success)'
+
+            errors = []
+        else:
+            # The trace didn't fail, which is unexpected. Add a new error so it'll be reported
+            error = ComparisonResult.error(
+                EXECUTOR_COMPARATOR, trace, 'trace was expected to fail but did not'
+            )
+            results.append(error)
+            errors = [error]
+
+        return errors
 
     def check_original_trace(self, project: Project, trace: Trace) -> Optional[CrashResult]:
         """
@@ -227,8 +310,7 @@ class Executor:
     ) -> list[ComparisonResult]:
         """
         Compare a debloated trace against the original and return a comparison result for each
-        comparator. This method will always return all failures and optionally return the successes
-        if ``report_successes`` is enabled.
+        comparator. This method will always return all comparison results.
 
         :param original: the trace of the original binary
         :param debloated: the trace of the debloated binary
@@ -245,8 +327,7 @@ class Executor:
             result = comparator.compare(original, debloated)
             logger.debug('comparator %s result: %s', comparator.id, result.status.value)
 
-            if not result or self.report_successes:
-                results.append(result)
+            results.append(result)
 
         return results
 
@@ -343,8 +424,14 @@ class Executor:
             if input_file.static:
                 # This is a static file that should not be modified
                 dest = input_file.get_destination(trace.cwd)
-                shutil.copy(str(input_file.source), str(dest))
-                self.set_input_file_permission(input_file, dest)
+                if input_file.source.is_dir():
+                    shutil.copytree(input_file.source, dest)
+                else:
+                    if not dest.parent.exists():
+                        dest.parent.mkdir(parents=True)
+
+                    shutil.copy(str(input_file.source), str(dest))
+                    self.set_input_file_mode(input_file, dest)
             else:
                 self.generate_input_file(trace, input_file)
 
@@ -356,22 +443,24 @@ class Executor:
             'generating input file for trace %s: %s', trace.debloater_engine, input_file.source
         )
         dest = input_file.get_destination(trace.cwd)
+        if not dest.parent.exists():
+            dest.parent.mkdir(parents=True)
 
         content = input_file.template.render(**trace.context.values)
         with open(dest, 'w') as file:
             file.write(content)
 
-        self.set_input_file_permission(input_file, dest)
+        self.set_input_file_mode(input_file, dest)
 
-    def set_input_file_permission(self, input_file: InputFile, destination: Path) -> None:
+    def set_input_file_mode(self, input_file: InputFile, destination: Path) -> None:
         """
-        Set the copied input file permissions.
+        Set the copied input file mode.
         """
-        if not input_file.permission:
-            # copy source file permissions
+        if not input_file.mode:
+            # copy source file mode
             perms = input_file.source.stat().st_mode & 0o777
         else:
-            perms = int(input_file.permission, 8)
+            perms = int(input_file.mode, 8)
 
         os.chmod(destination, perms)
 

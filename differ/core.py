@@ -137,25 +137,52 @@ class Project:
             file.write(yaml.safe_dump(body))
 
     @classmethod
-    def load(cls, root: Path, filename: Union[str, Path]) -> 'Project':
+    def load(cls, report_directory: Path, filename: Union[str, Path]) -> 'Project':
         """
-        Load the project from a YAML file.
+        Load the project from a YAML file and resolve all relative paths within the configurations.
 
-        :param root: root directory for storing all project data
-        :param body: project YAML file
+        :param report_directory: root directory for storing all report data
+        :param filename: project filename
         :returns: the parsed project object
         """
         with open(filename, 'r') as file:
             body = yaml.safe_load(file)
-        return cls.load_dict(root, body)
+
+        project = cls._load_dict(body)
+        project.resolve_paths(Path(filename).parent, report_directory)
+
+        return project
+
+    def resolve_paths(self, project_directory: Path, report_directory: Path) -> None:
+        """
+        Resolve all relative paths within the project definition.
+
+        :param project_directory: the project directory where the YAML file is loaded from
+        :param report_directory: the report directory where reports are stored
+        """
+        # First, resolve input paths against the project directory
+        if not self.original.is_absolute():
+            self.original = (project_directory / self.original).resolve()
+
+        for debloater in self.debloaters.values():
+            if not debloater.binary.is_absolute():
+                # Resolve the debloated binary to an absolute file path, relative to the directory
+                # where the project file is located.
+                debloater.binary = (project_directory / debloater.binary).absolute()
+
+        for template in self.templates:
+            for input_file in template.input_files:
+                input_file.resolve_source(project_directory)
+
+        if not self.directory.is_absolute():
+            self.directory = (report_directory / self.directory).resolve()
 
     @classmethod
-    def load_dict(cls, root: Path, body: dict) -> 'Project':
+    def _load_dict(cls, body: dict) -> 'Project':
         """
         Load a project from a dictionary.
 
-        :param root: root directory for storing all project data
-        :param body: project dictionary
+        :param body: project dictionary object
         :returns: the parsed project object
         """
         original = Path(body['original'])
@@ -168,23 +195,12 @@ class Project:
             for name, value in body['debloaters'].items()
         }
 
-        if not original.is_absolute():
-            # Resolve the original binary to an absolute file path, relative to the directory where
-            # the project file is located.
-            original = (root.parent / original).absolute()
-
-        for debloater in debloaters.values():
-            if not debloater.binary.is_absolute():
-                # Resolve the debloated binary to an absolute file path, relative to the directory
-                # where the project file is located.
-                debloater.binary = (root.parent / debloater.binary).absolute()
-
         return cls(
             name=body['name'],
             original=original,
             debloaters=debloaters,
             templates=templates,
-            directory=root / body['name'],
+            directory=Path(body['name']),
         )
 
 
@@ -202,13 +218,23 @@ class InputFile:
     #: an absolute path. The source file is stored in the trace directory with the same basename if
     #: a destination is not specified.
     destination: Optional[Path] = None
-    #: The destination file permissions. The source file's permissions are copied if not specified.
-    permission: Optional[str] = None
+    #: The destination file mode. The source file's mode are copied if not specified.
+    mode: Optional[str] = None
     #: The file is static and should not be generated using the trace context variables.
     static: bool = False
 
     def __post_init__(self) -> None:
         self._template: Optional[jinja2.Template] = None
+
+    def resolve_source(self, cwd: Path) -> None:
+        """
+        Resolve the source filename to an absolute file path based on the provided working
+        directory.
+
+        :param cwd: working directory to resolve relative paths against
+        """
+        if not self.source.is_absolute():
+            self.source = (cwd / self.source).resolve()
 
     @property
     def template(self) -> jinja2.Template:
@@ -231,10 +257,14 @@ class InputFile:
             return cls(Path(body))
 
         destination = body.get('destination')
+        mode = body.get('mode')
+        if isinstance(mode, int):
+            mode = str(mode)
+
         return cls(
             source=Path(body['source']),
             destination=Path(destination) if destination else None,
-            permission=body.get('permission'),
+            mode=mode,
             static=body.get('static', False),
         )
 
@@ -427,6 +457,7 @@ class TraceTemplate:
             timeout=timeout,
             setup=body.get('setup', ''),
             teardown=body.get('teardown', ''),
+            expect_success=body.get('expect_success', True),
             **kwargs,
         )
 
@@ -747,6 +778,101 @@ class Comparator(TraceHook):
         :returns: the
         """
         raise NotImplementedError()
+
+
+class VariableRef:
+    """
+    A reference to a variable within a comparator configuration. Comparator implementations can use
+    this class if some configuration can depend on a variable value that is generated for the
+    active context. For example, a template can be setup to randomly create a directory name based
+    on a fuzz variable. The comparator will need to check that the directory exists based on the
+    generated name. In this case, the following configuration can be used:
+
+    .. code-block:: yaml
+
+        name: mkdir
+        original: /usr/bin/mkdir
+
+        templates:
+          - arguments: "{{dirname}}"
+            variables:
+              dirname:
+                type: str
+                regex:
+                  pattern: '[A-Z][a-z0-9]{3,9}'
+                  count: 10
+
+            comparators:
+              - id: file
+                filename:
+                  variable: dirname
+                exists: true
+                type: directory
+
+    In this case, the :class:`~differ.comparators.files.FileComparator` will verify that the
+    directory ``{{dirname}}`` is created for each generated context.
+    """
+
+    def __init__(self, variable: str):
+        """
+        :param variable: the variable name
+        """
+        self.variable = variable
+
+    def get(self, values: dict) -> Any:
+        """
+        Get the variable value from the context values dictionary. The default implementation
+        returns ``values[sef.variable]`` and subclass may customize this behavior.
+
+        :param values: context variable values
+        :returns: the variable value
+        """
+        return values[self.variable]
+
+    @classmethod
+    def deref(cls, potential_ref: Any, values: dict) -> Any:
+        """
+        Attempt to dereference the variable. ``potential_ref`` can be either an instance of
+        ``VariableRef``, in which case the return value is ``potential_ref.get(values)``, or any
+        other type, in which case the ``potential_ref`` is returned. This method is a convenience
+        to handle both concrete values and variable references.
+
+        :param potential_ref: potential variable reference to dereference or concrete value
+        :param values: context variable values
+        :returns: the dereferences variable or the concrete value
+        """
+        if isinstance(potential_ref, cls):
+            return potential_ref.get(values)
+        return potential_ref
+
+    @classmethod
+    def try_parse(cls, value: Any) -> Any:
+        """
+        Attempt to parse a variable reference from a dictionary. A variable reference is defined as
+        a dictionary with at least a ``variable`` key that stores the variable name to dereference.
+        If the value is not a reference, return it.
+
+        :param value: potential variable reference or concrete value
+        :returns: either a ``VariableRef`` object or the concrete value
+        """
+        if isinstance(value, dict) and value.get('variable'):
+            return cls(**value)
+        return value
+
+    @classmethod
+    def parse(cls, value: Any) -> Any:
+        """
+        Similar to :meth:`try_parse` but raises a ``ValueError`` if the value is not a variable
+        reference.
+
+        :param value: potential variable reference or concrete value
+        :returns: the variable reference object
+        :raises ValueError: invalid variable reference
+        """
+        value = cls.try_parse(value)
+        if not isinstance(value, cls):
+            raise ValueError(f'invalid variable reference: {value}')
+        return value
 
 
 #: Registry for all available variable classes. This is populated by the

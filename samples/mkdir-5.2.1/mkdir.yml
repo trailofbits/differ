@@ -1,0 +1,119 @@
+name: coreutils_mkdir
+original: bin/mkdir.original
+debloaters:
+  chisel: bin/mkdir.chisel
+
+
+templates:
+  - arguments: d1
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - arguments: -p d1/d2
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2
+
+  - arguments: -p d1/d2/d3/d4
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2/d3/d4
+
+  - setup: mkdir d1
+    arguments: -p d1
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - setup: mkdir d1
+    arguments: -p d1/d2
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2
+
+  ###################
+  # Expected Errors #
+  ###################
+  - arguments: d1/d2
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        exists: false
+        filename: d1
+
+  - arguments: -m 12341234 d1
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        exists: false
+        filename: d1
+
+  - arguments: -m d1
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        exists: false
+        filename: d1
+
+  - setup: mkdir d1
+    arguments: d1
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  ######################
+  # Debloated Features #
+  ######################
+  #
+  # The following is disabled because mkdir.chisel behaves differently based on the installed OS
+  # and library versions.
+  #
+  # - arguments: -m {{mode}} d1
+  #   expect_success: false
+  #   variables:
+  #     mode:
+  #       type: int
+  #       values:
+  #         - 400
+  #         - 644
+  #         - 610
+  #   comparators:
+  #     - stdout
+  #     - stderr
+  #     - exit_code
+  #     - id: file
+  #       type: directory
+  #       filename: d1
+  #       mode:
+  #         variable: mode

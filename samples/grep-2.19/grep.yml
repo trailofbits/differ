@@ -1,0 +1,287 @@
+name: coreutils_grep
+original: bin/grep.original
+debloaters:
+  chisel: bin/grep.chisel
+
+templates:
+  - arguments: a input_dir/input
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: a -v -H -r input_dir
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  # "1" -h -r input_dir
+  - arguments: 1 -h -r input_dir
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -n si input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: 1 -r input_dir -l
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: 1 -r input_dir -L
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: randomtext -r input_dir -c
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -o [r][a][n][d]* input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: 1 -r input_dir -q
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: 1 -r input_dir -s
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -v a input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -i Si input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -w Si input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: "-x Don\\'t input_dir/input2"
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -E randomtext* input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: "'ye ' input_dir/input"
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: cold input_dir/input
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: ^D input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: .$ input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: '\^  input_dir/input2'
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: '\^$ input_dir/input2'
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: ^[AEIOU] input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: ^[^AEIOU] input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  ######################
+  # Debloated Features #
+  ######################
+  - arguments: -F randomtext* input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    expect_success: false
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: "'not exist' input_dir/input"
+    input_files:
+      - source: input_dir
+        static: true
+
+    expect_success: false
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -E free[^[:space:]]+ input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    expect_success: false
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: '-E "\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" input_dir/input'
+    input_files:
+      - source: input_dir
+        static: true
+
+    expect_success: false
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code

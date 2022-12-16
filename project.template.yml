@@ -30,7 +30,9 @@ templates:
 
     # Input files
     input_files:
-      # Path to the file. This can be absolute or relative to the trace directory.
+      # Path to the file. This can be absolute or relative to the trace directory. This can be a
+      # directory if 'static: true' is set, in which case the entire directory is recursively
+      # copied to the destination.
       - source: /path/to/input_file
 
         # The destination path or filename for each trace. This can be absolute or relative to the
@@ -39,12 +41,12 @@ templates:
         #
         # destination: generated_input_file
 
-        # Set specified permission on the file after it is copied or generated for each trace. By
-        # default, if not specified, the source file's permissions are copied. The value must be
-        # the octal permission value that is compatible with "chmod" (e.g.- "755"). This is
+        # Set specified mode on the file after it is copied or generated for each trace. By
+        # default, if not specified, the source file's mode is copied. The value must be
+        # the octal mode value that is compatible with "chmod" (e.g.- "755"). This is
         # optional.
         #
-        # permission: "755"
+        # mode: "755"
 
         # The file is either static or not. Static files are copied to the destination as-is
         # without modification. Non-static files are generated using Jinja2 and the trace's

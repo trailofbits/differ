@@ -27,8 +27,20 @@ def format(c):
 
 
 @task
-def test(c):
+def tests(c):
     c.run('coverage run --source=differ -m pytest', **KWARGS)
+    c.run('coverage report -m', **KWARGS)
+
+
+@task
+def unit_tests(c):
+    c.run('coverage run --source=differ -m pytest -k "not test_project"', **KWARGS)
+    c.run('coverage report -m', **KWARGS)
+
+
+@task
+def integration_tests(c):
+    c.run('coverage run --source=differ -m pytest -k "test_project"', **KWARGS)
     c.run('coverage report -m', **KWARGS)
 
 
@@ -44,6 +56,11 @@ def spell_check(c):
         f'npx cspell lint --show-suggestions --no-progress README.md project.template.yml {patterns}',
         **KWARGS,
     )
+
+
+@task(lint, spell_check, tests)
+def ci(c):
+    pass
 
 
 # @task

@@ -1,5 +1,6 @@
 if __name__ == '__main__':
     import argparse
+    import sys
     from pathlib import Path
 
     from .core import Project
@@ -42,4 +43,6 @@ if __name__ == '__main__':
     app.setup()
 
     project = Project.load(app.root, args.project_filename)
-    app.run_project(project)
+    error_count = app.run_project(project)
+
+    sys.exit(error_count)

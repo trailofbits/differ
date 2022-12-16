@@ -153,11 +153,14 @@ $ pipenv run lint
 # Format Python code
 $ pipenv run format
 
-# Run unit tests
-$ pipenv run test
+# Run unit and integration tests
+$ pipenv run tests
 
 # Run spell checking (requires cspell)
 $ pipenv run spell-check
+
+# Run all CI checks (lint, spell check, test)
+$ pipenv run ci
 ```
 
 <!--
