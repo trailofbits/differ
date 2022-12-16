@@ -97,6 +97,7 @@ templates:
   ######################
   - arguments: -m {{mode}} d1
     expect_success: false
+
     variables:
       mode:
         type: int
@@ -104,7 +105,6 @@ templates:
           - 400
           - 644
           - 610
-          - 777
     comparators:
       - stdout
       - stderr
