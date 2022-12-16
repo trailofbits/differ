@@ -139,10 +139,10 @@ class Project:
     @classmethod
     def load(cls, report_directory: Path, filename: Union[str, Path]) -> 'Project':
         """
-        Load the project from a YAML file.
+        Load the project from a YAML file and resolve all relative paths within the configurations.
 
-        :param root: root directory for storing all project data
-        :param body: project YAML file
+        :param report_directory: root directory for storing all report data
+        :param filename: project filename
         :returns: the parsed project object
         """
         with open(filename, 'r') as file:
@@ -182,8 +182,7 @@ class Project:
         """
         Load a project from a dictionary.
 
-        :param root: root directory for storing all project data
-        :param body: project dictionary
+        :param body: project dictionary object
         :returns: the parsed project object
         """
         original = Path(body['original'])
