@@ -95,22 +95,25 @@ templates:
   ######################
   # Debloated Features #
   ######################
-  - arguments: -m {{mode}} d1
-    expect_success: false
-
-    variables:
-      mode:
-        type: int
-        values:
-          - 400
-          - 644
-          - 610
-    comparators:
-      - stdout
-      - stderr
-      - exit_code
-      - id: file
-        type: directory
-        filename: d1
-        mode:
-          variable: mode
+  #
+  # The following is disabled because mkdir.chisel behaves differently based on the installed OS
+  # and library versions.
+  #
+  # - arguments: -m {{mode}} d1
+  #   expect_success: false
+  #   variables:
+  #     mode:
+  #       type: int
+  #       values:
+  #         - 400
+  #         - 644
+  #         - 610
+  #   comparators:
+  #     - stdout
+  #     - stderr
+  #     - exit_code
+  #     - id: file
+  #       type: directory
+  #       filename: d1
+  #       mode:
+  #         variable: mode
