@@ -159,7 +159,7 @@ $ pipenv run tests
 # Run spell checking (requires cspell)
 $ pipenv run spell-check
 
-# Run all CI checks (lint, spel check, test)
+# Run all CI checks (lint, spell check, test)
 $ pipenv run ci
 ```
 

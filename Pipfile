@@ -23,7 +23,7 @@ python_version = "3.9"
 [scripts]
 lint = "invoke lint"
 format = "invoke format"
-tests = "invoke test"
+tests = "invoke tests"
 ci = "invoke ci"
 "unit-tests" = "invoke unit-tests"
 "integration-tests" = "invoke integration-tests"
