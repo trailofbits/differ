@@ -106,10 +106,20 @@ class Executor:
         project.directory.mkdir()
 
         error_count = 0
+        context_count = 0
         for template in project.templates:
             contexts = self.generate_contexts(project, template)
             for context in contexts:
+                context_count += 1
                 error_count += self.run_context(project, context)
+
+        trace_count = context_count * (len(project.debloaters) + 1)
+        if not error_count:
+            logger.info('project %s ran %d traces successfully', project.name, trace_count)
+        else:
+            logger.error(
+                'project %s ran %d traces with %d errors', project.name, trace_count, error_count
+            )
 
         return error_count
 
