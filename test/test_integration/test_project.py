@@ -40,7 +40,16 @@ def pytest_generate_tests(metafunc: Metafunc):
 
 def test_project(project: Project):
     app = Executor(REPORT_DIR, overwrite_existing_report=True)
+    app.setup()
     error_count = app.run_project(project)
+
+    if error_count:
+        for filename in project.directory.iterdir():
+            if filename.name.startswith('report-') and filename.is_file():
+                print('# Error report:', filename.name)
+                print(filename.read_text())
+                print('----------')
+
     assert error_count == 0, (
         f'Project {project.name} failed with {error_count} errors; see report directory for '
         f'details: {project.directory}'
