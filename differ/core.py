@@ -71,6 +71,8 @@ class Project:
     debloaters: dict[str, DebloatedBinary] = field(default_factory=dict)
     #: List of the traces to run
     templates: list['TraceTemplate'] = field(default_factory=list)
+    #: Target filename for each binary that is executed.
+    link_filename: str = ''
 
     def context_directory(self, context: 'TraceContext') -> Path:
         """
@@ -201,6 +203,7 @@ class Project:
             debloaters=debloaters,
             templates=templates,
             directory=Path(body['name']),
+            link_filename=body.get('link_filename', ''),
         )
 
 

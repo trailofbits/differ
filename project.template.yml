@@ -11,6 +11,10 @@ original: /path/to/original/binary
 debloaters:
   my_debloater: /path/to/debloated/binary
 
+# Link each binary to this filename prior to executing the binary. Setting this option ensures that
+# the binary's filename (argv[0]) is identical for both the original binary and each debloated
+# binary, which may be necessary for uniform behavior and output. This is optional.
+# link_filename: binary
 
 # List of templates that define variables, comparators, command line arguments, etc.
 templates:

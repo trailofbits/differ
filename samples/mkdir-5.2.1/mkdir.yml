@@ -1,4 +1,5 @@
 name: coreutils_mkdir
+link_filename: mkdir
 original: bin/mkdir.original
 debloaters:
   chisel: bin/mkdir.chisel
