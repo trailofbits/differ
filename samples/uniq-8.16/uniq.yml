@@ -1,4 +1,5 @@
 name: coreutils_uniq
+link_filename: uniq
 original: bin/uniq.original
 debloaters:
   chisel: bin/uniq.chisel

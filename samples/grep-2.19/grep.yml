@@ -1,4 +1,5 @@
 name: coreutils_grep
+link_filename: grep
 original: bin/grep.original
 debloaters:
   chisel: bin/grep.chisel

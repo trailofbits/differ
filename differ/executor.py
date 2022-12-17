@@ -253,17 +253,30 @@ class Executor:
         stdin_file = self.create_stdin_file(trace)
         setup, teardown = self.write_hook_scripts(trace)
 
+        if project.link_filename:
+            link = trace.cwd / project.link_filename
+            link.symlink_to(trace.binary)
+            target = f'./{project.link_filename}'
+        else:
+            target = f'./{trace.binary.name}'
+
+        cwd = trace.cwd.parent / 'current_trace'
+        if cwd.exists():
+            cwd.unlink()
+
+        cwd.symlink_to(trace.cwd)
+
         if setup:
             # Run the trace setup script
             logger.debug(
                 'running trace setup for context %s: %s', trace.context.id, trace.debloater_engine
             )
-            subprocess.run([str(setup)], cwd=str(trace.cwd))
+            subprocess.run([str(setup)], cwd=str(cwd))
 
-        args = [str(trace.binary)] + shlex.split(trace.context.arguments)
+        args = [target] + shlex.split(trace.context.arguments)
         trace.process = subprocess.Popen(
             args,
-            cwd=str(trace.cwd),
+            cwd=str(cwd),
             stdout=trace.stdout_path.open('wb'),
             stderr=trace.stderr_path.open('wb'),
             stdin=stdin_file.open('rb'),
@@ -303,7 +316,9 @@ class Executor:
                 trace.context.id,
                 trace.debloater_engine,
             )
-            subprocess.run([str(teardown)], cwd=str(trace.cwd))
+            subprocess.run([str(teardown)], cwd=str(cwd))
+
+        cwd.unlink()
 
     def compare_trace(
         self, project: Project, original: Trace, debloated: Trace
