@@ -4,12 +4,15 @@ import os
 import shlex
 import shutil
 import subprocess
+import time
 from itertools import cycle
 from pathlib import Path
 from typing import Any, Optional
 
 from .core import (
+    Comparator,
     ComparisonResult,
+    ComparisonStatus,
     CrashResult,
     FuzzVariable,
     InputFile,
@@ -20,6 +23,24 @@ from .core import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class ExecutorComparator(Comparator):
+    """
+    A dummy comparator class that is used when an internal trace comparison check fails.
+    """
+
+    id: str = '__executor__'
+
+    def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
+        return ComparisonResult.success(self, debloated)
+
+    def verify_original(self, original: Trace) -> Optional[CrashResult]:
+        pass
+
+
+#: Singleton for the executor comparator
+EXECUTOR_COMPARATOR = ExecutorComparator({})
 
 
 class Executor:
@@ -33,6 +54,7 @@ class Executor:
         max_permutations: int = 100,
         report_successes: bool = False,
         verbose: bool = False,
+        overwrite_existing_report: bool = False,
     ):
         """
         :param root: root directory to store results
@@ -45,6 +67,7 @@ class Executor:
         self.max_permutations = max_permutations
         self.report_successes = report_successes
         self.verbose = verbose
+        self.overwrite_existing_report = overwrite_existing_report
 
     def setup(self) -> None:
         """
@@ -65,7 +88,7 @@ class Executor:
         if not self.root.exists():
             self.root.mkdir()
 
-    def run_project(self, project: Project) -> None:
+    def run_project(self, project: Project) -> int:
         """
         Run a project.
 
@@ -73,17 +96,34 @@ class Executor:
         """
         logger.info('running project: %s', project.name)
         if project.directory.exists():
-            # The project directory must not exist
-            raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), str(project.directory))
+            if not self.overwrite_existing_report:
+                # The project directory must not exist
+                raise FileExistsError(
+                    errno.EEXIST, os.strerror(errno.EEXIST), str(project.directory)
+                )
+            shutil.rmtree(project.directory)
 
         project.directory.mkdir()
 
+        error_count = 0
+        context_count = 0
         for template in project.templates:
             contexts = self.generate_contexts(project, template)
             for context in contexts:
-                self.run_context(project, context)
+                context_count += 1
+                error_count += self.run_context(project, context)
 
-    def run_context(self, project: Project, context: TraceContext) -> None:
+        trace_count = context_count * (len(project.debloaters) + 1)
+        if not error_count:
+            logger.info('project %s ran %d traces successfully', project.name, trace_count)
+        else:
+            logger.error(
+                'project %s ran %d traces with %d errors', project.name, trace_count, error_count
+            )
+
+        return error_count
+
+    def run_context(self, project: Project, context: TraceContext) -> int:
         """
         Run a trace context against the original binary and each debloated binary.
         """
@@ -100,27 +140,101 @@ class Executor:
         if crash := self.check_original_trace(project, original_trace):
             # The original did not behave as we expected and we can't trust the results of the
             # debloated binaries. Report the crash and quit.
-            crash.save(project.crash_filename(context))
-            return
+            crash.save(project.crash_filename(original_trace))
+            return 1
 
+        error_count = 0
         # Run each debloated binary and compare it against the original
         for debloater in project.debloaters.values():
             trace = self.create_trace(project, context, debloater.binary, debloater.engine)
             self.run_trace(project, trace)
-            if results := self.compare_trace(project, original_trace, trace):
-                # Results will not be empty if there were failures or report_successes is True.
-                project.save_report(trace, results)
+
+            results = self.compare_trace(project, original_trace, trace)
+            crash = self.check_trace_crash(trace)
+            errors = self.get_errors(trace, results, crash)
+
+            # A crash is an error if we don't expect it (expect_success: true)
+            crash_is_error = crash and trace.context.template.expect_success
+            if not crash_is_error:
+                # ignore the crash, it was expected
+                crash = None
+
+            if errors or crash:
+                # update the error count
+                error_count += 1
+
+            reports = results if self.report_successes else errors
+            if reports:
+                project.save_report(trace, reports)
+
+            if crash:
+                crash.save(project.crash_filename(trace))
+
+        return error_count
+
+    def get_errors(
+        self, trace: Trace, results: list[ComparisonResult], crash: Optional[CrashResult]
+    ) -> list[ComparisonResult]:
+        """
+        Get the list of errors for the trace, honoring the template's ``expect_success``
+        configuration. When ``expect_success: false``, the trace will fail if there are not errors
+        and the trace did not crash.
+        """
+        errors = [item for item in results if not item]
+        if trace.context.template.expect_success:
+            # We expected the trace to be successful, return the list of errors
+            return errors
+
+        # We expected the trace to fail, determine if the trace was actually successful by failing
+        if errors or crash:
+            # The trace failed as we expected, flip all errors to successful and clear the error
+            # list
+            for err in errors:
+                err.status = ComparisonStatus.success
+                err.details += ' (expected error treated as success)'
+
+            errors = []
+        else:
+            # The trace didn't fail, which is unexpected. Add a new error so it'll be reported
+            error = ComparisonResult.error(
+                EXECUTOR_COMPARATOR, trace, 'trace was expected to fail but did not'
+            )
+            results.append(error)
+            errors = [error]
+
+        return errors
 
     def check_original_trace(self, project: Project, trace: Trace) -> Optional[CrashResult]:
         """
         Check that the original trace behaved as expected and return a ``CrashResult`` if the
-        original trace deviated from expected output.
+        original trace deviated from expected output or crashed.
 
         :param trace: original binary trace
         """
+        if crash := self.check_trace_crash(trace):
+            return crash
+
         for comparator in trace.context.template.comparators:
             if crash := comparator.verify_original(trace):
                 return crash
+        return None
+
+    def check_trace_crash(self, trace: Trace) -> Optional[CrashResult]:
+        """
+        Check if the trash crashed and return a ``CrashResult`` if it did.
+        """
+        if trace.timed_out and not trace.context.template.timeout.expected:
+            return CrashResult(trace, 'Process was terminated because of an unexpected timeout')
+
+        if not trace.timed_out and trace.context.template.timeout.expected:
+            return CrashResult(trace, 'Process was expected to time out but exited early')
+
+        crash = trace.crash_result
+        if crash and not trace.timed_out:
+            # An expected timeout will have a signal of SIGTERM because we had to terminate the
+            # process. So, we only return a crash result on a signal if the process didn't timeout.
+            return crash
+
         return None
 
     def run_trace(self, project: Project, trace: Trace) -> None:
@@ -136,28 +250,82 @@ class Executor:
         for hook in hooks:
             hook.setup(trace)
 
-        args = [str(trace.binary)] + shlex.split(trace.context.arguments)
+        stdin_file = self.create_stdin_file(trace)
+        setup, teardown = self.write_hook_scripts(trace)
+
+        if project.link_filename:
+            link = trace.cwd / project.link_filename
+            link.symlink_to(trace.binary)
+            target = f'./{project.link_filename}'
+        else:
+            target = f'./{trace.binary.name}'
+
+        cwd = trace.cwd.parent / 'current_trace'
+        if cwd.exists():
+            cwd.unlink()
+
+        cwd.symlink_to(trace.cwd)
+
+        if setup:
+            # Run the trace setup script
+            logger.debug(
+                'running trace setup for context %s: %s', trace.context.id, trace.debloater_engine
+            )
+            subprocess.run([str(setup)], cwd=str(cwd))
+
+        args = [target] + shlex.split(trace.context.arguments)
         trace.process = subprocess.Popen(
             args,
-            cwd=str(trace.cwd),
-            stdout=trace.stdout_path.open('w'),
-            stderr=trace.stderr_path.open('w'),
-            stdin=subprocess.DEVNULL,
+            cwd=str(cwd),
+            stdout=trace.stdout_path.open('wb'),
+            stderr=trace.stderr_path.open('wb'),
+            stdin=stdin_file.open('rb'),
         )
-        trace.process.wait()
+
+        running = True
+        status = 0
+        end_time = time.monotonic() + trace.context.template.timeout.seconds
+        while running and time.monotonic() < end_time:
+            time.sleep(0.001)  # copied from subprocess.wait
+            pid, status = os.waitpid(trace.process.pid, os.WNOHANG)
+            running = pid != trace.process.pid  # pid will be "0" if the process is still running
+
+        if running:
+            # timeout reached
+            logger.warning(
+                'process reached timeout; terminating: %s: %s',
+                trace.context.id,
+                trace.debloater_engine,
+            )
+            trace.process.terminate()
+            _, status = os.waitpid(trace.process.pid, 0)
+            trace.timed_out = True
+
+        trace.process_status = status
+        trace.process.returncode = os.waitstatus_to_exitcode(status)
         logger.debug('process exited with code %d', trace.process.returncode)
 
         # Run teardown hooks
         for hook in hooks:
             hook.teardown(trace)
 
+        if teardown:
+            # Run the trace teardown script
+            logger.debug(
+                'running trace teardown for context %s: %s',
+                trace.context.id,
+                trace.debloater_engine,
+            )
+            subprocess.run([str(teardown)], cwd=str(cwd))
+
+        cwd.unlink()
+
     def compare_trace(
         self, project: Project, original: Trace, debloated: Trace
     ) -> list[ComparisonResult]:
         """
         Compare a debloated trace against the original and return a comparison result for each
-        comparator. This method will always return all failures and optionally return the successes
-        if ``report_successes`` is enabled.
+        comparator. This method will always return all comparison results.
 
         :param original: the trace of the original binary
         :param debloated: the trace of the debloated binary
@@ -174,8 +342,7 @@ class Executor:
             result = comparator.compare(original, debloated)
             logger.debug('comparator %s result: %s', comparator.id, result.status.value)
 
-            if not result or self.report_successes:
-                results.append(result)
+            results.append(result)
 
         return results
 
@@ -219,7 +386,7 @@ class Executor:
         contexts = []
         for id, values in enumerate(self.generate_parameters(template), start=1):
             args = self.generate_arguments(template, values)
-            contexts.append(TraceContext(template, args, values, id=f'{id:03}'))
+            contexts.append(TraceContext(template, args, values, id=f'{template.id}-{id:03}'))
 
         logger.debug('generated %d trace contexts for template %s', len(contexts), template.id)
         return contexts
@@ -272,8 +439,14 @@ class Executor:
             if input_file.static:
                 # This is a static file that should not be modified
                 dest = input_file.get_destination(trace.cwd)
-                shutil.copy(str(input_file.source), str(dest))
-                self.set_input_file_permission(input_file, dest)
+                if input_file.source.is_dir():
+                    shutil.copytree(input_file.source, dest)
+                else:
+                    if not dest.parent.exists():
+                        dest.parent.mkdir(parents=True)
+
+                    shutil.copy(str(input_file.source), str(dest))
+                    self.set_input_file_mode(input_file, dest)
             else:
                 self.generate_input_file(trace, input_file)
 
@@ -285,24 +458,78 @@ class Executor:
             'generating input file for trace %s: %s', trace.debloater_engine, input_file.source
         )
         dest = input_file.get_destination(trace.cwd)
+        if not dest.parent.exists():
+            dest.parent.mkdir(parents=True)
 
         content = input_file.template.render(**trace.context.values)
         with open(dest, 'w') as file:
             file.write(content)
 
-        self.set_input_file_permission(input_file, dest)
+        self.set_input_file_mode(input_file, dest)
 
-    def set_input_file_permission(self, input_file: InputFile, destination: Path) -> None:
+    def set_input_file_mode(self, input_file: InputFile, destination: Path) -> None:
         """
-        Set the copied input file permissions.
+        Set the copied input file mode.
         """
-        if not input_file.permission:
-            # copy source file permissions
+        if not input_file.mode:
+            # copy source file mode
             perms = input_file.source.stat().st_mode & 0o777
         else:
-            perms = int(input_file.permission, 8)
+            perms = int(input_file.mode, 8)
 
         os.chmod(destination, perms)
+
+    def create_stdin_file(self, trace: Trace) -> Path:
+        """
+        Create the standard input file for a trace. This methods returns the file that contains
+        the standard input that can be piped into the trace subprocess. If the trace template
+        ``stdin`` is a Path, then the resolved path is returned. Otherwise, a new stdin file is
+        generated for the trace and returned.
+
+        :returns: the path to the standard input file
+        """
+        stdin = trace.context.template.stdin
+        if isinstance(stdin, Path):
+            # This is a path, which can either be an input file that is generated or any file on
+            # disk. We resolve the file against the trace working directory if it is relative.
+            if not stdin.is_absolute():
+                stdin = (trace.cwd / stdin).resolve()
+            return stdin
+
+        # stdin is either empty or a string that we need to generate based on the context values
+        filename = trace.default_stdin_path
+        with open(filename, 'wb') as file:
+            if template := trace.context.template.stdin_template:
+                content = template.render(**trace.context.values)
+                file.write(content.encode())
+
+        return filename
+
+    def write_hook_scripts(self, trace: Trace) -> tuple[Optional[Path], Optional[Path]]:
+        """
+        Generate Bash scripts for trace setup and teardown. If the hook has not body then the item
+        within the tuple is ``None``.
+
+        :returns: a tuple containing the paths to the ``setup`` and ``teardown`` scripts to execute
+        """
+        templates = [
+            (trace.context.template.setup_template, trace.setup_script_path),
+            (trace.context.template.teardown_template, trace.teardown_script_path),
+        ]
+        scripts: list[Optional[Path]] = []
+        for template, filename in templates:
+            if not template:
+                scripts.append(None)
+                continue
+
+            with open(filename, 'w') as file:
+                print('#!/bin/bash', file=file)
+                print(template.render(**trace.context.values), file=file)
+
+            os.chmod(filename, 0o755)
+            scripts.append(filename)
+
+        return tuple(scripts)
 
 
 class VariableValueGenerator:

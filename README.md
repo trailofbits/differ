@@ -1,16 +1,18 @@
 # DIFFER
 
+![](https://github.com/trailofbits/differ/actions/workflows/ci.yml/badge.svg)
+
 DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirements
 
 ## Setup
 
 ### Installing Dependencies
 
-1. Install Python 3.9. For Ubuntu 20.04, the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) can be used:
+1. Install Python 3.9 and dependencies. For Ubuntu 20.04, the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) can be used:
    ```bash
    $ sudo add-apt-repository ppa:deadsnakes/ppa
    $ sudo apt update
-   $ sudo apt-get install python3.9 python3.9-venv
+   $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev
    ```
 2. Install `pipenv`, which manages the virtual environment.
    ```bash
@@ -54,7 +56,7 @@ templates:
           # generate 5 integers in the range of 0-99 (inclusive)
           minimum: 0
           maximum: 99
-          size: 5
+          count: 5
 
       right:
         type: int
@@ -151,13 +153,16 @@ $ pipenv run lint
 # Format Python code
 $ pipenv run format
 
-# Run unit tests
-$ pipenv run test
+# Run unit and integration tests
+$ pipenv run tests
 
 # Run spell checking (requires cspell)
 $ pipenv run spell-check
+
+# Run all CI checks (lint, spell check, test)
+$ pipenv run ci
 ```
 
 <!--
-spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest
+spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy
 -->

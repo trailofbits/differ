@@ -5,3 +5,10 @@ debloated
 EEXIST
 levelname
 strerror
+waitpid
+WNOHANG
+WTERMSIG
+WIFSIGNALED
+SIGTERM
+ssdeep
+deref

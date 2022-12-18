@@ -1,29 +1,71 @@
-from ..core import Comparator, ComparisonResult, Trace
+import re
+from typing import Optional
+
+from ..core import Comparator, ComparisonResult, CrashResult, Trace
 from . import register
 
 
 class StringComparator(Comparator):
     """
-    Base comparator for performing string comparisons.
+    Base comparator for performing string comparisons. This comparator accepts the following
+    configuration:
+
+    .. code-block:: yaml
+
+        - id: {comparator_id}
+          # By default, with no configuration specified, the original and debloated string content
+          # is compared and an error is raised if the content does not match exactly.
+          #
+          # Alternatively, the "pattern" configuration will match the content based on a regex
+          # pattern. This uses the Python "re.match" function.
+          pattern: '^hello [a-zA-Z][a-zA-Z0-9]*$'
     """
+
+    #: The string field name being compared. Subclasses must set this class attribute.
+    STRING_FIELD_NAME = ''
 
     def __init__(self, config: dict):
         super().__init__(config)
+        if pattern := config.get('pattern'):
+            self.pattern = re.compile(pattern.encode())
+        else:
+            self.pattern = None
 
-    def get_strings(self, original: Trace, debloated: Trace) -> tuple[str, bytes, bytes]:
+    def get_string(self, trace: Trace) -> bytes:
         """
-        Get the original and recovered strings to compare against. Subclasses must implement this.
-
-        :return: a tuple containing ``(name, original_str, recovered_str)``
+        Get the string to compare for a trace. Subclasses must implement this.
         """
         raise NotImplementedError()
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
-        name, orig_str, debloated_str = self.get_strings(original, debloated)
+        orig_str = self.get_string(original)
+        debloated_str = self.get_string(debloated)
 
-        if orig_str != debloated_str:
-            return ComparisonResult.error(self, debloated, f'{name} content does not match')
+        if self.pattern:
+            if not self.pattern.match(self.get_string(debloated)):
+                return ComparisonResult.error(
+                    self, debloated, f'{self.STRING_FIELD_NAME} content does not match pattern'
+                )
+        elif orig_str != debloated_str:
+            return ComparisonResult.error(
+                self, debloated, f'{self.STRING_FIELD_NAME} content does not match'
+            )
+
         return ComparisonResult.success(self, debloated)
+
+    def verify_original(self, original: Trace) -> Optional[CrashResult]:
+        if not self.pattern:
+            return None
+
+        string = self.get_string(original)
+        if not self.pattern.match(string):
+            return CrashResult(
+                original,
+                f'{self.STRING_FIELD_NAME} content does not match expected pattern',
+                comparator=self,
+            )
+
+        return None
 
 
 @register('stdout')
@@ -32,8 +74,10 @@ class StdoutComparator(StringComparator):
     Standard output content comparator.
     """
 
-    def get_strings(self, original: Trace, debloated: Trace) -> tuple[str, bytes, bytes]:
-        return 'stdout', original.read_stdout(), debloated.read_stdout()
+    STRING_FIELD_NAME = 'stdout'
+
+    def get_string(self, trace: Trace) -> bytes:
+        return trace.read_stdout()
 
 
 @register('stderr')
@@ -42,8 +86,10 @@ class StderrComparator(StringComparator):
     Standard error content comparator.
     """
 
-    def get_strings(self, original: Trace, debloated: Trace) -> tuple[str, bytes, bytes]:
-        return 'stderr', original.read_stderr(), debloated.read_stderr()
+    STRING_FIELD_NAME = 'stderr'
+
+    def get_string(self, trace: Trace) -> bytes:
+        return trace.read_stderr()
 
 
 @register('exit_code')

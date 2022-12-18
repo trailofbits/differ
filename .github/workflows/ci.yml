@@ -9,7 +9,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
@@ -28,6 +28,7 @@ jobs:
           # Python virtual env management
           pipx install pipenv
           npm install -g cspell
+          sudo apt-get install -y libfuzzy-dev
 
       - name: 'Init Python'
         run: |
@@ -44,6 +45,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
+          lfs: true
 
       - uses: actions/setup-python@v2
         with:
@@ -54,14 +56,15 @@ jobs:
         run: |
           # Python virtual env management
           pipx install pipenv
+          sudo apt-get install -y libfuzzy-dev
 
       - name: 'Init Python'
         run: |
           pipenv sync --dev
 
-      - name: 'Unit Tests'
+      - name: 'Tests'
         run: |
-          pipenv run test
+          pipenv run tests
 
   # pip-audit:
   #   runs-on: ubuntu-22.04
