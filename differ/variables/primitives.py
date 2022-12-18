@@ -6,6 +6,7 @@ from . import register
 
 import exrex
 
+
 @register('int')
 class IntVariable(FuzzVariable):
     """
@@ -75,6 +76,7 @@ class StringVariable(FuzzVariable):
             # The sample size (default: 5)
             size: 3
     """
+
     DEFAULT_SAMPLE_COUNT = 5
 
     def __init__(self, name: str, config: dict):
@@ -87,11 +89,9 @@ class StringVariable(FuzzVariable):
             self.pattern = None
             self.count = 0
 
-
     def generate_values(self, template: TraceTemplate) -> Iterator[str]:
         if self.values:
             yield from self.values
-
         if self.pattern:
             yield from [self.generate_string(self.pattern) for _ in range(self.count)]
 
