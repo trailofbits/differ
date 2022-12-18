@@ -27,11 +27,11 @@ class IntVariable(FuzzVariable):
             minimum: 0
             # The maximum value
             maximum: 100
-            # The sample size (default: 5)
-            size: 5
+            # The number of samples to generate (default: 5)
+            count: 5
     """
 
-    DEFAULT_SAMPLE_SIZE = 5
+    DEFAULT_SAMPLE_COUNT = 5
 
     def __init__(self, name: str, config: dict):
         super().__init__(name, config)
@@ -41,18 +41,19 @@ class IntVariable(FuzzVariable):
         if range:
             self.minimum = range['minimum']
             self.maximum = range['maximum']
-            self.size = range.get('size', self.DEFAULT_SAMPLE_SIZE)
+            self.count = range.get('count', self.DEFAULT_SAMPLE_COUNT)
         else:
             self.minimum = 0
             self.maximum = 0
-            self.size = 0
+            self.count = 0
 
     def generate_values(self, template: TraceTemplate) -> Iterator[int]:
         if self.values:
             yield from self.values
 
-        if self.size:
-            yield from random.sample(range(self.minimum, self.maximum + 1), k=self.size)
+        if self.count:
+            yield from random.sample(range(self.minimum, self.maximum + 1), k=self.count)
+
 
 @register('str')
 class StringVariable(FuzzVariable):
@@ -79,15 +80,22 @@ class StringVariable(FuzzVariable):
     def __init__(self, name: str, config: dict):
         super().__init__(name, config)
         self.values: list[int] = config.get('values') or []
-        self.regex: list[int] = config.get('regex') or []
-        self.size = self.regex.get('size', self.DEFAULT_SAMPLE_SIZE)
+        # self.regex: list[int] = config.get('regex') or []
+        # self.count = self.regex.get('count', self.DEFAULT_SAMPLE_SIZE)
+        if regex := config.get('regex'):
+            self.pattern = regex['pattern']
+            self.count = regex.get('count', self.DEFAULT_SAMPLE_SIZE)
+        else:
+            self.pattern = None
+            self.count = 0
+
 
     def generate_values(self, template: TraceTemplate) -> Iterator[str]:
         if self.values:
             yield from self.values
 
-        if self.regex:
-            yield from [self.generate_string(self.regex['pattern']) for _ in range(self.size)]
+        if self.pattern:
+            yield from [self.generate_string(self.pattern) for _ in range(self.count)]
 
     def generate_string(self, regex: str) -> str:
         return exrex.getone(regex)
