@@ -12,3 +12,12 @@ WIFSIGNALED
 SIGTERM
 ssdeep
 deref
+
+# sphinx / restructuredText directives
+toctree
+autoclass
+automodule
+maxdepth
+genindex
+modindex
+automethod

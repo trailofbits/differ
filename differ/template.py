@@ -17,13 +17,13 @@ def quote_filter(s: str) -> str:
 
     .. code-block:: yaml
 
-    - templates:
-      - arguments: '--value {{name | quote}}'
-        variables:
-          name:
-            type: str
-            values:
-              - 'this value contains spaces'
+      - templates:
+        - arguments: '--value {{name | quote}}'
+          variables:
+            name:
+              type: str
+              values:
+                - 'this value contains spaces'
 
     In this example, the generated command line arguments generated would be:
 
