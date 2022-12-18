@@ -75,16 +75,14 @@ class StringVariable(FuzzVariable):
             # The sample size (default: 5)
             size: 3
     """
-    DEFAULT_SAMPLE_SIZE = 5
+    DEFAULT_SAMPLE_COUNT = 5
 
     def __init__(self, name: str, config: dict):
         super().__init__(name, config)
         self.values: list[int] = config.get('values') or []
-        # self.regex: list[int] = config.get('regex') or []
-        # self.count = self.regex.get('count', self.DEFAULT_SAMPLE_SIZE)
         if regex := config.get('regex'):
             self.pattern = regex['pattern']
-            self.count = regex.get('count', self.DEFAULT_SAMPLE_SIZE)
+            self.count = regex.get('count', self.DEFAULT_SAMPLE_COUNT)
         else:
             self.pattern = None
             self.count = 0
