@@ -511,6 +511,10 @@ class Trace:
     #: Cache that is cleaned up when the trace is no longer needed. Comparators can use the cache
     #: to store the results of an expensive task.
     cache: dict[str, Any] = field(default_factory=dict)
+    #: Subprocess for the setup script
+    setup_script: Optional[subprocess.CompletedProcess] = None
+    #: Subprocess for the teardown script
+    teardown_script: Optional[subprocess.CompletedProcess] = None
 
     @property
     def crashed(self) -> bool:
@@ -597,6 +601,14 @@ class Trace:
         :returns: the path to the trace's teardown script
         """
         return self.cwd / '__differ-teardown.sh'
+
+    @property
+    def setup_script_output(self) -> Path:
+        return self.cwd / '__differ-setup-output.bin'
+
+    @property
+    def teardown_script_output(self) -> Path:
+        return self.cwd / '__differ-teardown-output.bin'
 
 
 class ComparisonStatus(Enum):

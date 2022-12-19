@@ -1,4 +1,5 @@
 import os
+import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
@@ -49,8 +50,20 @@ class TestExecutorRunTrace:
 
         app.write_hook_scripts.assert_called_once_with(trace)
         assert mock_run.call_args_list == [
-            call([str(setup)], cwd=str(link_cwd)),
-            call([str(teardown)], cwd=str(link_cwd)),
+            call(
+                [str(setup)],
+                cwd=str(link_cwd),
+                stdout=trace.setup_script_output.open.return_value,
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+            ),
+            call(
+                [str(teardown)],
+                cwd=str(link_cwd),
+                stdout=trace.teardown_script_output.open.return_value,
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+            ),
         ]
 
         link_cwd.exists.assert_called_once()
@@ -102,8 +115,20 @@ class TestExecutorRunTrace:
 
         app.write_hook_scripts.assert_called_once_with(trace)
         assert mock_run.call_args_list == [
-            call([str(setup)], cwd=str(link_cwd)),
-            call([str(teardown)], cwd=str(link_cwd)),
+            call(
+                [str(setup)],
+                cwd=str(link_cwd),
+                stdout=trace.setup_script_output.open.return_value,
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+            ),
+            call(
+                [str(teardown)],
+                cwd=str(link_cwd),
+                stdout=trace.teardown_script_output.open.return_value,
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+            ),
         ]
 
         link_cwd.exists.assert_called_once()

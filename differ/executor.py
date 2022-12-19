@@ -271,7 +271,13 @@ class Executor:
             logger.debug(
                 'running trace setup for context %s: %s', trace.context.id, trace.debloater_engine
             )
-            subprocess.run([str(setup)], cwd=str(cwd))
+            trace.setup_script = subprocess.run(
+                [str(setup)],
+                cwd=str(cwd),
+                stdout=trace.setup_script_output.open('wb'),
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+            )
 
         args = [target] + shlex.split(trace.context.arguments)
         trace.process = subprocess.Popen(
@@ -316,7 +322,13 @@ class Executor:
                 trace.context.id,
                 trace.debloater_engine,
             )
-            subprocess.run([str(teardown)], cwd=str(cwd))
+            trace.teardown_script = subprocess.run(
+                [str(teardown)],
+                cwd=str(cwd),
+                stdout=trace.teardown_script_output.open('wb'),
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+            )
 
         cwd.unlink()
 
