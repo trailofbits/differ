@@ -179,6 +179,15 @@ class HookScriptComparator(Comparator):
 
 @register('setup_script')
 class SetupScriptComparator(HookScriptComparator):
+    """
+    Setup script output comparator. This captures and compares the exit code and stdout/stderr
+    content produces by the setup script defined in the template's ``setup`` configuration.
+
+    .. code-block:: yaml
+
+        - id: setup_script
+    """
+
     def __init__(self, config: dict):
         super().__init__('setup', config)
 
@@ -188,6 +197,15 @@ class SetupScriptComparator(HookScriptComparator):
 
 @register('teardown_script')
 class TeardownScriptComparator(HookScriptComparator):
+    """
+    Teardown script output comparator. This captures and compares the exit code and stdout/stderr
+    content produces by the teardown script defined in the template's ``teardown`` configuration.
+
+    .. code-block:: yaml
+
+        - id: teardown_script
+    """
+
     def __init__(self, config: dict):
         super().__init__('teardown', config)
 
