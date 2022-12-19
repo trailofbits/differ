@@ -1,4 +1,6 @@
 import re
+from pathlib import Path
+from subprocess import CompletedProcess
 from typing import Optional
 
 from ..core import Comparator, ComparisonResult, CrashResult, Trace
@@ -125,3 +127,69 @@ class ExitCodeComparator(Comparator):
             )
 
         return ComparisonResult.success(self, debloated)
+
+
+class HookScriptComparator(Comparator):
+    """
+    A comparator that compares the results of hook scripts (exit code and stdout/stderr content).
+    """
+
+    def __init__(self, hook: str, config: dict):
+        """
+        :param hook: the hook, either 'setup' or 'teardown'
+        """
+        super().__init__(config)
+        self.hook = hook
+        self.id = f'{hook}_script'
+
+    def get_output(self, trace: Trace) -> tuple[CompletedProcess, Path]:
+        """
+        Get the output from the hook script.
+
+        :returns: a tuple containing the completed subprocess and path to the stdout/stderr content
+        """
+        raise NotImplementedError()  # pragma: no cover
+
+    def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
+        original_process, original_output = self.get_output(original)
+        debloated_process, debloated_output = self.get_output(debloated)
+
+        if not original_process and not debloated_process:
+            return ComparisonResult.success(self, debloated)
+
+        if original_process.returncode != debloated_process.returncode:
+            return ComparisonResult.error(
+                self,
+                debloated,
+                f'{self.hook} hook script exit code does not match: '
+                f'original={original_process.returncode}, '
+                f'debloated={debloated_process.returncode}',
+            )
+
+        if original_output.read_bytes() != debloated_output.read_bytes():
+            return ComparisonResult.error(
+                self,
+                debloated,
+                f'{self.hook} hook script output does not match: original={original_output}, '
+                f'debloated={debloated_output}',
+            )
+
+        return ComparisonResult.success(self, debloated)
+
+
+@register('setup_script')
+class SetupScriptComparator(HookScriptComparator):
+    def __init__(self, config: dict):
+        super().__init__('setup', config)
+
+    def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
+        return trace.setup_script, trace.setup_script_output
+
+
+@register('teardown_script')
+class TeardownScriptComparator(HookScriptComparator):
+    def __init__(self, config: dict):
+        super().__init__('teardown', config)
+
+    def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
+        return trace.teardown_script, trace.teardown_script_output
