@@ -211,3 +211,21 @@ class TeardownScriptComparator(HookScriptComparator):
 
     def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
         return trace.teardown_script, trace.teardown_script_output
+
+
+@register('concurrent_script')
+class ConcurrentScriptComparator(HookScriptComparator):
+    """
+    Teardown script output comparator. This captures and compares the exit code and stdout/stderr
+    content produces by the teardown script defined in the template's ``teardown`` configuration.
+
+    .. code-block:: yaml
+
+        - id: teardown_script
+    """
+
+    def __init__(self, config: dict):
+        super().__init__('concurrent', config)
+
+    def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
+        return trace.concurrent_script, trace.concurrent_script_output
