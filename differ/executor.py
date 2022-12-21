@@ -249,7 +249,7 @@ class Executor:
         # create the file used for stdin
         stdin_file = self.create_stdin_file(trace)
         # generate the setup and teardown scripts, if specified
-        setup, teardown = self.write_hook_scripts(trace)
+        self.write_hook_scripts(trace)
 
         if project.link_filename:
             # link the binary to the link_filename
@@ -267,7 +267,7 @@ class Executor:
         cwd.symlink_to(trace.cwd)
 
         # run setup hooks and setup script
-        self._setup_trace(trace, setup, cwd)
+        self._setup_trace(trace, cwd)
 
         # start the binary
         args = [target] + shlex.split(trace.context.arguments)
@@ -280,21 +280,21 @@ class Executor:
         )
 
         # monitor the process and launch the concurrent script
-        self._monitor_trace(trace)
+        self._monitor_trace(trace, cwd)
 
         # run the teardown hooks, teardown script, and terminate the concurrent script
-        self._teardown_trace(trace, teardown, cwd)
+        self._teardown_trace(trace, cwd)
 
         cwd.unlink()
 
-    def _setup_trace(self, trace: Trace, setup_script: Optional[Path], cwd: Path) -> None:
+    def _setup_trace(self, trace: Trace, cwd: Path) -> None:
         """
         Run the trace setup hooks and the setup script.
         """
         for hook in trace.context.template.hooks:
             hook.setup(trace)
 
-        if not setup_script:
+        if not trace.setup_script_path.exists():
             return
 
         # Run the trace setup script
@@ -302,14 +302,14 @@ class Executor:
             'running trace setup for context %s: %s', trace.context.id, trace.debloater_engine
         )
         trace.setup_script = subprocess.run(
-            [str(setup_script)],
+            [f'./{trace.setup_script_path.name}'],
             cwd=str(cwd),
             stdout=trace.setup_script_output.open('wb'),
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
         )
 
-    def _teardown_trace(self, trace: Trace, teardown_script: Optional[Path], cwd: Path) -> None:
+    def _teardown_trace(self, trace: Trace, cwd: Path) -> None:
         """
         Run the trace teardown hooks, the teardown script, and terminate the concurrent script if
         it is still running.
@@ -318,7 +318,7 @@ class Executor:
         for hook in trace.context.template.hooks:
             hook.teardown(trace)
 
-        if teardown_script:
+        if trace.teardown_script_path.exists():
             # Run the trace teardown script
             logger.debug(
                 'running trace teardown for context %s: %s',
@@ -326,7 +326,7 @@ class Executor:
                 trace.debloater_engine,
             )
             trace.teardown_script = subprocess.run(
-                [str(teardown_script)],
+                [f'./{trace.teardown_script_path.name}'],
                 cwd=str(cwd),
                 stdout=trace.teardown_script_output.open('wb'),
                 stderr=subprocess.STDOUT,
@@ -340,7 +340,7 @@ class Executor:
                 trace.concurrent_script.terminate()
                 trace.concurrent_script.wait()
 
-    def _monitor_trace(self, trace: Trace) -> None:
+    def _monitor_trace(self, trace: Trace, cwd: Path) -> None:
         """
         Monitor the trace as it is running and block until it either finishes execution or the
         trace times out and is terminated by differ.
@@ -362,7 +362,8 @@ class Executor:
 
         if running and concurrent_delay_time:
             trace.concurrent_script = subprocess.Popen(
-                [str(trace.concurrent_script_path)],
+                [f'./{trace.concurrent_script_path.name}'],
+                cwd=str(cwd),
                 stdout=trace.concurrent_script_output.open('wb'),
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL,
@@ -588,7 +589,7 @@ class Executor:
 
         return filename
 
-    def write_hook_scripts(self, trace: Trace) -> tuple[Optional[Path], Optional[Path]]:
+    def write_hook_scripts(self, trace: Trace) -> None:
         """
         Generate Bash scripts for trace setup and teardown. If the hook has not body then the item
         within the tuple is ``None``.
@@ -597,12 +598,12 @@ class Executor:
         """
         templates = [
             (trace.context.template.setup_template, trace.setup_script_path),
+            (trace.context.template.concurrent_template, trace.concurrent_script_path),
             (trace.context.template.teardown_template, trace.teardown_script_path),
         ]
-        scripts: list[Optional[Path]] = []
+
         for template, filename in templates:
             if not template:
-                scripts.append(None)
                 continue
 
             with open(filename, 'w') as file:
@@ -610,9 +611,6 @@ class Executor:
                 print(template.render(**trace.context.values), file=file)
 
             os.chmod(filename, 0o755)
-            scripts.append(filename)
-
-        return tuple(scripts)
 
 
 class VariableValueGenerator:
