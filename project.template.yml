@@ -75,28 +75,27 @@ templates:
     # then any crashes or comparison failures are treated as successful (default: true).
     # expect_success: true
 
-    # Bash script commands to execute prior to launching each trace. The body is a Jinja2 template
-    # and can reference template variables. The script is run from the trace directory. The setup
-    # commands are run after input files are copied/generated so the script can reference these.
-    # This is optional.
+    # Bash script to execute prior to launching each trace. The body is a Jinja2 template
+    # and can reference template variables. The script is run from the trace directory and differ
+    # blocks until the script completes. The setup commands are run after input files are
+    # copied/generated so the script can reference these. This is optional.
     #
     # setup: |
     #   touch ./empty_file
     #   echo hello {{full_name}} > ./some_file
 
-    # Bash script commands to execute after a trace has completed. The body is a Jinja2 template
-    # and can reference template variables. The script is run from the trace directory. This is
-    # optional.
+    # Bash script to execute after a trace has completed. The body is a Jinja2 template
+    # and can reference template variables. The script is run from the trace directory and differ
+    # blocks until the script completes. This is optional.
     #
     # teardown: |
     #   rm ./empty_file
     #   echo goodbye >> ./some_file
 
-    # Configuration for running a series of bash commands while the trace is executing. This block
-    # is optional.
+    # Configuration for running a Bash script while the trace is executing. This block is optional.
     concurrent:
-      # The list of bash commands to execute while the trace is running. These are run within a
-      # background process. Differ will terminate the bash process if it is still running after
+      # The Bash script to execute while the trace is running. These are run asynchronously within
+      # a background process. Differ will terminate the bash process if it is still running after
       # the trace has completed and all teardown commands have completed. Ideally the bash script
       # should either exit normally on its own after running or a command within a teardown script
       # should trigger a graceful exit of the concurrent script.
@@ -111,6 +110,7 @@ templates:
       #
       # run: |
       #   wget http://localhost:{{port}}/some_file.txt
+      #   exit $?
 
       # The amount of time to wait in seconds after starting the trace before launching bash
       # commands in the "run" body. This is optional (default: 1.0)
@@ -154,8 +154,3 @@ templates:
         pattern: '^hello, [A-z][a-z0-9]+!\n$'
 
       - stderr
-
-
-
-
-
