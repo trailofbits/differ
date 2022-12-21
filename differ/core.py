@@ -482,6 +482,9 @@ class TraceTemplate:
         else:
             timeout = TimeoutConstraint()
 
+        concurrent_dict = body.get('concurrent')
+        concurrent = ConcurrentHook.load_dict(concurrent_dict) if concurrent_dict else None
+
         return cls(
             arguments=arguments,
             variables=variables,
@@ -491,6 +494,7 @@ class TraceTemplate:
             timeout=timeout,
             setup=body.get('setup', ''),
             teardown=body.get('teardown', ''),
+            concurrent=concurrent,
             expect_success=body.get('expect_success', True),
             **kwargs,
         )
