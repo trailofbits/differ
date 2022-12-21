@@ -11,9 +11,6 @@ from differ import executor
 class TestExecutorRunTrace:
     @patch.object(executor.subprocess, 'Popen')
     def test_run_trace(self, mock_popen):
-        setup = Path('/path/to/setup.sh')
-        teardown = Path('/path/to/teardown.sh')
-
         trace_cwd = MagicMock()
         link_cwd = trace_cwd.parent / 'current_trace'
         link_cwd.exists.return_value = True
@@ -22,7 +19,7 @@ class TestExecutorRunTrace:
 
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
-        app.write_hook_scripts = MagicMock(return_value=[setup, teardown])
+        app.write_hook_scripts = MagicMock()
         app._setup_trace = MagicMock()
         app._monitor_trace = MagicMock()
         app._teardown_trace = MagicMock()
@@ -39,9 +36,9 @@ class TestExecutorRunTrace:
 
         app.write_hook_scripts.assert_called_once_with(trace)
         app.create_stdin_file.assert_called_once_with(trace)
-        app._setup_trace.assert_called_once_with(trace, setup, link_cwd)
-        app._teardown_trace.assert_called_once_with(trace, teardown, link_cwd)
-        app._monitor_trace.assert_called_once_with(trace)
+        app._setup_trace.assert_called_once_with(trace, link_cwd)
+        app._teardown_trace.assert_called_once_with(trace, link_cwd)
+        app._monitor_trace.assert_called_once_with(trace, link_cwd)
 
         link_cwd.exists.assert_called_once()
         assert link_cwd.unlink.call_count == 2
@@ -61,7 +58,7 @@ class TestExecutorRunTrace:
 
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
-        app.write_hook_scripts = MagicMock(return_value=[setup, teardown])
+        app.write_hook_scripts = MagicMock()
         app._setup_trace = MagicMock()
         app._monitor_trace = MagicMock()
         app._teardown_trace = MagicMock()
@@ -78,9 +75,9 @@ class TestExecutorRunTrace:
 
         app.write_hook_scripts.assert_called_once_with(trace)
         app.create_stdin_file.assert_called_once_with(trace)
-        app._setup_trace.assert_called_once_with(trace, setup, link_cwd)
-        app._teardown_trace.assert_called_once_with(trace, teardown, link_cwd)
-        app._monitor_trace.assert_called_once_with(trace)
+        app._setup_trace.assert_called_once_with(trace, link_cwd)
+        app._teardown_trace.assert_called_once_with(trace, link_cwd)
+        app._monitor_trace.assert_called_once_with(trace, link_cwd)
 
         link_cwd.exists.assert_called_once()
         link_cwd.unlink.assert_called_once()
@@ -92,17 +89,15 @@ class TestExecutorRunTrace:
         hook = MagicMock()
         trace = MagicMock()
         trace.context.template.hooks = [hook]
-
-        setup = object()
         cwd = object()
 
         app = executor.Executor(Path('/'))
-        app._setup_trace(trace, setup, cwd)
+        app._setup_trace(trace, cwd)
 
         hook.setup.assert_called_once_with(trace)
         assert trace.setup_script is mock_run.return_value
         mock_run.assert_called_once_with(
-            [str(setup)],
+            [f'./{trace.setup_script_path.name}'],
             cwd=str(cwd),
             stdout=trace.setup_script_output.open.return_value,
             stderr=subprocess.STDOUT,
@@ -113,13 +108,15 @@ class TestExecutorRunTrace:
     @patch.object(executor.subprocess, 'run')
     def test_setup_trace_no_script(self, mock_run):
         hook = MagicMock()
-        trace = MagicMock(setup_script=None)
+        trace = MagicMock()
+        trace.setup_script = None
+        trace.setup_script_path.exists.return_value = False
         trace.context.template.hooks = [hook]
 
         cwd = object()
 
         app = executor.Executor(Path('/'))
-        app._setup_trace(trace, None, cwd)
+        app._setup_trace(trace, cwd)
 
         hook.setup.assert_called_once_with(trace)
         assert trace.setup_script is None
@@ -131,15 +128,14 @@ class TestExecutorRunTrace:
         trace = MagicMock()
         trace.context.template.hooks = [hook]
 
-        teardown = object()
         cwd = object()
 
         app = executor.Executor(Path('/'))
-        app._teardown_trace(trace, teardown, cwd)
+        app._teardown_trace(trace, cwd)
 
         hook.teardown.assert_called_once_with(trace)
         mock_run.assert_called_once_with(
-            [str(teardown)],
+            [f'./{trace.teardown_script_path.name}'],
             cwd=str(cwd),
             stdout=trace.teardown_script_output.open.return_value,
             stderr=subprocess.STDOUT,
@@ -150,16 +146,19 @@ class TestExecutorRunTrace:
 
     def test_teardown_trace_concurrent_timeout(self):
         trace = MagicMock()
+        trace.teardown_script = None
+        trace.teardown_script_path.exists.return_value = False
         trace.context.template.hooks = []
         trace.concurrent_script.wait.side_effect = [subprocess.TimeoutExpired('asdf', 1.0), None]
 
         cwd = object()
 
         app = executor.Executor(Path('/'))
-        app._teardown_trace(trace, None, cwd)
+        app._teardown_trace(trace, cwd)
 
         assert trace.concurrent_script.wait.call_args_list == [call(0.001), call()]
         trace.concurrent_script.terminate.assert_called_once()
+        assert trace.teardown_script is None
 
     @patch.object(executor.subprocess, 'Popen')
     @patch.object(executor.time, 'monotonic')
@@ -167,6 +166,7 @@ class TestExecutorRunTrace:
     def test_monitor_trace(self, mock_exitcode, mock_time, mock_popen):
         mock_time.return_value = 10
 
+        cwd = MagicMock()
         trace = MagicMock()
         trace.context.template.timeout.seconds = 5
         trace.context.template.concurrent = None
@@ -174,7 +174,7 @@ class TestExecutorRunTrace:
         app = executor.Executor(Path('/'))
         app._wait_process = MagicMock(return_value=(False, 100))
 
-        app._monitor_trace(trace)
+        app._monitor_trace(trace, cwd)
 
         app._wait_process.assert_called_once_with(trace.process, 15)  # 10 + 5
         assert trace.process_status == 100
@@ -188,6 +188,7 @@ class TestExecutorRunTrace:
     def test_monitor_trace_concurrent(self, mock_exitcode, mock_time, mock_popen):
         mock_time.return_value = 10
 
+        cwd = MagicMock()
         trace = MagicMock()
         trace.context.template.concurrent.delay = 2
         trace.context.template.timeout.seconds = 5
@@ -195,7 +196,7 @@ class TestExecutorRunTrace:
         app = executor.Executor(Path('/'))
         app._wait_process = MagicMock(side_effect=[(True, 0), (False, 100)])
 
-        app._monitor_trace(trace)
+        app._monitor_trace(trace, cwd)
 
         assert app._wait_process.call_args_list == [
             call(trace.process, 12),  # 10 + 5
@@ -205,7 +206,8 @@ class TestExecutorRunTrace:
         assert trace.process.returncode == mock_exitcode.return_value
         mock_exitcode.assert_called_once_with(100)
         mock_popen.assert_called_once_with(
-            [str(trace.concurrent_script_path)],
+            [f'./{trace.concurrent_script_path.name}'],
+            cwd=str(cwd),
             stdout=trace.concurrent_script_output.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
@@ -220,6 +222,7 @@ class TestExecutorRunTrace:
         mock_time.return_value = 10
         mock_waitpid.return_value = (0, 100)
 
+        cwd = MagicMock()
         trace = MagicMock()
         trace.context.template.timeout.seconds = 5
         trace.context.template.concurrent = None
@@ -227,7 +230,7 @@ class TestExecutorRunTrace:
         app = executor.Executor(Path('/'))
         app._wait_process = MagicMock(return_value=(True, 0))
 
-        app._monitor_trace(trace)
+        app._monitor_trace(trace, cwd)
 
         app._wait_process.assert_called_once_with(trace.process, 15)  # 10 + 5
         assert trace.process_status == 100
@@ -241,7 +244,7 @@ class TestExecutorRunTrace:
         trace = MagicMock(process=None)
         app = executor.Executor(Path('/'))
         with pytest.raises(TypeError):
-            app._monitor_trace(trace)
+            app._monitor_trace(trace, MagicMock())
 
     @patch.object(executor.time, 'monotonic')
     @patch.object(executor.os, 'waitpid')
