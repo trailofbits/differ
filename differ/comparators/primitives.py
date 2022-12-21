@@ -142,7 +142,7 @@ class HookScriptComparator(Comparator):
         self.hook = hook
         self.id = f'{hook}_script'
 
-    def get_output(self, trace: Trace) -> tuple[CompletedProcess, Path]:
+    def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
         """
         Get the output from the hook script.
 
@@ -154,7 +154,7 @@ class HookScriptComparator(Comparator):
         original_process, original_output = self.get_output(original)
         debloated_process, debloated_output = self.get_output(debloated)
 
-        if not original_process and not debloated_process:
+        if not original_process or not debloated_process:
             return ComparisonResult.success(self, debloated)
 
         if original_process.returncode != debloated_process.returncode:
@@ -228,4 +228,10 @@ class ConcurrentScriptComparator(HookScriptComparator):
         super().__init__('concurrent', config)
 
     def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
-        return trace.concurrent_script, trace.concurrent_script_output
+        if trace.concurrent_script:
+            proc = CompletedProcess(
+                trace.concurrent_script.args, trace.concurrent_script.returncode
+            )
+        else:
+            proc = None
+        return proc, trace.concurrent_script_output

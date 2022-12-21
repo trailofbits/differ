@@ -3,6 +3,8 @@ import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
+import pytest
+
 from differ import executor
 
 
@@ -234,6 +236,12 @@ class TestExecutorRunTrace:
         mock_popen.assert_not_called()
         trace.process.terminate.assert_called_once()
         assert trace.timed_out is True
+
+    def test_monitor_trace_not_running(self):
+        trace = MagicMock(process=None)
+        app = executor.Executor(Path('/'))
+        with pytest.raises(TypeError):
+            app._monitor_trace(trace)
 
     @patch.object(executor.time, 'monotonic')
     @patch.object(executor.os, 'waitpid')

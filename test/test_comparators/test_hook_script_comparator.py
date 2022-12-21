@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from differ.comparators import primitives
 from differ.core import ComparisonResult, ComparisonStatus, Trace
@@ -81,3 +81,20 @@ class TestTeardownScriptComparator:
         ext = primitives.TeardownScriptComparator({})
         assert ext.id == 'teardown_script'
         assert ext.get_output(trace) == (trace.teardown_script, trace.teardown_script_output)
+
+
+class TestConcurrentScriptComparator:
+    @patch.object(primitives, 'CompletedProcess')
+    def test_get_output(self, mock_proc):
+        trace = MagicMock()
+        ext = primitives.ConcurrentScriptComparator({})
+        assert ext.id == 'concurrent_script'
+        assert ext.get_output(trace) == (mock_proc.return_value, trace.concurrent_script_output)
+        mock_proc.assert_called_once_with(
+            trace.concurrent_script.args, trace.concurrent_script.returncode
+        )
+
+    def test_get_output_none(self):
+        trace = MagicMock(concurrent_script=None)
+        ext = primitives.ConcurrentScriptComparator({})
+        assert ext.get_output(trace) == (None, trace.concurrent_script_output)

@@ -309,7 +309,7 @@ class Executor:
             stdin=subprocess.DEVNULL,
         )
 
-    def _teardown_trace(self, trace: Trace, teardown_script: Path, cwd: Path) -> None:
+    def _teardown_trace(self, trace: Trace, teardown_script: Optional[Path], cwd: Path) -> None:
         """
         Run the trace teardown hooks, the teardown script, and terminate the concurrent script if
         it is still running.
@@ -345,6 +345,9 @@ class Executor:
         Monitor the trace as it is running and block until it either finishes execution or the
         trace times out and is terminated by differ.
         """
+        if not trace.process:
+            raise TypeError('trace process is not active')
+
         running = True
         status = 0
         start = time.monotonic()
@@ -391,6 +394,7 @@ class Executor:
         :returns: a tuple containing ``(is_still_running, wait_status)``
         """
         running = True
+        status = 0
         while running and time.monotonic() < end_time:
             time.sleep(0.001)  # copied from subprocess.wait
             pid, status = os.waitpid(process.pid, os.WNOHANG)
