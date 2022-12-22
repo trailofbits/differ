@@ -1,111 +1,57 @@
 Recipe: Network Server
 ======================
 
-A network server will typically require:
+A network server requires a client binary that speaks the same protocol. The differ project will
+launch the server binary and, after it has time to completely initialize, run the client to connect
+to the server and exercise some functionality. The server will either terminate on its own and will
+need to be terminated manually so that it cleanly exits.
 
-1. A configuration file
-2. A client to connect to and interact with the server
-
-The client will exercise the server, trigger some behavior, and then produce some output that can be
-compared across binaries to verify that the server is operating correctly.
-
-This recipe will target a notional HTTP server and use off the shelf ``wget`` as the client. The
-trace template will:
-
-- Generate a configuration based on some fuzz variables
-- Run the server
-- While the server is running, launch the client program to download a file from the server
-- Gracefully terminate the server
-- Compare the downloaded file contents
-
-This is a notional example where the HTTP server is configured through an INI file. The project is
-configured to serve the ``test.html`` file from a fuzzed endpoint name.
+This recipe will use the netcat tool, running in server mode, and then use another netcat instance
+to send a message to the server.
 
 Project Configuration
 ---------------------
 
 .. code-block:: yaml
 
-    name: http_server
-    original: /path/to/http/server
+    name: netcat
+    original: /usr/bin/nc
     debloaters:
-      some_debloater: /path/to/debloated/http/server
+      some_debloater: /usr/bin/nc
 
     templates:
-      # The command line arguments will load a configuration file, ./config.ini
-      - arguments: -c ./config.ini
-
-        input_files:
-          # We need to generate the configuration file based on variables.
-          - source: configuration.template.ini
-            destination: config.ini
-
-          # Next, we need some file to serve (test.html)
-          - test.html
+      # The command line arguments will load a configuration file. Listen on port 8080
+      - arguments: -l 8080
 
         # Create the fuzz variables
         variables:
-          # The route to the filename being served (e.g.- "GET /{{route}}" returns "test.html")
-          route:
-            type: str
-            regex:
-              pattern: '[A-Z][0-9A-Za-z_]{3,10}'
+          # The number to make sure we have some randomness in the output between traces
+          number:
+            type: int
+            range:
+              minimum: 0
+              maximum: 1024
               count: 5
 
         # The concurrent commands to execute while the trace is running. This will be our call to
-        # wget to download the file
+        # netcat to send the message
         concurrent:
           delay: 2.0  # allow the HTTP server 2 seconds to start up prior to running wget
           run: |
-            wget http://localhost:8080/{{route}} --output-document downloaded.html
-            rc=$?
-
-            # We downloaded the file, we can safely terminate the server
-            kill $(DIFFER_BINARY_PID)
-
-            # exit with the exit code of wget to trigger an error if wget failed
-            exit $rc
+            echo 'hello world: {{number}}' | nc -N 127.0.0.1 8080
+            exit $?
 
         # Finally, the list of comparators we run
         comparators:
           # Verify the exit code of the server matches
           - exit_code
-          # Verify the stdout and stderr content of the server matches
+          # Verify the stdout and stderr content of the server matches, this will include the
+          # message received from the netcat client.
           - stdout
           - stderr
           # Verify that the stdout/stderr content and the exit code of the concurrent bash script
-          # (wget) matches
+          # (nc) matches
           - concurrent_script
-          # Verify the contents of the downloaded file
-          - id: file
-            filename: downloaded.html
 
 
-Configuration File Template
----------------------------
-
-For this example, the server accepts an INI file for configuration. The server is configured to
-listen on port 8080 and serve the ``test.html`` file at the ``{{route}}`` endpoint.
-
-.. code-block:: ini
-
-    listen=8080
-
-    [routes]
-    {{route}}=test.html
-
-
-Test HTML File Template
------------------------
-
-.. code-block:: html
-
-    <html>
-      <head>
-        <title>Hello from: {{route}}</title>
-      </head>
-      <body>
-        <h1>Hello from: {{route}}</h1>
-      </body>
-    </html>
-
+.. spell-checker:ignore netcat
