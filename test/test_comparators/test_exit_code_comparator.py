@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock
-from differ.core import ComparisonStatus
+
 from differ.comparators import primitives
+from differ.core import ComparisonStatus
 
 
 class TestExitCodeComparator:
-
     def test_verify_original_skip(self):
         trace = MagicMock()
         ext = primitives.ExitCodeComparator({})

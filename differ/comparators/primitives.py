@@ -132,14 +132,16 @@ class ExitCodeComparator(Comparator):
         return code if not self.coerce_bool else int(bool(code))
 
     def verify_original(self, original: Trace) -> Optional[CrashResult]:
-        if self.expect is None:
+        if self.expect is None or not original.process:
             return
 
         # Verify that the original trace exited with the expected exit code
         original_code = self._normalize_exit_code(original.process.returncode)  # type: ignore
 
         if original_code != self._normalize_exit_code(self.expect):
-            return CrashResult(original, f'unexpected exit code: {original.process.returncode}', self)
+            return CrashResult(
+                original, f'unexpected exit code: {original.process.returncode}', self
+            )
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
         original_code = self._normalize_exit_code(original.process.returncode)  # type: ignore
@@ -190,25 +192,28 @@ class HookScriptComparator(Comparator):
         raise NotImplementedError()  # pragma: no cover
 
     def verify_original(self, original: Trace) -> Optional[CrashResult]:
+        if isinstance(self.exit_code, bool):
+            return
+
         process, _ = self.get_output(original)
-        if not isinstance(self.exit_code, bool) and process.returncode != self.exit_code:
+        if process and process.returncode != self.exit_code:
             return CrashResult(original, f'unexpected exit code: {process.returncode}', self)
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
-        original_process, original_output = self.get_output(original)
-        debloated_process, debloated_output = self.get_output(debloated)
+        original_proc, original_output = self.get_output(original)
+        debloated_proc, debloated_output = self.get_output(debloated)
 
-        if not original_process or not debloated_process:
+        if not original_proc or not debloated_proc:
             # The hook didn't run, nothing to compare
             return ComparisonResult.success(self, debloated)
 
-        if self.exit_code is not False and original_process.returncode != debloated_process.returncode:
+        if self.exit_code is not False and original_proc.returncode != debloated_proc.returncode:
             return ComparisonResult.error(
                 self,
                 debloated,
                 f'{self.hook} hook script exit code does not match: '
-                f'original={original_process.returncode}, '
-                f'debloated={debloated_process.returncode}',
+                f'original={original_proc.returncode}, '
+                f'debloated={debloated_proc.returncode}',
             )
 
         if original_output.read_bytes() != debloated_output.read_bytes():
