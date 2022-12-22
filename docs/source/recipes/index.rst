@@ -6,3 +6,4 @@ differ Recipes
    :caption: Contents:
 
    network_server
+   network_client

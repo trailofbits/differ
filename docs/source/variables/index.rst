@@ -1,5 +1,5 @@
-differ Comparators
-==================
+differ Variables
+================
 
 .. toctree::
    :maxdepth: 2
