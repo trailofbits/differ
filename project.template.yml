@@ -58,7 +58,7 @@ templates:
         #
         # static: false
 
-    # Standard input content
+    # Standard input content. This block is optional.
     stdin:
       # Standard input can either be a string or the path to a file. Paths can be absolute or
       # relative to the trace directory and can reference an input_file.
@@ -75,22 +75,47 @@ templates:
     # then any crashes or comparison failures are treated as successful (default: true).
     # expect_success: true
 
-    # Bash script commands to execute prior to launching each trace. The body is a Jinja2 template
-    # and can reference template variables. The script is run from the trace directory. The setup
-    # commands are run after input files are copied/generated so the script can reference these.
-    # This is optional.
+    # Bash script to execute prior to launching each trace. The body is a Jinja2 template
+    # and can reference template variables. The script is run from the trace directory and differ
+    # blocks until the script completes. The setup commands are run after input files are
+    # copied/generated so the script can reference these. This is optional.
     #
     # setup: |
     #   touch ./empty_file
     #   echo hello {{full_name}} > ./some_file
 
-    # Bash script commands to execute after a trace has completed. The body is a Jinja2 template
-    # and can reference template variables. The script is run from the trace directory. This is
-    # optional.
+    # Bash script to execute after a trace has completed. The body is a Jinja2 template
+    # and can reference template variables. The script is run from the trace directory and differ
+    # blocks until the script completes. This is optional.
     #
     # teardown: |
     #   rm ./empty_file
     #   echo goodbye >> ./some_file
+
+    # Configuration for running a Bash script while the trace is executing. This block is optional.
+    concurrent:
+      # The Bash script to execute while the trace is running. These are run asynchronously within
+      # a background process. Differ will terminate the bash process if it is still running after
+      # the trace has completed and all teardown commands have completed. Ideally the bash script
+      # should either exit normally on its own after running or a command within a teardown script
+      # should trigger a graceful exit of the concurrent script.
+      #
+      # The concurrent hook is useful when testing server binaries that require a client to trigger
+      # some behavior. For example, when testing an HTTP server, the concurrent hook could run curl
+      # or wget to download a file and then use the file comparator to verify the contents of the
+      # downloaded file.
+      #
+      # Similar to the setup and teardown hooks, these bash commands are a Jinja2 template and can
+      # reference variables.
+      #
+      # run: |
+      #   wget http://localhost:{{port}}/some_file.txt
+      #   exit $?
+
+      # The amount of time to wait in seconds after starting the trace before launching bash
+      # commands in the "run" body. This is optional (default: 1.0)
+      #
+      # delay: 1.0
 
     # A set of variables that will be generated for each trace.
     variables:
@@ -129,8 +154,3 @@ templates:
         pattern: '^hello, [A-z][a-z0-9]+!\n$'
 
       - stderr
-
-
-
-
-

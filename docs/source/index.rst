@@ -10,6 +10,7 @@ Welcome to differ's documentation!
    template
    comparators/index
    variables/index
+   recipes/index
 
 
 

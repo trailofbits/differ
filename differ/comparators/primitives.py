@@ -142,7 +142,7 @@ class HookScriptComparator(Comparator):
         self.hook = hook
         self.id = f'{hook}_script'
 
-    def get_output(self, trace: Trace) -> tuple[CompletedProcess, Path]:
+    def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
         """
         Get the output from the hook script.
 
@@ -154,7 +154,7 @@ class HookScriptComparator(Comparator):
         original_process, original_output = self.get_output(original)
         debloated_process, debloated_output = self.get_output(debloated)
 
-        if not original_process and not debloated_process:
+        if not original_process or not debloated_process:
             return ComparisonResult.success(self, debloated)
 
         if original_process.returncode != debloated_process.returncode:
@@ -211,3 +211,27 @@ class TeardownScriptComparator(HookScriptComparator):
 
     def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
         return trace.teardown_script, trace.teardown_script_output
+
+
+@register('concurrent_script')
+class ConcurrentScriptComparator(HookScriptComparator):
+    """
+    Teardown script output comparator. This captures and compares the exit code and stdout/stderr
+    content produces by the teardown script defined in the template's ``teardown`` configuration.
+
+    .. code-block:: yaml
+
+        - id: teardown_script
+    """
+
+    def __init__(self, config: dict):
+        super().__init__('concurrent', config)
+
+    def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
+        if trace.concurrent_script:
+            proc = CompletedProcess(
+                trace.concurrent_script.args, trace.concurrent_script.returncode
+            )
+        else:
+            proc = None
+        return proc, trace.concurrent_script_output
