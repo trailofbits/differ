@@ -102,6 +102,7 @@ class TestExecutorRunTrace:
             stdout=trace.setup_script_output.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
+            env=trace.env.return_value,
         )
         trace.setup_script_output.open.assert_called_once_with('wb')
 
@@ -123,10 +124,15 @@ class TestExecutorRunTrace:
         mock_run.assert_not_called()
 
     @patch.object(executor.subprocess, 'run')
-    def test_teardown_trace(self, mock_run):
+    @patch.object(executor.time, 'monotonic')
+    def test_teardown_trace(self, mock_time, mock_run):
         hook = MagicMock()
         trace = MagicMock()
         trace.context.template.hooks = [hook]
+        trace.context.template.timeout.seconds = 10.0
+        trace.start_time = 0.0
+
+        mock_time.return_value = 4.0
 
         cwd = object()
 
@@ -140,23 +146,31 @@ class TestExecutorRunTrace:
             stdout=trace.teardown_script_output.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
+            env=trace.env.return_value,
         )
         trace.teardown_script_output.open.assert_called_once_with('wb')
-        trace.concurrent_script.wait.assert_called_once_with(0.001)
+        trace.concurrent_script.wait.assert_called_once_with(10.0 - (4.0 - 0.0))
 
-    def test_teardown_trace_concurrent_timeout(self):
+    @patch.object(executor.time, 'monotonic')
+    def test_teardown_trace_concurrent_timeout(self, mock_time):
         trace = MagicMock()
+        trace.start_time = 0.0
+        trace.context.template.timeout.seconds = 10.0
         trace.teardown_script = None
         trace.teardown_script_path.exists.return_value = False
         trace.context.template.hooks = []
         trace.concurrent_script.wait.side_effect = [subprocess.TimeoutExpired('asdf', 1.0), None]
 
         cwd = object()
+        mock_time.return_value = 6.0
 
         app = executor.Executor(Path('/'))
         app._teardown_trace(trace, cwd)
 
-        assert trace.concurrent_script.wait.call_args_list == [call(0.001), call()]
+        assert trace.concurrent_script.wait.call_args_list == [
+            call(5.0),
+            call(),
+        ]
         trace.concurrent_script.terminate.assert_called_once()
         assert trace.teardown_script is None
 
@@ -211,6 +225,7 @@ class TestExecutorRunTrace:
             stdout=trace.concurrent_script_output.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
+            env=trace.env.return_value,
         )
         trace.concurrent_script_output.open.assert_called_once_with('wb')
 
