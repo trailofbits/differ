@@ -48,7 +48,7 @@ Project Configuration
               nc -N 127.0.0.1 8080 < client-message.txt
               rc=$?
 
-              echo netcat cient attempt $cycle = $rc
+              echo netcat client attempt $cycle = $rc
 
               ((cycle++))
             done
