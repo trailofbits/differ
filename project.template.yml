@@ -80,6 +80,13 @@ templates:
     # blocks until the script completes. The setup commands are run after input files are
     # copied/generated so the script can reference these. This is optional.
     #
+    # The setup script will have access to the following differ-specific environment variables:
+    #
+    #  - DIFFER_TRACE_DIR: the trace directory
+    #  - DIFFER_TRACE_DEBLOATER: the debloater engine being evaluated,
+    #  - DIFFER_TRACE_BINARY: the path to the binary being executed
+    #  - DIFFER_CONTEXT_ID: the trace context id
+    #
     # setup: |
     #   touch ./empty_file
     #   echo hello {{full_name}} > ./some_file
@@ -87,6 +94,17 @@ templates:
     # Bash script to execute after a trace has completed. The body is a Jinja2 template
     # and can reference template variables. The script is run from the trace directory and differ
     # blocks until the script completes. This is optional.
+    #
+    # The teardown script will have access to the following differ-specific environment variables:
+    #
+    #  - DIFFER_TRACE_DIR: the trace directory
+    #  - DIFFER_TRACE_DEBLOATER: the debloater engine being evaluated,
+    #  - DIFFER_TRACE_BINARY: the path to the binary being executed
+    #  - DIFFER_CONTEXT_ID: the trace context id
+    #  - DIFFER_TRACE_PID: the trace pid, which will have exited by the time teardown runs
+    #  - DIFFER_TRACE_EXIT_CODE: the exit code of the trace
+    #  - DIFFER_CONCURRENT_PID: (optional) the concurrent script pid, which may still be executing
+    #  - DIFFER_CONCURRENT_EXIT_CODE: (optional) the concurrent script exit code
     #
     # teardown: |
     #   rm ./empty_file
@@ -107,6 +125,15 @@ templates:
       #
       # Similar to the setup and teardown hooks, these bash commands are a Jinja2 template and can
       # reference variables.
+      #
+      # The concurrent script will have access to the following differ-specific environment
+      # variables:
+      #
+      #  - DIFFER_TRACE_DIR: the trace directory
+      #  - DIFFER_TRACE_DEBLOATER: the debloater engine being evaluated,
+      #  - DIFFER_TRACE_BINARY: the path to the binary being executed
+      #  - DIFFER_CONTEXT_ID: the trace context id
+      #  - DIFFER_TRACE_PID: the trace pid that is currently executing
       #
       # run: |
       #   wget http://localhost:{{port}}/some_file.txt

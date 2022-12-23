@@ -552,6 +552,8 @@ class Trace:
     teardown_script: Optional[subprocess.CompletedProcess] = None
     #: Subprocess for the concurrent script
     concurrent_script: Optional[subprocess.Popen] = None
+    #: The timestamp when the trace began executing
+    start_time: float = 0.0
 
     @property
     def crashed(self) -> bool:
@@ -654,6 +656,36 @@ class Trace:
     @property
     def concurrent_script_output(self) -> Path:
         return self.cwd / '__differ-concurrent-output.bin'
+
+    def env(self, inherit: bool = True) -> dict[str, str]:
+        """
+        The environment variables to use when executing all hook scripts (setup, teardown, and
+        concurrent).
+
+        :param inherit: inherit from the current process's environment variables
+        :returns: the environment variables for the trace hook scripts
+        """
+        env = dict(os.environ) if inherit else {}
+
+        env.update(
+            {
+                'DIFFER_TRACE_DIR': str(self.cwd),
+                'DIFFER_TRACE_DEBLOATER': self.debloater_engine,
+                'DIFFER_TRACE_BINARY': str(self.binary),
+                'DIFFER_CONTEXT_ID': self.context.id,
+            }
+        )
+        if self.process:
+            env['DIFFER_TRACE_PID'] = str(self.process.pid)
+            if self.process.returncode is not None:
+                env['DIFFER_TRACE_EXIT_CODE'] = str(self.process.returncode)
+
+        if self.concurrent_script:
+            env['DIFFER_CONCURRENT_PID'] = str(self.concurrent_script.pid)
+            if self.concurrent_script.returncode is not None:
+                env['DIFFER_CONCURRENT_EXIT_CODE'] = str(self.concurrent_script.returncode)
+
+        return env
 
 
 class ComparisonStatus(Enum):
@@ -835,7 +867,7 @@ class Comparator(TraceHook):
 
         :param original: the original trace
         :param debloated: the debloated trace
-        :returns: the
+        :returns: the comparison result (success or error with details)
         """
         raise NotImplementedError()
 

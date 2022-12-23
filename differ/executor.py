@@ -307,6 +307,7 @@ class Executor:
             stdout=trace.setup_script_output.open('wb'),
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
+            env=trace.env(inherit=True),
         )
 
     def _teardown_trace(self, trace: Trace, cwd: Path) -> None:
@@ -331,12 +332,21 @@ class Executor:
                 stdout=trace.teardown_script_output.open('wb'),
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL,
+                env=trace.env(inherit=True),
             )
 
         if trace.concurrent_script:
+            # Determine how long we'll wait for the concurrent script to complete. Either the
+            # remaining timeout amount for a minimum for 5 seconds.
+            wait_time = float(trace.context.template.timeout.seconds) - (
+                time.monotonic() - trace.start_time
+            )
+            if wait_time < 5.0:
+                wait_time = 5.0
             try:
-                trace.concurrent_script.wait(0.001)
+                trace.concurrent_script.wait(wait_time)
             except subprocess.TimeoutExpired:
+                logger.error('terminating concurrent script')
                 trace.concurrent_script.terminate()
                 trace.concurrent_script.wait()
 
@@ -350,15 +360,17 @@ class Executor:
 
         running = True
         status = 0
-        start = time.monotonic()
-        end_time = start + float(trace.context.template.timeout.seconds)
+        trace.start_time = time.monotonic()
+        end_time = trace.start_time + float(trace.context.template.timeout.seconds)
 
         if concurrent := trace.context.template.concurrent:
-            concurrent_delay_time = start + concurrent.delay
+            concurrent_delay_time = trace.start_time + concurrent.delay
         else:
             concurrent_delay_time = 0.0
 
-        running, status = self._wait_process(trace.process, concurrent_delay_time or end_time)
+        initial_timeout = concurrent_delay_time or end_time
+        if initial_timeout > trace.start_time:
+            running, status = self._wait_process(trace.process, concurrent_delay_time or end_time)
 
         if running and concurrent_delay_time:
             trace.concurrent_script = subprocess.Popen(
@@ -367,6 +379,7 @@ class Executor:
                 stdout=trace.concurrent_script_output.open('wb'),
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL,
+                env=trace.env(inherit=True),
             )
 
             running, status = self._wait_process(trace.process, end_time)

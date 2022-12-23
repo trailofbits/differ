@@ -55,7 +55,8 @@ Project Configuration
         # Finally, the list of comparators we run
         comparators:
           # Verify the exit code of the client matches
-          - exit_code
+          - id: exit_code
+            expect: 0
           # Verify the stdout and stderr content of the client matches.
           - stdout
           - stderr
