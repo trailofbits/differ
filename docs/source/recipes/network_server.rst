@@ -34,24 +34,39 @@ Project Configuration
               count: 5
 
         # The concurrent commands to execute while the trace is running. This will be our call to
-        # netcat to send the message
+        # netcat to send the message. We do this in a loop until the server starts and accepts the
+        # connection.
         concurrent:
-          delay: 2.0  # allow the HTTP server 2 seconds to start up prior to running wget
+          delay: 0.0  # we do our own sleeping in the concurrent script
           run: |
-            echo 'hello world: {{number}}' | nc -N 127.0.0.1 8080
-            exit $?
+            cycle=0
+            rc=1
+            echo 'hello world: {{number}}' > ./client-message.txt
+            while [ $cycle -lt 10 ] && [ $rc -ne 0 ];
+            do
+              sleep 0.1
+              nc -N 127.0.0.1 8080 < client-message.txt
+              rc=$?
 
+              echo netcat cient attempt $cycle = $rc
+
+              ((cycle++))
+            done
+
+            exit $rc
         # Finally, the list of comparators we run
         comparators:
           # Verify the exit code of the server matches
-          - exit_code
+          - id: exit_code
+            expect: 0
           # Verify the stdout and stderr content of the server matches, this will include the
           # message received from the netcat client.
           - stdout
           - stderr
           # Verify that the stdout/stderr content and the exit code of the concurrent bash script
           # (nc) matches
-          - concurrent_script
+          - id: concurrent_script
+            exit_code: 0
 
 
 .. spell-checker:ignore netcat
