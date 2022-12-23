@@ -5,8 +5,8 @@ from differ.core import ComparisonResult, ComparisonStatus, Trace
 
 
 class HookComparator(primitives.HookScriptComparator):
-    def __init__(self):
-        super().__init__('test', {})
+    def __init__(self, config: dict = None):
+        super().__init__('test', config or {})
         self.get_output = MagicMock(side_effect=self._get_output)
 
     def _get_output(self, trace: Trace):
@@ -65,6 +65,52 @@ class TestHookScriptComparator:
         assert result.status is ComparisonStatus.error
         assert result.comparator is ext.id
         assert result.trace_directory is debloated.cwd
+
+    def test_compare_skip_exit_code(self):
+        original = MagicMock()
+        original.setup_script.returncode = 0
+        original.setup_script_output.read_bytes.return_value = b'hello'
+        debloated = MagicMock()
+        debloated.setup_script.returncode = 1
+        debloated.setup_script_output.read_bytes.return_value = b'hello'
+
+        ext = HookComparator({'exit_code': False})
+        assert ext.compare(original, debloated).status is ComparisonStatus.success
+
+    def test_compare_exit_code_config(self):
+        original = MagicMock()
+        original.setup_script.returncode = 0
+        original.setup_script_output.read_bytes.return_value = b'hello'
+
+        debloated = MagicMock()
+        debloated.setup_script.returncode = 1
+        debloated.setup_script_output.read_bytes.return_value = b'hello'
+
+        ext = HookComparator({'exit_code': 0})
+        result = ext.compare(original, debloated)
+        assert result.status is ComparisonStatus.error
+        assert result.comparator is ext.id
+        assert result.trace_directory is debloated.cwd
+
+    def test_verify_original_skip(self):
+        ext = HookComparator()
+        assert ext.verify_original(MagicMock()) is None
+
+    def test_verify_original_error(self):
+        trace = MagicMock()
+        trace.setup_script.returncode = 1
+        ext = HookComparator({'exit_code': 0})
+        result = ext.verify_original(trace)
+        assert result is not None
+        assert result.trace is trace
+        assert result.comparator is ext
+
+    def test_verify_original_ok(self):
+        trace = MagicMock()
+        trace.setup_script.returncode = 0
+        ext = HookComparator({'exit_code': 0})
+        result = ext.verify_original(trace)
+        assert result is None
 
 
 class TestSetupScriptComparator:

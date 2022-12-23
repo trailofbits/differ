@@ -105,19 +105,47 @@ class ExitCodeComparator(Comparator):
           # Coerce the return value to either True (non-zero) or False (zero) prior to performing
           # the comparison. This is useful when the return value is non-deterministic. This is
           # disabled by default.
-          coerce_bool: false
+          # coerce_bool: false
+
+          # Expect that the exit code be a specific value. This is optional.
+          # expect: 0
     """
 
     def __init__(self, config: dict):
         super().__init__(config)
         self.coerce_bool = config.get('coerce_bool', False)
+        expect = config.get('expect')
+        if expect is not None:
+            self.expect = expect
+        else:
+            self.expect = None
+
+    def _normalize_exit_code(self, code: int) -> int:
+        """
+        Normalize the exit code if the ``coerce_bool`` option is enabled. Normalized exit codes are
+        either 0 for success or 1 for failure. If ``coerce_bool`` is disabled then this method just
+        returns ``code`` unmodified.
+
+        :param code: exit code
+        :returns: the normalized exit code
+        """
+        return code if not self.coerce_bool else int(bool(code))
+
+    def verify_original(self, original: Trace) -> Optional[CrashResult]:
+        if self.expect is None or not original.process:
+            return
+
+        # Verify that the original trace exited with the expected exit code
+        original_code = self._normalize_exit_code(original.process.returncode)  # type: ignore
+
+        if original_code != self._normalize_exit_code(self.expect):
+            return CrashResult(
+                original, f'unexpected exit code: {original.process.returncode}', self
+            )
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
-        original_code = original.process.returncode  # type: ignore
-        recovered_code = debloated.process.returncode  # type: ignore
-        if self.coerce_bool:
-            original_code = int(bool(original_code))
-            recovered_code = int(bool(recovered_code))
+        original_code = self._normalize_exit_code(original.process.returncode)  # type: ignore
+        recovered_code = self._normalize_exit_code(debloated.process.returncode)  # type: ignore
 
         if original_code != recovered_code:
             return ComparisonResult.error(
@@ -131,7 +159,18 @@ class ExitCodeComparator(Comparator):
 
 class HookScriptComparator(Comparator):
     """
-    A comparator that compares the results of hook scripts (exit code and stdout/stderr content).
+    .. code-block:: yaml
+
+        - id: {comparator_id}
+          # Controls how the hook script's exit code is validated and compared. Possible values
+          # are:
+          #
+          #  - true: compare the exit code of the original trace against each debloated trace
+          #  - false: do not compare the exit code
+          #  - <int>: verify that the exit code is the specified value
+          #
+          # This is optional with the default being "true" (compare the exit code across traces)
+          exit_code: true
     """
 
     def __init__(self, hook: str, config: dict):
@@ -142,6 +181,8 @@ class HookScriptComparator(Comparator):
         self.hook = hook
         self.id = f'{hook}_script'
 
+        self.exit_code = config.get('exit_code', True)
+
     def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
         """
         Get the output from the hook script.
@@ -150,20 +191,29 @@ class HookScriptComparator(Comparator):
         """
         raise NotImplementedError()  # pragma: no cover
 
-    def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
-        original_process, original_output = self.get_output(original)
-        debloated_process, debloated_output = self.get_output(debloated)
+    def verify_original(self, original: Trace) -> Optional[CrashResult]:
+        if isinstance(self.exit_code, bool):
+            return
 
-        if not original_process or not debloated_process:
+        process, _ = self.get_output(original)
+        if process and process.returncode != self.exit_code:
+            return CrashResult(original, f'unexpected exit code: {process.returncode}', self)
+
+    def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
+        original_proc, original_output = self.get_output(original)
+        debloated_proc, debloated_output = self.get_output(debloated)
+
+        if not original_proc or not debloated_proc:
+            # The hook didn't run, nothing to compare
             return ComparisonResult.success(self, debloated)
 
-        if original_process.returncode != debloated_process.returncode:
+        if self.exit_code is not False and original_proc.returncode != debloated_proc.returncode:
             return ComparisonResult.error(
                 self,
                 debloated,
                 f'{self.hook} hook script exit code does not match: '
-                f'original={original_process.returncode}, '
-                f'debloated={debloated_process.returncode}',
+                f'original={original_proc.returncode}, '
+                f'debloated={debloated_proc.returncode}',
             )
 
         if original_output.read_bytes() != debloated_output.read_bytes():
@@ -181,11 +231,8 @@ class HookScriptComparator(Comparator):
 class SetupScriptComparator(HookScriptComparator):
     """
     Setup script output comparator. This captures and compares the exit code and stdout/stderr
-    content produces by the setup script defined in the template's ``setup`` configuration.
-
-    .. code-block:: yaml
-
-        - id: setup_script
+    content produced by the setup script defined in the template's ``setup`` configuration. See the
+    :class:`HookScriptComparator` for available configuration.
     """
 
     def __init__(self, config: dict):
@@ -199,11 +246,8 @@ class SetupScriptComparator(HookScriptComparator):
 class TeardownScriptComparator(HookScriptComparator):
     """
     Teardown script output comparator. This captures and compares the exit code and stdout/stderr
-    content produces by the teardown script defined in the template's ``teardown`` configuration.
-
-    .. code-block:: yaml
-
-        - id: teardown_script
+    content produced by the teardown script defined in the template's ``teardown`` configuration.
+    See the :class:`HookScriptComparator` for available configuration.
     """
 
     def __init__(self, config: dict):
@@ -216,12 +260,9 @@ class TeardownScriptComparator(HookScriptComparator):
 @register('concurrent_script')
 class ConcurrentScriptComparator(HookScriptComparator):
     """
-    Teardown script output comparator. This captures and compares the exit code and stdout/stderr
-    content produces by the teardown script defined in the template's ``teardown`` configuration.
-
-    .. code-block:: yaml
-
-        - id: teardown_script
+    Concurrent script output comparator. This captures and compares the exit code and stdout/stderr
+    content produced by the concurrent script defined in the template's ``concurrent``
+    configuration. See the :class:`HookScriptComparator` for available configuration.
     """
 
     def __init__(self, config: dict):
