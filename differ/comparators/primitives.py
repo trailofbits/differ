@@ -102,23 +102,28 @@ class ExitCodeComparator(Comparator):
     .. code-block:: yaml
 
         - id: exit_code
-          # Coerce the return value to either True (non-zero) or False (zero) prior to performing
-          # the comparison. This is useful when the return value is non-deterministic. This is
-          # disabled by default.
-          # coerce_bool: false
-
-          # Expect that the exit code be a specific value. This is optional.
+          # Expect that the exit code be a specific value. The value can be any of the following:
+          #
+          #   - <int>: The exit code must match this integer value exactly.
+          #   - false: Allow any non-zero exit code which is treated as a failure in Bash
+          #   - true: Only allow an exit code of 0 which is treated as a success in Bash
+          #
+          # This configuration is optional.
           # expect: 0
     """
 
     def __init__(self, config: dict):
         super().__init__(config)
-        self.coerce_bool = config.get('coerce_bool', False)
         expect = config.get('expect')
-        if expect is not None:
-            self.expect = expect
+        if isinstance(expect, bool):
+            # in this case, we need to coerce the exit codes:
+            # * true  -> 0 (success)
+            # * false -> 1 (failure)
+            self.expect = int(not expect)
+            self._coerce_bool = True
         else:
-            self.expect = None
+            self.expect = expect if isinstance(expect, int) else None
+            self._coerce_bool = False
 
     def _normalize_exit_code(self, code: int) -> int:
         """
@@ -129,7 +134,7 @@ class ExitCodeComparator(Comparator):
         :param code: exit code
         :returns: the normalized exit code
         """
-        return code if not self.coerce_bool else int(bool(code))
+        return code if not self._coerce_bool else int(code != 0)
 
     def verify_original(self, original: Trace) -> Optional[CrashResult]:
         if self.expect is None or not original.process:

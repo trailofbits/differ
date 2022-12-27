@@ -28,7 +28,7 @@ class TestExitCodeComparator:
     def test_verify_original_coerce_error(self):
         trace = MagicMock()
         trace.process.returncode = 1
-        ext = primitives.ExitCodeComparator({'expect': 0, 'coerce_bool': True})
+        ext = primitives.ExitCodeComparator({'expect': True})
         result = ext.verify_original(trace)
         assert result is not None
         assert result.comparator is ext
@@ -37,7 +37,7 @@ class TestExitCodeComparator:
     def test_verify_original_coerce_ok(self):
         trace = MagicMock()
         trace.process.returncode = 1
-        ext = primitives.ExitCodeComparator({'expect': 2, 'coerce_bool': True})
+        ext = primitives.ExitCodeComparator({'expect': False})
         assert ext.verify_original(trace) is None
 
     def test_compare_ok(self):
@@ -57,7 +57,7 @@ class TestExitCodeComparator:
         debloated = MagicMock()
         debloated.process.returncode = 2
 
-        ext = primitives.ExitCodeComparator({'coerce_bool': True})
+        ext = primitives.ExitCodeComparator({'expect': False})
         assert ext.compare(original, debloated).status is ComparisonStatus.success
 
     def test_compare_error(self):
@@ -80,7 +80,7 @@ class TestExitCodeComparator:
         debloated = MagicMock()
         debloated.process.returncode = 1
 
-        ext = primitives.ExitCodeComparator({'coerce_bool': True})
+        ext = primitives.ExitCodeComparator({'expect': True})
         result = ext.compare(original, debloated)
         assert result.status is ComparisonStatus.error
         assert result.comparator is ext.id
