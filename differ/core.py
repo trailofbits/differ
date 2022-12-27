@@ -676,6 +676,8 @@ class Trace:
             }
         )
         if self.process:
+            env['DIFFER_TRACE_STDOUT'] = str(self.stdout_path.absolute())
+            env['DIFFER_TRACE_STDERR'] = str(self.stderr_path.absolute())
             env['DIFFER_TRACE_PID'] = str(self.process.pid)
             if self.process.returncode is not None:
                 env['DIFFER_TRACE_EXIT_CODE'] = str(self.process.returncode)

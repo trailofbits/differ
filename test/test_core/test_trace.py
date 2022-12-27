@@ -31,6 +31,8 @@ class TestTrace:
             'DIFFER_CONTEXT_ID': trace.context.id,
             'DIFFER_TRACE_PID': str(trace.process.pid),
             'DIFFER_TRACE_EXIT_CODE': str(trace.process.returncode),
+            'DIFFER_TRACE_STDOUT': str(trace.stdout_path),
+            'DIFFER_TRACE_STDERR': str(trace.stderr_path),
         }
 
     @patch.object(core, 'os')
