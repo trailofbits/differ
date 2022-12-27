@@ -52,3 +52,15 @@ class IntVariable(FuzzVariable):
 
         if self.count:
             yield from random.sample(range(self.minimum, self.maximum + 1), k=self.count)
+
+
+@register('str')
+class StubStringVariable(FuzzVariable):
+    # TODO: this is a stub, remove this when ready to merge the full string variable
+
+    def __init__(self, name, config):
+        super().__init__(name, config)
+        self.values = config['values']
+
+    def generate_values(self, template: TraceTemplate) -> Iterator:
+        return iter(self.values)
