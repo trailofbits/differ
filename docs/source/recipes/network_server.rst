@@ -66,7 +66,8 @@ Project Configuration
           # Verify that the stdout/stderr content and the exit code of the concurrent bash script
           # (nc) matches
           - id: concurrent_script
-            exit_code: 0
+            exit_code:
+              expect: 0
 
 
 .. spell-checker:ignore netcat
