@@ -5,22 +5,21 @@ import shlex
 import shutil
 import subprocess
 import time
-from itertools import cycle
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from .core import (
     Comparator,
     ComparisonResult,
     ComparisonStatus,
     CrashResult,
-    FuzzVariable,
     InputFile,
     Project,
     Trace,
     TraceContext,
     TraceTemplate,
 )
+from .parameters import CombinationParameterGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -506,24 +505,18 @@ class Executor:
         :param template: trace template
         :returns: a list of generated variable values
         """
-        generators = [
-            VariableValueGenerator(template, variable) for variable in template.variables.values()
-        ]
-        names = [item.variable.name for item in generators]
+        generator = CombinationParameterGenerator(template)
         count = 0
-        done = False
         values: list[dict] = []
 
-        while not done:
+        for value_set in generator.generate():
             # Populate a dictionary of the generated values
-            values.append({name: next(generator) for name, generator in zip(names, generators)})
+            values.append(value_set)
             count += 1
             # We are done when every variable has been exhausted or the number of value sets
             # generated is greater than the max_permutations setting.
-            done = (
-                all(generator.exhausted for generator in generators)
-                or count >= self.max_permutations
-            )
+            if count >= self.max_permutations:
+                break
 
         logger.debug('generated %d value sets for template %s', len(values), template.id)
         return values
@@ -624,34 +617,3 @@ class Executor:
                 print(template.render(**trace.context.values), file=file)
 
             os.chmod(filename, 0o755)
-
-
-class VariableValueGenerator:
-    """
-    An iterator that produces generated values for a variable. The generated values are cached so
-    that the iterator does not need to be recreated when it has been exhausted. The iterator will
-    produce results forever, callers should check if the iterator has been exhausted using the
-    ``exhausted`` attribute.
-    """
-
-    def __init__(self, template: TraceTemplate, variable: FuzzVariable):
-        self.variable = variable
-        self._iter = variable.generate_values(template)
-        self._current = next(self._iter)
-        self._values = []
-        self.exhausted = False
-
-    def __next__(self) -> Any:
-        value = self._current
-        try:
-            self._current = next(self._iter)
-        except StopIteration:
-            # Iterator has been exhausted, we now produce values from the cache
-            self.exhausted = True
-            self._iter = cycle(self._values)
-            self._current = next(self._iter)
-        else:
-            # Cache the value
-            self._values.append(value)
-
-        return self._current
