@@ -112,6 +112,10 @@ class TestHookScriptComparator:
         result = ext.verify_original(trace)
         assert result is None
 
+    def test_verify_original_skip_exit_code(self):
+        ext = HookComparator({'exit_code': False})
+        assert ext.verify_original(MagicMock()) is None
+
 
 class TestSetupScriptComparator:
     def test_get_output(self):
