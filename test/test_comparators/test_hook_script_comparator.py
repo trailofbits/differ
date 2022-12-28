@@ -86,7 +86,7 @@ class TestHookScriptComparator:
         debloated.setup_script.returncode = 1
         debloated.setup_script_output.read_bytes.return_value = b'hello'
 
-        ext = HookComparator({'exit_code': 0})
+        ext = HookComparator({'exit_code': {'expect': 0}})
         result = ext.compare(original, debloated)
         assert result.status is ComparisonStatus.error
         assert result.comparator is ext.id
@@ -99,7 +99,7 @@ class TestHookScriptComparator:
     def test_verify_original_error(self):
         trace = MagicMock()
         trace.setup_script.returncode = 1
-        ext = HookComparator({'exit_code': 0})
+        ext = HookComparator({'exit_code': {'expect': 0}})
         result = ext.verify_original(trace)
         assert result is not None
         assert result.trace is trace
@@ -108,7 +108,7 @@ class TestHookScriptComparator:
     def test_verify_original_ok(self):
         trace = MagicMock()
         trace.setup_script.returncode = 0
-        ext = HookComparator({'exit_code': 0})
+        ext = HookComparator({'exit_code': {'expect': 0}})
         result = ext.verify_original(trace)
         assert result is None
 
