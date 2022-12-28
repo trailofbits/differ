@@ -1,0 +1,31 @@
+name: coreutils_date
+link_filename: date
+original: bin/date.original
+debloaters:
+  # The CHISEL binary does not work properly so we compare the original date against itself
+  original: bin/date.original
+
+templates:
+  # U, W, V formatting
+  - arguments: "--date '1996-1-{{day}}' +{{fmt}}"
+    fuzz_strategy: permute
+    variables:
+      day:
+        type: int
+        range:
+          minimum: 1
+          maximum: 10
+          count: 10
+
+      fmt:
+        type: str
+        values:
+          - '%U'
+          - '%W'
+          - '%V'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
