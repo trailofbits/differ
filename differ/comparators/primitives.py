@@ -153,12 +153,13 @@ class ExitCodeComparator(Comparator, _ExitCodeComparator):
           # This configuration is optional.
           # expect: 0
     """
+
     def __init__(self, config: dict):
         super().__init__(config)
         _ExitCodeComparator.__init__(self, config)
 
     def get_exit_code(self, trace: Trace) -> int:
-        return trace.process.returncode
+        return trace.process.returncode  # type: ignore
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
         original_code = self.get_exit_code(original)
@@ -177,9 +178,7 @@ class ExitCodeComparator(Comparator, _ExitCodeComparator):
         # Verify that the original trace exited with the expected exit code
         exit_code = self.get_exit_code(original)
         if not self.verify_original_exit_code(exit_code):
-            return CrashResult(
-                original, f'unexpected exit code: {exit_code}', self
-            )
+            return CrashResult(original, f'unexpected exit code: {exit_code}', self)
 
 
 class HookScriptComparator(Comparator):
@@ -236,7 +235,9 @@ class HookScriptComparator(Comparator):
             # The hook didn't run, nothing to compare
             return ComparisonResult.success(self, debloated)
 
-        if self.exit_code and not self.exit_code.compare_exit_code(original_proc.returncode, debloated_proc.returncode):
+        if self.exit_code and not self.exit_code.compare_exit_code(
+            original_proc.returncode, debloated_proc.returncode
+        ):
             return ComparisonResult.error(
                 self,
                 debloated,
