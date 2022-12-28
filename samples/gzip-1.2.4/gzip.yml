@@ -25,7 +25,8 @@ templates:
       - id: exit_code
         expect: 0
       - id: teardown_script
-        exit_code: 0
+        exit_code:
+          expect: 0
       - id: file
         filename: sample1.extracted
 
@@ -47,7 +48,8 @@ templates:
       - id: exit_code
         expect: 0
       - id: teardown_script
-        exit_code: 0
+        exit_code:
+          expect: 0
 
   # -f (overwrite)
   - arguments: -f foo
@@ -70,7 +72,8 @@ templates:
       - id: exit_code
         expect: 0
       - id: teardown_script
-        exit_code: 0
+        exit_code:
+          expect: 0
 
   # -t (test) invalid
   - arguments: -t inputs/sample1.ref
