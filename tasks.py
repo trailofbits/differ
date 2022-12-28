@@ -40,7 +40,7 @@ def unit_tests(c):
 
 @task
 def integration_tests(c):
-    c.run('coverage run --source=differ -m pytest -k "test_project"', **KWARGS)
+    c.run('coverage run --source=differ -m pytest -k "test_integration"', **KWARGS)
     c.run('coverage report -m', **KWARGS)
 
 
