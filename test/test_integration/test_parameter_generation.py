@@ -1,5 +1,5 @@
 from differ.core import TraceTemplate
-from differ.fuzz import CombinationParameterGenerator
+from differ.parameters import CombinationParameterGenerator
 from differ.variables.primitives import IntVariable, StubStringVariable
 
 
