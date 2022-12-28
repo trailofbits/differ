@@ -1,7 +1,9 @@
+import grp
 import hashlib
+import pwd
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import ssdeep
 
@@ -28,6 +30,70 @@ class OctalRef(VariableRef):
 
 
 MODE_NO_CHECK = -1
+
+
+class _FileOwnerComparator:
+    """
+    Helper class to verify file ownership against a rule set. Accepts the following configuration:
+
+    .. code-block:: yaml
+
+        # Rule for comparing the owning username. This is optional and, by default, the owning user
+        # name of the original and debloated file are compared to be matching.
+        # user: <name: str, uid: int, true, false>
+
+        # Rule for comparing the owning group. This is optional and, by default, the owning group
+        # name of the original and debloated file are compared to be matching.
+        # group: <name: str, gid: int, true, false>
+    """
+
+    def __init__(self, config: dict):
+        self.user: Union[bool, str] = config.get('user', True)
+        self.group: Union[bool, str] = config.get('group', True)
+
+        if isinstance(self.user, str):
+            self.uid = pwd.getpwnam(self.user).pw_uid
+        elif isinstance(self.user, int) and not isinstance(self.user, bool):
+            self.uid = self.user
+        else:
+            self.uid = None
+
+        if isinstance(self.group, str):
+            self.gid = grp.getgrnam(self.group).gr_gid
+        elif isinstance(self.group, int) and not isinstance(self.group, bool):
+            self.gid = self.group
+        else:
+            self.gid = None
+
+    def verify_file_owner(self, filename: Path) -> bool:
+        """
+        Verify the file owner based on the configuration.
+
+        :param filename: file to verify
+        :returns: ``True`` if the file has the expected ownership, ``False`` otherwise
+        """
+        stat = filename.lstat()
+
+        if self.uid is not None and stat.st_uid != self.uid:
+            return False
+
+        if self.gid is not None and stat.st_gid != self.gid:
+            return False
+
+        return True
+
+    def compare_file_owner(self, original_file: Path, debloated_file: Path) -> bool:
+        """
+        Compare the file owner between the original trace and debloated trace.
+
+        :param original_file: original trace file
+        :param debloated_file: debloated trace file
+        :returns: ``True`` if the file ownership matches, ``False`` otherwise
+        """
+        original = original_file.lstat()
+        debloated = debloated_file.lstat()
+
+        return (original.st_uid, original.st_gid) == (debloated.st_uid, debloated.st_gid)
 
 
 @register('file')
@@ -70,6 +136,26 @@ class FileComparator(Comparator):
           # Mode as a variable reference
           # mode:
           #   variable: file_mode
+
+          # The file owner. This can either be "true" to compare both the owner user and group or
+          # it can be a dictionary specifying how to compare the owner user and group. This is
+          # optional and, when not specified, no owner information is compared.
+          # owner:
+          #   # The file owner username. This can be either:
+          #   #
+          #   #  - true: compare the owner username (default)
+          #   #  - false: do not compare the owner username
+          #   #  - <str>: expect a specific owner username
+          #   #  - <int>: expect a specific owner uid
+          #   user: root
+          #
+          #   # The file owner group name. Similar tot the user, his can be either:
+          #   #
+          #   #  - true: compare the owner group (default)
+          #   #  - false: do not compare the owner group
+          #   #  - <str>: expect a specific owner group name
+          #   #  - <int>: expect a specific owner gid
+          #   group: sudo
     """
 
     def __init__(self, config: dict):
@@ -78,6 +164,7 @@ class FileComparator(Comparator):
         self.exists = config.get('exists', True)
         self.path_type = PathType(config.get('type', 'file'))
         mode = OctalRef.try_parse(config.get('mode'))
+        owner = config.get('owner')
 
         if isinstance(mode, (int, str)):
             self.mode = int(str(mode), 8)
@@ -91,10 +178,23 @@ class FileComparator(Comparator):
         else:
             self.similarity = config.get('similarity', 100)
 
+        if owner is True:
+            self.owner = _FileOwnerComparator({})
+        elif isinstance(owner, dict):
+            self.owner = _FileOwnerComparator(owner)
+        else:
+            self.owner = None
+
     def verify_original(self, trace: Trace) -> Optional[CrashResult]:
         filename = trace.cwd / self.filename
         if error := self.check_file_type(trace, filename):
             return CrashResult(trace, error, comparator=self)
+
+        if not filename.exists():
+            return
+
+        if self.owner and not self.owner.verify_file_owner(filename):
+            return CrashResult(trace, 'unexpected file owner', comparator=self)
 
         if not self.similarity:
             return
@@ -152,9 +252,16 @@ class FileComparator(Comparator):
         return sha1.hexdigest(), fuzzy.digest()
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
+        original_filename = original.cwd / self.filename
         filename = debloated.cwd / self.filename
         if error := self.check_file_type(debloated, filename):
             return ComparisonResult.error(self, debloated, error)
+
+        if not filename.exists():
+            return ComparisonResult.success(self, debloated)
+
+        if self.owner and not self.owner.compare_file_owner(original_filename, filename):
+            return ComparisonResult.error(self, debloated, 'unexpected file owner')
 
         if not self.similarity:
             return ComparisonResult.success(self, debloated)
