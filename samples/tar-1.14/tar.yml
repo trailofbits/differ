@@ -15,7 +15,6 @@ templates:
       cp bar.orig bar
 
     teardown: |
-      set -e
       rm foo bar
       ./tar xf foo.tar
 
