@@ -787,6 +787,7 @@ class CrashResult:
             'values': self.trace.context.values,
             'trace_directory': str(self.trace.cwd),
             'details': self.details,
+            'arguments': shlex.split(self.trace.context.arguments),
         }
         if self.comparator:
             body['comparator'] = self.comparator.id
