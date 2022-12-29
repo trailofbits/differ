@@ -7,6 +7,7 @@ Welcome to differ's documentation!
 
    core
    executor
+   parameters
    template
    comparators/index
    variables/index

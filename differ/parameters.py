@@ -59,7 +59,8 @@ class ParameterIterator:
 
 class CombinationParameterGenerator(ParameterGenerator):
     """
-    Generate unique combinations of parameters until all variable values have been exhausted.
+    Generate unique combinations of parameters until all variable values and combinations have been
+    covered.
     """
 
     def __init__(self, template: TraceTemplate):
@@ -69,12 +70,42 @@ class CombinationParameterGenerator(ParameterGenerator):
         self._reversed = list(reversed(self.parameters))
 
     def generate(self) -> Iterable[dict]:
+        """
+        Generate all unique combinations. This method works using a waterfall method to cover all
+        possible combinations, for example:
+
+        .. code-block:: python
+
+            # trace template variables
+            variables = {
+                'x': ['a', 'b', 'c'],
+                'y': [1, 2, 3],
+                'z': [True, False]
+            }
+
+            # result from list(generate())
+            result = [
+                {'x': 'a', 'y': 1, 'z': True  },
+                {'x': 'a', 'y': 1, 'z': False },
+                {'x': 'a', 'y': 2, 'z': True  },
+                {'x': 'a', 'y': 2, 'z': False },
+                {'x': 'a', 'y': 3, 'z': True  },
+                {'x': 'a', 'y': 3, 'z': False },
+                {'x': 'b', 'y': 1, 'z': True  },
+                ........
+                {'x': 'c', 'y': 3, 'z': True  },
+                {'x': 'c', 'y': 3, 'z': False }
+            ]
+        """
         exhausted = False
         while not exhausted:
             yield {param.variable.name: param.value for param in self.parameters}
 
             for param in self._reversed:
                 if not param.advance():
+                    # The iterator has not reached the end, continue
                     break
             else:
+                # We are done when every value iterator has been exhausted (all calls to advance()
+                # return True).
                 exhausted = True
