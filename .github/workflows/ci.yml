@@ -64,6 +64,11 @@ jobs:
 
       - name: 'Tests'
         run: |
+          echo whoami:
+          whoami
+          echo groups:
+          groups
+          echo =====
           pipenv run tests
 
   # pip-audit:
