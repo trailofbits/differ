@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from differ.comparators import primitives
-from differ.core import ComparisonResult, ComparisonStatus, Trace
+from differ.core import ComparisonResult, ComparisonStatus, CrashResult, Trace
 
 
 class HookComparator(primitives.HookScriptComparator):
@@ -47,9 +47,9 @@ class TestHookScriptComparator:
 
         ext = HookComparator()
         result = ext.compare(original, debloated)
-        assert result.status is ComparisonStatus.error
-        assert result.comparator is ext.id
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.error(
+            'test_script[exit_code]', debloated, result.details
+        )
 
     def test_compare_output(self):
         original = MagicMock()
@@ -62,9 +62,7 @@ class TestHookScriptComparator:
 
         ext = HookComparator()
         result = ext.compare(original, debloated)
-        assert result.status is ComparisonStatus.error
-        assert result.comparator is ext.id
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.error('test_script[output]', debloated, result.details)
 
     def test_compare_skip_exit_code(self):
         original = MagicMock()
@@ -86,11 +84,11 @@ class TestHookScriptComparator:
         debloated.setup_script.returncode = 1
         debloated.setup_script_output.read_bytes.return_value = b'hello'
 
-        ext = HookComparator({'exit_code': 0})
+        ext = HookComparator({'exit_code': {'expect': 0}})
         result = ext.compare(original, debloated)
-        assert result.status is ComparisonStatus.error
-        assert result.comparator is ext.id
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.error(
+            'test_script[exit_code]', debloated, result.details
+        )
 
     def test_verify_original_skip(self):
         ext = HookComparator()
@@ -99,18 +97,20 @@ class TestHookScriptComparator:
     def test_verify_original_error(self):
         trace = MagicMock()
         trace.setup_script.returncode = 1
-        ext = HookComparator({'exit_code': 0})
+        ext = HookComparator({'exit_code': {'expect': 0}})
         result = ext.verify_original(trace)
-        assert result is not None
-        assert result.trace is trace
-        assert result.comparator is ext
+        assert result == CrashResult(trace, result.details, 'test_script[exit_code]')
 
     def test_verify_original_ok(self):
         trace = MagicMock()
         trace.setup_script.returncode = 0
-        ext = HookComparator({'exit_code': 0})
+        ext = HookComparator({'exit_code': {'expect': 0}})
         result = ext.verify_original(trace)
         assert result is None
+
+    def test_verify_original_skip_exit_code(self):
+        ext = HookComparator({'exit_code': False})
+        assert ext.verify_original(MagicMock()) is None
 
 
 class TestSetupScriptComparator:

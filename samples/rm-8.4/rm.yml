@@ -1,0 +1,117 @@
+name: coreutils_rm
+link_filename: rm
+original: bin/rm.original
+debloaters:
+  # The CHISEL binary does not work properly so we compare the original against itself
+  original: bin/rm.original
+
+templates:
+  # remove file
+  - arguments: file
+    setup: |
+      touch file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file
+        exists: false
+
+  # -r (recrusive remove directory)
+  - arguments: -r dir
+    setup: |
+      mkdir dir
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  # -r -f (recrusive remove directory force)
+  - arguments: -r -f dir
+    setup: |
+      mkdir dir
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  # -y YES (prompt before removing)
+  - arguments: -i file
+    setup: |
+      touch file
+
+    stdin:
+      value: "Y\n"
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file
+        exists: false
+
+  # -y NO (prompt before removing)
+  - arguments: -i file
+    setup: |
+      touch file
+
+    stdin:
+      value: "N\n"
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file
+        exists: true
+
+  ##################
+  # Error Handling #
+  ##################
+
+  # file does not exist
+  - arguments: file
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # -f (force directory)
+  - arguments: -f dir
+    setup: |
+      mkdir dir
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+      - id: file
+        filename: dir
+        type: directory
+
+  # missing operand
+  - arguments: ''
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false

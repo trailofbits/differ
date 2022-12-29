@@ -1,0 +1,179 @@
+name: coreutils_gzip
+link_filename: gzip
+original: bin/gzip.original
+debloaters:
+  # The chisel debloated gzip does not run correctly so we test against the original
+  original: bin/gzip.original
+
+templates:
+  # -c (compress to stdout)
+  - arguments: -c
+    input_files:
+      - source: inputs
+        static: true
+
+    stdin:
+      file: inputs/sample1.ref
+
+    teardown: |
+      zcat $DIFFER_TRACE_STDOUT > sample1.extracted
+      cmp sample1.extracted inputs/sample1.ref
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: sample1.extracted
+
+  # -d (decomparess)
+  - arguments: -d
+    input_files:
+      - source: inputs
+        static: true
+
+    stdin:
+      file: inputs/sample1.gz.ref
+
+    teardown: |
+      cmp $DIFFER_TRACE_STDOUT inputs/sample1.ref
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+
+  # -f (overwrite)
+  - arguments: -f foo
+    setup: |
+      echo 1234 > foo
+      echo 4567 > foo.gz
+
+    input_files:
+      - source: inputs
+        static: true
+
+    teardown: |
+      zcat foo.gz > foo.orig
+      echo 1234 > foo
+      cmp foo foo.orig
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+
+  # -t (test) invalid
+  - arguments: -t inputs/sample1.ref
+    input_files:
+      - source: inputs
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  # -t (test) valid
+  - arguments: -t inputs/sample1.gz.ref
+    input_files:
+      - source: inputs
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  #####################
+  # Expected Failures #
+  #####################
+
+  # File does not exist
+  - arguments: foo
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # Invalid arguments (help or missing operand)
+  - arguments: '{{arg}}'
+    variables:
+      arg:
+        type: str
+        values:
+          - "--help"
+          - "-h"
+          - "-S"
+          - "--suffix"
+          - "-k"
+          - "--license"
+          - "-L"
+          - "-V"
+          - "--version"
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  # -l/--list -d (list contents of compressed archive)
+  # TODO: this is disabled because the CHISEL sample is not working
+  # - arguments: '-d {{arg}}'
+  #   expect_success: false
+  #   input_files:
+  #     - source: inputs
+  #       static: true
+  #
+  #   stdin:
+  #     file: inputs/sample1.gz.ref
+  #
+  #   variables:
+  #     arg:
+  #       type: str
+  #       values:
+  #         - "-l"
+  #         - "--list"
+  #
+  #   comparators:
+  #     - stdout
+  #     - stderr
+  #     - exit_code
+
+  # -l/--list -c (list contents of compressed archive)
+  # TODO: this is disabled because the CHISEL sample is not working
+  # - arguments: '-c {{arg}}'
+  #   expect_success: false
+  #   input_files:
+  #     - source: inputs
+  #       static: true
+  #
+  #   stdin:
+  #     file: inputs/sample1.ref
+  #
+  #   variables:
+  #     arg:
+  #       type: str
+  #       values:
+  #         - "-l"
+  #         - "--list"
+  #
+  #   comparators:
+  #     - stdout
+  #     - stderr
+  #     - exit_code

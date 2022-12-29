@@ -111,38 +111,45 @@ templates:
     #   echo goodbye >> ./some_file
 
     # Configuration for running a Bash script while the trace is executing. This block is optional.
-    concurrent:
-      # The Bash script to execute while the trace is running. These are run asynchronously within
-      # a background process. Differ will terminate the bash process if it is still running after
-      # the trace has completed and all teardown commands have completed. Ideally the bash script
-      # should either exit normally on its own after running or a command within a teardown script
-      # should trigger a graceful exit of the concurrent script.
-      #
-      # The concurrent hook is useful when testing server binaries that require a client to trigger
-      # some behavior. For example, when testing an HTTP server, the concurrent hook could run curl
-      # or wget to download a file and then use the file comparator to verify the contents of the
-      # downloaded file.
-      #
-      # Similar to the setup and teardown hooks, these bash commands are a Jinja2 template and can
-      # reference variables.
-      #
-      # The concurrent script will have access to the following differ-specific environment
-      # variables:
-      #
-      #  - DIFFER_TRACE_DIR: the trace directory
-      #  - DIFFER_TRACE_DEBLOATER: the debloater engine being evaluated,
-      #  - DIFFER_TRACE_BINARY: the path to the binary being executed
-      #  - DIFFER_CONTEXT_ID: the trace context id
-      #  - DIFFER_TRACE_PID: the trace pid that is currently executing
-      #
-      # run: |
-      #   wget http://localhost:{{port}}/some_file.txt
-      #   exit $?
+    # concurrent:
+    #   # The Bash script to execute while the trace is running. These are run asynchronously within
+    #   # a background process. Differ will terminate the bash process if it is still running after
+    #   # the trace has completed and all teardown commands have completed. Ideally the bash script
+    #   # should either exit normally on its own after running or a command within a teardown script
+    #   # should trigger a graceful exit of the concurrent script.
+    #   #
+    #   # The concurrent hook is useful when testing server binaries that require a client to trigger
+    #   # some behavior. For example, when testing an HTTP server, the concurrent hook could run curl
+    #   # or wget to download a file and then use the file comparator to verify the contents of the
+    #   # downloaded file.
+    #   #
+    #   # Similar to the setup and teardown hooks, these bash commands are a Jinja2 template and can
+    #   # reference variables.
+    #   #
+    #   # The concurrent script will have access to the following differ-specific environment
+    #   # variables:
+    #   #
+    #   #  - DIFFER_TRACE_DIR: the trace directory
+    #   #  - DIFFER_TRACE_DEBLOATER: the debloater engine being evaluated,
+    #   #  - DIFFER_TRACE_BINARY: the path to the binary being executed
+    #   #  - DIFFER_CONTEXT_ID: the trace context id
+    #   #  - DIFFER_TRACE_PID: the trace pid that is currently executing
+    #   #
+    #   # run: |
+    #   #   wget http://localhost:{{port}}/some_file.txt
+    #   #   exit $?
+    #
+    #   # The amount of time to wait in seconds after starting the trace before launching bash
+    #   # commands in the "run" body. This is optional (default: 1.0)
+    #   #
+    #   # delay: 1.0
 
-      # The amount of time to wait in seconds after starting the trace before launching bash
-      # commands in the "run" body. This is optional (default: 1.0)
-      #
-      # delay: 1.0
+    # Controls whether each hook script will exit immediately if a command exits with a non-zero
+    # status (the Bash "set -e" option). This configuration affects the setup, concurrent, and
+    # teardown scripts. The default behavior is to enable "set -e" and can be turned off by
+    # setting this option to "false".
+    #
+    # script_exit_on_first_error: true
 
     # A set of variables that will be generated for each trace.
     variables:

@@ -1,0 +1,144 @@
+name: coreutils_bzip2
+link_filename: bzip2
+original: bin/bzip2.original
+debloaters:
+  # the chisel binary does not run, so we test against the original
+  original: bin/bzip2.original
+
+templates:
+  # output to stdout
+  - arguments: -c
+    input_files:
+      - source: inputs
+        static: true
+
+    stdin:
+      file: inputs/sample1.ref
+
+    teardown: |
+      cmp $DIFFER_TRACE_STDOUT inputs/sample1.bz2.ref
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+
+  # decompress
+  - arguments: -d
+    input_files:
+      - source: inputs
+        static: true
+
+    stdin:
+      file: inputs/sample1.bz2.ref
+
+    teardown: |
+      cmp $DIFFER_TRACE_STDOUT inputs/sample1.ref
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+
+  # overwrite
+  - arguments: -f foo
+    setup: |
+      echo 1234 > foo
+      echo 4567 > foo.bz2
+
+    teardown: |
+      bzcat foo.bz2 > foo.orig
+      echo 1234 > foo
+      cmp foo foo.orig
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo.bz2
+
+  # test invalid
+  - arguments: -t foo
+    setup: |
+      echo 1234 > foo
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # test valid
+  - arguments: -t inputs/sample1.bz2.ref
+    input_files:
+      - source: inputs
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  # keep original file
+  - arguments: -k foo
+    setup: |
+      echo 1234 > foo
+
+    teardown: |
+      bzcat foo.bz2 > foo.extracted
+      cmp foo foo.extracted
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: foo.bz2
+
+  # Test invalid arguments
+  #
+  # TODO: This template is currently disabled because we don't have a way to emluate a TTY within
+  # differ. See issue #XXX
+  #
+  # - arguments: '{{arg}}'
+  #   variables:
+  #     arg:
+  #       type: str
+  #       values:
+  #         - "-z"
+  #         - "-q"
+  #         - "-v"
+  #         - "-s"
+  #         - "-1"
+  #         - "-2"
+  #         - "-3"
+  #         - "-4"
+  #         - "-5"
+  #         - "-6"
+  #         - "-7"
+  #         - "-8"
+  #         - "-9"
+  #         - "-L"
+  #         - "-V"
+  #   comparators:
+  #     - stdout
+  #     - stderr
+  #     - id: exit_code
+  #       expect: false
+
+

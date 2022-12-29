@@ -12,6 +12,8 @@ WIFSIGNALED
 SIGTERM
 ssdeep
 deref
+getpwnam
+getgrnam
 
 # sphinx / restructuredText directives
 toctree

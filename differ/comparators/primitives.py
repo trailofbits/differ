@@ -37,7 +37,7 @@ class StringComparator(Comparator):
         """
         Get the string to compare for a trace. Subclasses must implement this.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
         orig_str = self.get_string(original)
@@ -94,31 +94,22 @@ class StderrComparator(StringComparator):
         return trace.read_stderr()
 
 
-@register('exit_code')
-class ExitCodeComparator(Comparator):
+class _ExitCodeComparator:
     """
-    Process exit code comparator. This comparator accepts the following configuration options:
-
-    .. code-block:: yaml
-
-        - id: exit_code
-          # Coerce the return value to either True (non-zero) or False (zero) prior to performing
-          # the comparison. This is useful when the return value is non-deterministic. This is
-          # disabled by default.
-          # coerce_bool: false
-
-          # Expect that the exit code be a specific value. This is optional.
-          # expect: 0
+    Helper class to compare process exit codes.
     """
 
     def __init__(self, config: dict):
-        super().__init__(config)
-        self.coerce_bool = config.get('coerce_bool', False)
         expect = config.get('expect')
-        if expect is not None:
-            self.expect = expect
+        if isinstance(expect, bool):
+            # in this case, we need to coerce the exit codes:
+            # * true  -> 0 (success)
+            # * false -> 1 (failure)
+            self.expect = int(not expect)
+            self._coerce_bool = True
         else:
-            self.expect = None
+            self.expect = expect if isinstance(expect, int) else None
+            self._coerce_bool = False
 
     def _normalize_exit_code(self, code: int) -> int:
         """
@@ -129,32 +120,82 @@ class ExitCodeComparator(Comparator):
         :param code: exit code
         :returns: the normalized exit code
         """
-        return code if not self.coerce_bool else int(bool(code))
+        return code if not self._coerce_bool else int(code != 0)
 
-    def verify_original(self, original: Trace) -> Optional[CrashResult]:
-        if self.expect is None or not original.process:
-            return
+    def compare_exit_code(self, original_code: int, debloated_code: int) -> bool:
+        """
+        Compare the exit codes.
 
-        # Verify that the original trace exited with the expected exit code
-        original_code = self._normalize_exit_code(original.process.returncode)  # type: ignore
+        :param original_code: the original trace exit code
+        :param debloated_code: the debloated trace exit code
+        :returns: ``True`` if the exit codes match, ``False`` otherwise
+        """
+        original_code = self._normalize_exit_code(original_code)
+        debloated_code = self._normalize_exit_code(debloated_code)
 
-        if original_code != self._normalize_exit_code(self.expect):
-            return CrashResult(
-                original, f'unexpected exit code: {original.process.returncode}', self
-            )
+        return original_code == debloated_code
+
+    def verify_original_exit_code(self, original_code: int) -> bool:
+        """
+        Verify the process exit code matches the configuration.
+
+        :param original_code: original trace exit code
+        :returns: ``True`` if the exit code matches configuration, ``False`` otherwise
+        """
+        if self.expect is None:
+            return True
+
+        normalized = self._normalize_exit_code(original_code)
+        return normalized == self.expect
+
+
+@register('exit_code')
+class ExitCodeComparator(Comparator):
+    """
+    Process exit code comparator. This comparator accepts the following configuration options:
+
+    .. code-block:: yaml
+
+        - id: exit_code
+          # Expect that the exit code be a specific value. The value can be any of the following:
+          #
+          #   - <int>: The exit code must match this integer value exactly.
+          #   - false: Allow any non-zero exit code which is treated as a failure in Bash
+          #   - true: Only allow an exit code of 0 which is treated as a success in Bash
+          #
+          # This configuration is optional.
+          # expect: 0
+    """
+
+    def __init__(self, config: dict):
+        super().__init__(config)
+        self.comparator = _ExitCodeComparator(config)
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
-        original_code = self._normalize_exit_code(original.process.returncode)  # type: ignore
-        recovered_code = self._normalize_exit_code(debloated.process.returncode)  # type: ignore
+        if not original.process or not debloated.process:
+            # this should not happen
+            raise ValueError('original or debloated process has not executed')  # pragma: no cover
 
-        if original_code != recovered_code:
+        original_code = original.process.returncode
+        debloated_code = debloated.process.returncode
+
+        if not self.comparator.compare_exit_code(original_code, debloated_code):
             return ComparisonResult.error(
                 self,
                 debloated,
-                f'exit codes do not match: {original_code} != {recovered_code}',
+                f'exit codes do not match: {original_code} != {debloated}',
             )
 
         return ComparisonResult.success(self, debloated)
+
+    def verify_original(self, original: Trace) -> Optional[CrashResult]:
+        # Verify that the original trace exited with the expected exit code
+        if not original.process:
+            raise ValueError('original process has not executed')  # pragma: no cover
+
+        exit_code = original.process.returncode
+        if not self.comparator.verify_original_exit_code(exit_code):
+            return CrashResult(original, f'unexpected exit code: {exit_code}', self)
 
 
 class HookScriptComparator(Comparator):
@@ -165,23 +206,27 @@ class HookScriptComparator(Comparator):
           # Controls how the hook script's exit code is validated and compared. Possible values
           # are:
           #
-          #  - true: compare the exit code of the original trace against each debloated trace
-          #  - false: do not compare the exit code
-          #  - <int>: verify that the exit code is the specified value
+          #  - <dict>: :class:`exit code comparator <ExitCodeComparator>` configuration
+          #  - false, null: do not compare the exit code
           #
-          # This is optional with the default being "true" (compare the exit code across traces)
-          exit_code: true
+          # This is optional with the default being enabled with the default exit code comparator
+          # configuration.
+          # exit_code: {}
     """
 
     def __init__(self, hook: str, config: dict):
         """
-        :param hook: the hook, either 'setup' or 'teardown'
+        :param hook: the hook name
         """
         super().__init__(config)
         self.hook = hook
         self.id = f'{hook}_script'
 
-        self.exit_code = config.get('exit_code', True)
+        exit_code_config = config.get('exit_code', {})
+        if isinstance(exit_code_config, dict):
+            self.exit_code = _ExitCodeComparator(exit_code_config)
+        else:
+            self.exit_code = None
 
     def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
         """
@@ -192,12 +237,14 @@ class HookScriptComparator(Comparator):
         raise NotImplementedError()  # pragma: no cover
 
     def verify_original(self, original: Trace) -> Optional[CrashResult]:
-        if isinstance(self.exit_code, bool):
+        if not self.exit_code:
             return
 
         process, _ = self.get_output(original)
-        if process and process.returncode != self.exit_code:
-            return CrashResult(original, f'unexpected exit code: {process.returncode}', self)
+        if process and not self.exit_code.verify_original_exit_code(process.returncode):
+            return CrashResult(
+                original, f'unexpected exit code: {process.returncode}', f'{self.id}[exit_code]'
+            )
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
         original_proc, original_output = self.get_output(original)
@@ -207,9 +254,11 @@ class HookScriptComparator(Comparator):
             # The hook didn't run, nothing to compare
             return ComparisonResult.success(self, debloated)
 
-        if self.exit_code is not False and original_proc.returncode != debloated_proc.returncode:
+        if self.exit_code and not self.exit_code.compare_exit_code(
+            original_proc.returncode, debloated_proc.returncode
+        ):
             return ComparisonResult.error(
-                self,
+                f'{self.id}[exit_code]',
                 debloated,
                 f'{self.hook} hook script exit code does not match: '
                 f'original={original_proc.returncode}, '
@@ -218,7 +267,7 @@ class HookScriptComparator(Comparator):
 
         if original_output.read_bytes() != debloated_output.read_bytes():
             return ComparisonResult.error(
-                self,
+                f'{self.id}[output]',
                 debloated,
                 f'{self.hook} hook script output does not match: original={original_output}, '
                 f'debloated={debloated_output}',
