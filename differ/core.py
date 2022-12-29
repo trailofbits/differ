@@ -127,8 +127,13 @@ class Project:
             'binary': str(trace.binary.readlink()),
         }
         for result in results:
+            if isinstance(result.comparator, Comparator):
+                name = result.comparator.id
+            else:
+                name = result.comparator
+
             doc = {
-                'comparator': result.comparator,
+                'comparator': name,
                 'details': result.details,
                 'status': result.status.value,
             }
@@ -728,16 +733,14 @@ class ComparisonResult:
     status: ComparisonStatus
     #: The comparator that produced the result
     comparator: str
-    #: The debloated binary working directory, containing logs and input files
-    trace_directory: Path
-    #: The concrete variable values used in the trace
-    values: dict
+    #: The debloated trace
+    trace: Trace
     #: Additional details
     details: str = ''
 
     @classmethod
     def error(
-        cls, comparator: 'Comparator', trace: Trace, details: str = ''
+        cls, comparator: Union[str, 'Comparator'], trace: Trace, details: str = ''
     ) -> 'ComparisonResult':
         """
         Create a failed comparison result.
@@ -747,16 +750,15 @@ class ComparisonResult:
         :param details: additional details
         """
         return cls(
-            values=trace.context.values,
-            trace_directory=trace.cwd,
-            comparator=comparator.id,
-            details=details,
             status=ComparisonStatus.error,
+            comparator=comparator.id if isinstance(comparator, Comparator) else str(comparator),
+            trace=trace,
+            details=details,
         )
 
     @classmethod
     def success(
-        cls, comparator: 'Comparator', trace: Trace, details: str = ''
+        cls, comparator: Union[str, 'Comparator'], trace: Trace, details: str = ''
     ) -> 'ComparisonResult':
         """
         Create a successful comparison result.
@@ -766,11 +768,10 @@ class ComparisonResult:
         :param details: additional details
         """
         return cls(
-            values=trace.context.values,
-            trace_directory=trace.cwd,
-            comparator=comparator.id,
-            details=details,
             status=ComparisonStatus.success,
+            comparator=comparator.id if isinstance(comparator, Comparator) else str(comparator),
+            trace=trace,
+            details=details,
         )
 
     def __bool__(self) -> bool:
@@ -791,7 +792,7 @@ class CrashResult:
     trace: Trace
     #: Additional details
     details: str = ''
-    comparator: Optional['Comparator'] = None
+    comparator: Optional[Union['Comparator', str]] = None
 
     def save(self, filename: Path) -> None:
         """
@@ -806,7 +807,11 @@ class CrashResult:
             'arguments': shlex.split(self.trace.context.arguments),
         }
         if self.comparator:
-            body['comparator'] = self.comparator.id
+            body['comparator'] = (
+                self.comparator.id
+                if isinstance(self.comparator, Comparator)
+                else str(self.comparator)
+            )
 
         with open(filename, 'w') as file:
             file.write(yaml.safe_dump(body))

@@ -2,7 +2,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 from differ import executor
-from differ.core import ComparisonStatus
+from differ.core import ComparisonResult, ComparisonStatus
 
 
 class MockComparisonResultError(MagicMock):
@@ -41,6 +41,6 @@ class TestExecutorResults:
         app = executor.Executor(Path('/'))
         errors = app.get_errors(trace, results, None)
         assert len(errors) == 1
-        assert errors[0].comparator == executor.EXECUTOR_COMPARATOR.id
-        assert errors[0].trace_directory is trace.cwd
-        assert errors == results
+        assert errors[0] == ComparisonResult.error(
+            executor.EXECUTOR_COMPARATOR, trace, errors[0].details
+        )

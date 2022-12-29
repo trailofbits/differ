@@ -261,7 +261,7 @@ class FileComparator(Comparator):
             return ComparisonResult.success(self, debloated)
 
         if self.owner and not self.owner.compare_file_owner(original_filename, filename):
-            return ComparisonResult.error(self, debloated, 'unexpected file owner')
+            return ComparisonResult.error(f'{self.id}[owner]', debloated, 'unexpected file owner')
 
         if not self.similarity:
             return ComparisonResult.success(self, debloated)

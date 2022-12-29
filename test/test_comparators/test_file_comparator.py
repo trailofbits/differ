@@ -224,8 +224,7 @@ class TestFileComparator:
 
         ext = files.FileComparator({'filename': 'asdf', 'similarity': 0, 'owner': True})
         result = ext.compare(original, debloated)
-        assert result.status is ComparisonStatus.error
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.error('file[owner]', debloated, result.details)
 
     def test_verify_original_ownership(self):
         original = MagicMock(cwd=MagicMock())

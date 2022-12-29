@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from differ.comparators import primitives
-from differ.core import ComparisonStatus
+from differ.core import ComparisonResult, ComparisonStatus
 
 
 class TestExitCodeComparator:
@@ -69,9 +69,7 @@ class TestExitCodeComparator:
 
         ext = primitives.ExitCodeComparator({})
         result = ext.compare(original, debloated)
-        assert result.status is ComparisonStatus.error
-        assert result.comparator is ext.id
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.error(ext, debloated, result.details)
 
     def test_compare_coerce_error(self):
         original = MagicMock()
@@ -82,6 +80,4 @@ class TestExitCodeComparator:
 
         ext = primitives.ExitCodeComparator({'expect': True})
         result = ext.compare(original, debloated)
-        assert result.status is ComparisonStatus.error
-        assert result.comparator is ext.id
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.error(ext, debloated, result.details)

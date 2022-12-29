@@ -242,7 +242,9 @@ class HookScriptComparator(Comparator):
 
         process, _ = self.get_output(original)
         if process and not self.exit_code.verify_original_exit_code(process.returncode):
-            return CrashResult(original, f'unexpected exit code: {process.returncode}', self)
+            return CrashResult(
+                original, f'unexpected exit code: {process.returncode}', f'{self.id}[exit_code]'
+            )
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
         original_proc, original_output = self.get_output(original)
@@ -256,7 +258,7 @@ class HookScriptComparator(Comparator):
             original_proc.returncode, debloated_proc.returncode
         ):
             return ComparisonResult.error(
-                self,
+                f'{self.id}[exit_code]',
                 debloated,
                 f'{self.hook} hook script exit code does not match: '
                 f'original={original_proc.returncode}, '
@@ -265,7 +267,7 @@ class HookScriptComparator(Comparator):
 
         if original_output.read_bytes() != debloated_output.read_bytes():
             return ComparisonResult.error(
-                self,
+                f'{self.id}[output]',
                 debloated,
                 f'{self.hook} hook script output does not match: original={original_output}, '
                 f'debloated={debloated_output}',
