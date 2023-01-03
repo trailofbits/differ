@@ -1,0 +1,176 @@
+name: coreutils_chown
+link_filename: chown
+original: bin/chown.original
+debloaters:
+  # The CHISEL debloated binary does not work properly so we compare the original against itself
+  original: bin/chown.original
+
+templates:
+  - arguments: "{{env.USER}}:adm file1"
+    setup: |
+      touch file1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner:
+          group: adm
+
+  # nested path
+  - arguments: "{{env.USER}}:adm d1/d1/d1/file"
+    setup: |
+      mkdir -p d1/d1/d1
+      touch d1/d1/d1/file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: d1/d1/d1/file
+        owner:
+          group: adm
+
+  # -R (recursive)
+  - arguments: "-R {{env.USER}}:adm d1"
+    setup: |
+      mkdir -p d1/d1/d1
+      touch d1/d1/d1/file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: d1/d1/d1/file
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1
+        type: directory
+        owner:
+          group: adm
+
+  # -h normal_file (do not dereference symlink)
+  - arguments: "-h {{env.USER}}:adm file1"
+    setup: |
+      touch file1
+      ln -s file1 symfile1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner:
+          group: adm
+      - id: file
+        filename: symfile1
+        owner: true
+
+  # -h symlink (do not dereference symlink)
+  - arguments: "-h {{env.USER}}:adm symfile1"
+    setup: |
+      touch file1
+      ln -s file1 symfile1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner: true
+      - id: file
+        filename: symfile1
+        owner:
+          group: adm
+
+  # symlink
+  - arguments: "{{env.USER}}:adm symfile1"
+    setup: |
+      touch file1
+      ln -s file1 symfile1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner:
+          group: adm
+      - id: file
+        filename: symfile1
+        owner: true
+
+  # no arguments (missing operand)
+  - arguments: ''
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # invalid user
+  - arguments: input1 input2 notexist
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # missing operand
+  - arguments: notexist
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # --help
+  - arguments: '--help'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  # flag with missing operand
+  - argument: '{{arg}} file'
+    variables:
+      arg:
+        type: str
+        values:
+          - "-c"
+          - "-f"
+          - "-v"
+          - "-H"
+          - "-L"
+          - "-P"
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false

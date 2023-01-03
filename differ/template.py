@@ -3,11 +3,21 @@ Jinja2 Environment and template functions. This module provides the ``JINJA_ENVI
 that contains all custom filters that are available to command line arguments and input file
 templates.
 """
+import os
 import shlex
 
 from jinja2 import Environment
 
-JINJA_ENVIRONMENT = Environment(keep_trailing_newline=True)
+#: The Jinja2 Environment will custom filters.
+#:
+#: - :func:`quote_filter` - the ``quote`` filter
+#:
+#: And global variables.
+#:
+#: - ``env`` - :data:`os.environ`
+JINJA_ENVIRONMENT = Environment(
+    keep_trailing_newline=True,
+)
 
 
 def quote_filter(s: str) -> str:
@@ -17,13 +27,13 @@ def quote_filter(s: str) -> str:
 
     .. code-block:: yaml
 
-    - templates:
-      - arguments: '--value {{name | quote}}'
-        variables:
-          name:
-            type: str
-            values:
-              - 'this value contains spaces'
+      - templates:
+        - arguments: '--value {{name | quote}}'
+          variables:
+            name:
+              type: str
+              values:
+                - 'this value contains spaces'
 
     In this example, the generated command line arguments generated would be:
 
@@ -37,7 +47,5 @@ def quote_filter(s: str) -> str:
     return shlex.quote(s)
 
 
-#: The Jinja2 Environment will custom filters.
-#:
-#: - :func:`quote_filter` - the ``quote`` filter
 JINJA_ENVIRONMENT.filters['quote'] = quote_filter
+JINJA_ENVIRONMENT.globals = {'env': dict(os.environ)}

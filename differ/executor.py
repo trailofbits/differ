@@ -5,22 +5,21 @@ import shlex
 import shutil
 import subprocess
 import time
-from itertools import cycle
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from .core import (
     Comparator,
     ComparisonResult,
     ComparisonStatus,
     CrashResult,
-    FuzzVariable,
     InputFile,
     Project,
     Trace,
     TraceContext,
     TraceTemplate,
 )
+from .parameters import CombinationParameterGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -242,37 +241,34 @@ class Executor:
         Run a single trace.
         """
         logger.debug('running trace for context %s: %s', trace.context.id, trace.debloater_engine)
-        hooks = list(trace.context.template.hooks)
 
+        # copy and generate any input files
         self.copy_input_files(trace)
 
-        # Run setup hooks
-        for hook in hooks:
-            hook.setup(trace)
-
+        # create the file used for stdin
         stdin_file = self.create_stdin_file(trace)
-        setup, teardown = self.write_hook_scripts(trace)
+        # generate the setup and teardown scripts, if specified
+        self.write_hook_scripts(trace)
 
         if project.link_filename:
+            # link the binary to the link_filename
             link = trace.cwd / project.link_filename
             link.symlink_to(trace.binary)
             target = f'./{project.link_filename}'
         else:
             target = f'./{trace.binary.name}'
 
+        # link the 'current_trace' directory to the trace cwd so that paths are uniform
         cwd = trace.cwd.parent / 'current_trace'
         if cwd.exists():
             cwd.unlink()
 
         cwd.symlink_to(trace.cwd)
 
-        if setup:
-            # Run the trace setup script
-            logger.debug(
-                'running trace setup for context %s: %s', trace.context.id, trace.debloater_engine
-            )
-            subprocess.run([str(setup)], cwd=str(cwd))
+        # run setup hooks and setup script
+        self._setup_trace(trace, cwd)
 
+        # start the binary
         args = [target] + shlex.split(trace.context.arguments)
         trace.process = subprocess.Popen(
             args,
@@ -282,13 +278,110 @@ class Executor:
             stdin=stdin_file.open('rb'),
         )
 
+        # monitor the process and launch the concurrent script
+        self._monitor_trace(trace, cwd)
+
+        # run the teardown hooks, teardown script, and terminate the concurrent script
+        self._teardown_trace(trace, cwd)
+
+        cwd.unlink()
+
+    def _setup_trace(self, trace: Trace, cwd: Path) -> None:
+        """
+        Run the trace setup hooks and the setup script.
+        """
+        for hook in trace.context.template.hooks:
+            hook.setup(trace)
+
+        if not trace.setup_script_path.exists():
+            return
+
+        # Run the trace setup script
+        logger.debug(
+            'running trace setup for context %s: %s', trace.context.id, trace.debloater_engine
+        )
+        trace.setup_script = subprocess.run(
+            [f'./{trace.setup_script_path.name}'],
+            cwd=str(cwd),
+            stdout=trace.setup_script_output.open('wb'),
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+            env=trace.env(inherit=True),
+        )
+
+    def _teardown_trace(self, trace: Trace, cwd: Path) -> None:
+        """
+        Run the trace teardown hooks, the teardown script, and terminate the concurrent script if
+        it is still running.
+        """
+        # Run teardown hooks
+        for hook in trace.context.template.hooks:
+            hook.teardown(trace)
+
+        if trace.teardown_script_path.exists():
+            # Run the trace teardown script
+            logger.debug(
+                'running trace teardown for context %s: %s',
+                trace.context.id,
+                trace.debloater_engine,
+            )
+            trace.teardown_script = subprocess.run(
+                [f'./{trace.teardown_script_path.name}'],
+                cwd=str(cwd),
+                stdout=trace.teardown_script_output.open('wb'),
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+                env=trace.env(inherit=True),
+            )
+
+        if trace.concurrent_script:
+            # Determine how long we'll wait for the concurrent script to complete. Either the
+            # remaining timeout amount for a minimum for 5 seconds.
+            wait_time = float(trace.context.template.timeout.seconds) - (
+                time.monotonic() - trace.start_time
+            )
+            if wait_time < 5.0:
+                wait_time = 5.0
+            try:
+                trace.concurrent_script.wait(wait_time)
+            except subprocess.TimeoutExpired:
+                logger.error('terminating concurrent script')
+                trace.concurrent_script.terminate()
+                trace.concurrent_script.wait()
+
+    def _monitor_trace(self, trace: Trace, cwd: Path) -> None:
+        """
+        Monitor the trace as it is running and block until it either finishes execution or the
+        trace times out and is terminated by differ.
+        """
+        if not trace.process:
+            raise TypeError('trace process is not active')
+
         running = True
         status = 0
-        end_time = time.monotonic() + trace.context.template.timeout.seconds
-        while running and time.monotonic() < end_time:
-            time.sleep(0.001)  # copied from subprocess.wait
-            pid, status = os.waitpid(trace.process.pid, os.WNOHANG)
-            running = pid != trace.process.pid  # pid will be "0" if the process is still running
+        trace.start_time = time.monotonic()
+        end_time = trace.start_time + float(trace.context.template.timeout.seconds)
+
+        if concurrent := trace.context.template.concurrent:
+            concurrent_delay_time = trace.start_time + concurrent.delay
+        else:
+            concurrent_delay_time = 0.0
+
+        initial_timeout = concurrent_delay_time or end_time
+        if initial_timeout > trace.start_time:
+            running, status = self._wait_process(trace.process, concurrent_delay_time or end_time)
+
+        if running and concurrent_delay_time:
+            trace.concurrent_script = subprocess.Popen(
+                [f'./{trace.concurrent_script_path.name}'],
+                cwd=str(cwd),
+                stdout=trace.concurrent_script_output.open('wb'),
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+                env=trace.env(inherit=True),
+            )
+
+            running, status = self._wait_process(trace.process, end_time)
 
         if running:
             # timeout reached
@@ -305,20 +398,23 @@ class Executor:
         trace.process.returncode = os.waitstatus_to_exitcode(status)
         logger.debug('process exited with code %d', trace.process.returncode)
 
-        # Run teardown hooks
-        for hook in hooks:
-            hook.teardown(trace)
+    def _wait_process(self, process: subprocess.Popen, end_time: float) -> tuple[bool, int]:
+        """
+        Wait for the process to finish executing or until the ``end_time`` is surpassed.
 
-        if teardown:
-            # Run the trace teardown script
-            logger.debug(
-                'running trace teardown for context %s: %s',
-                trace.context.id,
-                trace.debloater_engine,
-            )
-            subprocess.run([str(teardown)], cwd=str(cwd))
+        :param process: the subprocess to wait for
+        :param end_time: the moment in time to wait until
+        :returns: a tuple containing ``(is_still_running, wait_status)``
+        """
+        running = True
+        status = 0
+        while running and time.monotonic() < end_time:
+            time.sleep(0.001)  # copied from subprocess.wait
+            pid, status = os.waitpid(process.pid, os.WNOHANG)
+            # pid will be "0" if the process is still running
+            running = pid != process.pid
 
-        cwd.unlink()
+        return running, status
 
     def compare_trace(
         self, project: Project, original: Trace, debloated: Trace
@@ -409,24 +505,18 @@ class Executor:
         :param template: trace template
         :returns: a list of generated variable values
         """
-        generators = [
-            VariableValueGenerator(template, variable) for variable in template.variables.values()
-        ]
-        names = [item.variable.name for item in generators]
+        generator = CombinationParameterGenerator(template)
         count = 0
-        done = False
         values: list[dict] = []
 
-        while not done:
+        for value_set in generator.generate():
             # Populate a dictionary of the generated values
-            values.append({name: next(generator) for name, generator in zip(names, generators)})
+            values.append(value_set)
             count += 1
             # We are done when every variable has been exhausted or the number of value sets
             # generated is greater than the max_permutations setting.
-            done = (
-                all(generator.exhausted for generator in generators)
-                or count >= self.max_permutations
-            )
+            if count >= self.max_permutations:
+                break
 
         logger.debug('generated %d value sets for template %s', len(values), template.id)
         return values
@@ -505,7 +595,7 @@ class Executor:
 
         return filename
 
-    def write_hook_scripts(self, trace: Trace) -> tuple[Optional[Path], Optional[Path]]:
+    def write_hook_scripts(self, trace: Trace) -> None:
         """
         Generate Bash scripts for trace setup and teardown. If the hook has not body then the item
         within the tuple is ``None``.
@@ -514,12 +604,12 @@ class Executor:
         """
         templates = [
             (trace.context.template.setup_template, trace.setup_script_path),
+            (trace.context.template.concurrent_template, trace.concurrent_script_path),
             (trace.context.template.teardown_template, trace.teardown_script_path),
         ]
-        scripts: list[Optional[Path]] = []
+
         for template, filename in templates:
             if not template:
-                scripts.append(None)
                 continue
 
             with open(filename, 'w') as file:
@@ -527,37 +617,3 @@ class Executor:
                 print(template.render(**trace.context.values), file=file)
 
             os.chmod(filename, 0o755)
-            scripts.append(filename)
-
-        return tuple(scripts)
-
-
-class VariableValueGenerator:
-    """
-    An iterator that produces generated values for a variable. The generated values are cached so
-    that the iterator does not need to be recreated when it has been exhausted. The iterator will
-    produce results forever, callers should check if the iterator has been exhausted using the
-    ``exhausted`` attribute.
-    """
-
-    def __init__(self, template: TraceTemplate, variable: FuzzVariable):
-        self.variable = variable
-        self._iter = variable.generate_values(template)
-        self._current = next(self._iter)
-        self._values = []
-        self.exhausted = False
-
-    def __next__(self) -> Any:
-        value = self._current
-        try:
-            self._current = next(self._iter)
-        except StopIteration:
-            # Iterator has been exhausted, we now produce values from the cache
-            self.exhausted = True
-            self._iter = cycle(self._values)
-            self._current = next(self._iter)
-        else:
-            # Cache the value
-            self._values.append(value)
-
-        return self._current

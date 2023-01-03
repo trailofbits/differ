@@ -55,7 +55,8 @@ class TestFileComparator:
         original = MagicMock()
         original.cache = {'filename_sha1': 'sha1', 'filename_ssdeep': 'ssdeep'}
         debloated = MagicMock()
-        debloated.cwd = Path('/')
+        debloated.cwd = MagicMock()
+        (debloated.cwd / 'filename').exists.return_value = True
         mock_hash_file.return_value = ('sha1', 'ssdeep')
 
         ext = files.FileComparator({'filename': 'filename'})
@@ -71,7 +72,9 @@ class TestFileComparator:
         original = MagicMock()
         original.cache = {'filename_sha1': 'sha1', 'filename_ssdeep': 'ssdeep'}
         debloated = MagicMock()
-        debloated.cwd = Path('/')
+        debloated.cwd = MagicMock()
+        filename = debloated.cwd / 'filename'
+        filename.exists.return_value = True
         mock_hash_file.return_value = ('sha1_2', 'ssdeep_2')
         mock_compare.return_value = 95
 
@@ -88,7 +91,9 @@ class TestFileComparator:
         original = MagicMock()
         original.cache = {'filename_sha1': 'sha1', 'filename_ssdeep': 'ssdeep'}
         debloated = MagicMock()
-        debloated.cwd = Path('/')
+        debloated.cwd = MagicMock()
+        filename = debloated.cwd / 'filename'
+        filename.exists.return_value = True
         mock_hash_file.return_value = ('sha1_2', 'ssdeep_2')
         mock_compare.return_value = 89
 
@@ -190,6 +195,90 @@ class TestFileComparator:
 
         assert ext.compare(original, debloated) == ComparisonResult.success(ext, debloated)
         ext.hash_file.assert_not_called()
+
+    def test_compare_ownership(self):
+        original = MagicMock(cwd=MagicMock())
+        orig_file = original.cwd / 'asdf'
+        orig_file.exists.return_value = True
+        orig_file.lstat.return_value = MagicMock(st_uid=1, st_gid=2)
+
+        debloated = MagicMock(cwd=MagicMock())
+        debloated_file = debloated.cwd / 'asdf'
+        debloated_file.exists.return_value = True
+        debloated_file.lstat.return_value = MagicMock(st_uid=1, st_gid=2)
+
+        ext = files.FileComparator({'filename': 'asdf', 'similarity': 0, 'owner': True})
+        result = ext.compare(original, debloated)
+        assert result.status is ComparisonStatus.success
+
+    def test_compare_ownership_error(self):
+        original = MagicMock(cwd=MagicMock())
+        orig_file = original.cwd / 'asdf'
+        orig_file.exists.return_value = True
+        orig_file.lstat.return_value = MagicMock(st_uid=1, st_gid=2)
+
+        debloated = MagicMock(cwd=MagicMock())
+        debloated_file = debloated.cwd / 'asdf'
+        debloated_file.exists.return_value = True
+        debloated_file.lstat.return_value = MagicMock(st_uid=2, st_gid=3)
+
+        ext = files.FileComparator({'filename': 'asdf', 'similarity': 0, 'owner': True})
+        result = ext.compare(original, debloated)
+        assert result == ComparisonResult.error('file[owner]', debloated, result.details)
+
+    def test_verify_original_ownership(self):
+        original = MagicMock(cwd=MagicMock())
+        orig_file = original.cwd / 'asdf'
+        orig_file.exists.return_value = True
+        orig_file.lstat.return_value = MagicMock(st_uid=1, st_gid=2)
+
+        ext = files.FileComparator(
+            {'filename': 'asdf', 'similarity': 0, 'owner': {'user': 1, 'group': 2}}
+        )
+        result = ext.verify_original(original)
+        assert result is None
+
+    @patch.object(files.pwd, 'getpwnam')
+    @patch.object(files.grp, 'getgrnam')
+    def test_verify_original_ownership_user_error(self, mock_group, mock_user):
+        mock_group.return_value = MagicMock(gr_gid=2)
+        mock_user.return_value = MagicMock(pw_uid=2)
+        original = MagicMock(cwd=MagicMock())
+        orig_file = original.cwd / 'asdf'
+        orig_file.exists.return_value = True
+        orig_file.lstat.return_value = MagicMock(st_uid=1, st_gid=2)
+
+        ext = files.FileComparator(
+            {'filename': 'asdf', 'similarity': 0, 'owner': {'user': 'root', 'group': 'sudo'}}
+        )
+        result = ext.verify_original(original)
+        assert result is not None
+        assert result.comparator is ext
+        assert result.trace is original
+
+        mock_group.assert_called_once_with('sudo')
+        mock_user.assert_called_once_with('root')
+
+    @patch.object(files.pwd, 'getpwnam')
+    @patch.object(files.grp, 'getgrnam')
+    def test_verify_original_ownership_group_error(self, mock_group, mock_user):
+        mock_group.return_value = MagicMock(gr_gid=4)
+        mock_user.return_value = MagicMock(pw_uid=1)
+        original = MagicMock(cwd=MagicMock())
+        orig_file = original.cwd / 'asdf'
+        orig_file.exists.return_value = True
+        orig_file.lstat.return_value = MagicMock(st_uid=1, st_gid=2)
+
+        ext = files.FileComparator(
+            {'filename': 'asdf', 'similarity': 0, 'owner': {'user': 'root', 'group': 'sudo'}}
+        )
+        result = ext.verify_original(original)
+        assert result is not None
+        assert result.comparator is ext
+        assert result.trace is original
+
+        mock_group.assert_called_once_with('sudo')
+        mock_user.assert_called_once_with('root')
 
 
 class TestOctalRef:

@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from differ.comparators import primitives
-from differ.core import ComparisonStatus
+from differ.core import ComparisonResult, ComparisonStatus
 
 
 class StringComparator(primitives.StringComparator):
@@ -20,9 +20,7 @@ class TestStringComparator:
         debloated.read_stdout.return_value = b'asdf'
 
         result = comparator.compare(original, debloated)
-        assert result.status is ComparisonStatus.success
-        assert result.comparator is comparator.id
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.success(comparator, debloated, result.details)
 
     def test_compare_exact_error(self):
         comparator = StringComparator({})
@@ -32,9 +30,7 @@ class TestStringComparator:
         debloated.read_stdout.return_value = b'asdf2'
 
         result = comparator.compare(original, debloated)
-        assert result.status is ComparisonStatus.error
-        assert result.comparator is comparator.id
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.error(comparator, debloated, result.details)
 
     def test_compare_regex(self):
         comparator = StringComparator({'pattern': '^hello, [A-Z][a-z]+$'})
@@ -44,9 +40,7 @@ class TestStringComparator:
         debloated.read_stdout.return_value = b'hello, Bob'
 
         result = comparator.compare(original, debloated)
-        assert result.status is ComparisonStatus.success
-        assert result.comparator is comparator.id
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.success(comparator, debloated, result.details)
 
     def test_compare_regex_error(self):
         comparator = StringComparator({'pattern': '^hello, [A-Z][a-z]+$'})
@@ -56,9 +50,7 @@ class TestStringComparator:
         debloated.read_stdout.return_value = b'hello, X-91b'
 
         result = comparator.compare(original, debloated)
-        assert result.status is ComparisonStatus.error
-        assert result.comparator is comparator.id
-        assert result.trace_directory is debloated.cwd
+        assert result == ComparisonResult.error(comparator, debloated, result.details)
 
     def test_compare_original_exact(self):
         comparator = StringComparator({})

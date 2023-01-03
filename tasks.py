@@ -40,7 +40,7 @@ def unit_tests(c):
 
 @task
 def integration_tests(c):
-    c.run('coverage run --source=differ -m pytest -k "test_project"', **KWARGS)
+    c.run('coverage run --source=differ -m pytest -k "test_integration"', **KWARGS)
     c.run('coverage report -m', **KWARGS)
 
 
@@ -51,7 +51,7 @@ def build_docs(c):
 
 @task
 def spell_check(c):
-    patterns = '"differ/**/*"'  # "docs/source/**/*.rst"'
+    patterns = '"differ/**/*" "docs/source/**/*.rst"'
     c.run(
         f'npx cspell lint --show-suggestions --no-progress README.md project.template.yml {patterns}',
         **KWARGS,

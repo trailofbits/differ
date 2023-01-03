@@ -16,6 +16,8 @@ pyright = "*"
 invoke = "*"
 coverage = "*"
 pytest = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
 
 [requires]
 python_version = "3.9"
