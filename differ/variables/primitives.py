@@ -1,10 +1,9 @@
 import random
+import exrex
 from typing import Iterator, Optional
 
 from ..core import FuzzVariable, TraceTemplate
 from . import register
-
-import exrex
 
 
 @register('int')
