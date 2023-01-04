@@ -28,18 +28,21 @@ def format(c):
 
 @task
 def tests(c):
+    c.run('coverage erase')
     c.run('coverage run --source=differ -m pytest', **KWARGS)
     c.run('coverage report -m', **KWARGS)
 
 
 @task
 def unit_tests(c):
-    c.run('coverage run --source=differ -m pytest -k "not test_project"', **KWARGS)
+    c.run('coverage erase')
+    c.run('coverage run --source=differ -m pytest -k "not test_integration"', **KWARGS)
     c.run('coverage report -m', **KWARGS)
 
 
 @task
 def integration_tests(c):
+    c.run('coverage erase')
     c.run('coverage run --source=differ -m pytest -k "test_integration"', **KWARGS)
     c.run('coverage report -m', **KWARGS)
 

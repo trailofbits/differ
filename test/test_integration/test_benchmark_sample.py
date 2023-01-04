@@ -38,7 +38,7 @@ def pytest_generate_tests(metafunc: Metafunc):
     metafunc.parametrize('project', projects, ids=[project.name for project in projects])
 
 
-def test_project(project: Project):
+def test_benchmark_sample(project: Project):
     app = Executor(REPORT_DIR, overwrite_existing_report=True)
     app.setup()
     error_count = app.run_project(project)
