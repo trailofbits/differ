@@ -269,7 +269,7 @@ class Executor:
         self._setup_trace(trace, cwd)
 
         # start the binary
-        args = [target] + shlex.split(trace.context.arguments)
+        args = [target] + shlex.split(trace.arguments)
         trace.process = subprocess.Popen(
             args,
             cwd=str(cwd),
@@ -467,7 +467,9 @@ class Executor:
         # symlink the binary to the trace directory
         link = cwd / binary.name
         link.symlink_to(binary)
+
         trace = Trace(link, context, cwd, debloater_engine)
+        trace.arguments = context.template.arguments_template.render(trace=trace, **context.values)
 
         return trace
 
@@ -481,21 +483,10 @@ class Executor:
         """
         contexts = []
         for id, values in enumerate(self.generate_parameters(template), start=1):
-            args = self.generate_arguments(template, values)
-            contexts.append(TraceContext(template, args, values, id=f'{template.id}-{id:03}'))
+            contexts.append(TraceContext(template, values, id=f'{template.id}-{id:03}'))
 
         logger.debug('generated %d trace contexts for template %s', len(contexts), template.id)
         return contexts
-
-    def generate_arguments(self, template: TraceTemplate, values: dict) -> str:
-        """
-        Generate the command line arguments using the provided variable values.
-
-        :param template: trace template
-        :param value: variable values
-        :returns: the generated command line arguments
-        """
-        return template.arguments_template.render(**values)
 
     def generate_parameters(self, template: TraceTemplate) -> list[dict]:
         """
@@ -551,7 +542,7 @@ class Executor:
         if not dest.parent.exists():
             dest.parent.mkdir(parents=True)
 
-        content = input_file.template.render(**trace.context.values)
+        content = input_file.template.render(trace=trace, **trace.context.values)
         with open(dest, 'w') as file:
             file.write(content)
 
@@ -590,7 +581,7 @@ class Executor:
         filename = trace.default_stdin_path
         with open(filename, 'wb') as file:
             if template := trace.context.template.stdin_template:
-                content = template.render(**trace.context.values)
+                content = template.render(trace=trace, **trace.context.values)
                 file.write(content.encode())
 
         return filename
@@ -614,6 +605,6 @@ class Executor:
 
             with open(filename, 'w') as file:
                 print('#!/bin/bash', file=file)
-                print(template.render(**trace.context.values), file=file)
+                print(template.render(trace=trace, **trace.context.values), file=file)
 
             os.chmod(filename, 0o755)

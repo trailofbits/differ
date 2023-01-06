@@ -14,9 +14,13 @@ class TestExecutorHookScripts:
         app = executor.Executor(Path('/'))
         app.write_hook_scripts(trace)
 
-        trace.context.template.setup_template.render.assert_called_once_with(**values)
-        trace.context.template.teardown_template.render.assert_called_once_with(**values)
-        trace.context.template.concurrent_template.render.assert_called_once_with(**values)
+        trace.context.template.setup_template.render.assert_called_once_with(trace=trace, **values)
+        trace.context.template.teardown_template.render.assert_called_once_with(
+            trace=trace, **values
+        )
+        trace.context.template.concurrent_template.render.assert_called_once_with(
+            trace=trace, **values
+        )
         assert mock_file.call_args_list == [
             call(trace.setup_script_path, 'w'),
             call(trace.concurrent_script_path, 'w'),

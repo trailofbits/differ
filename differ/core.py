@@ -117,7 +117,7 @@ class Project:
             args = trace.process.args[1:]  # type: ignore
         else:
             # The process did not execute. This should not happen and is here as a fallback
-            args = shlex.split(trace.context.arguments)
+            args = shlex.split(trace.arguments)
 
         body = {
             'values': trace.context.values,
@@ -531,8 +531,6 @@ class TraceContext:
 
     #: Origin trace template
     template: TraceTemplate
-    #: Populate command line arguments based on variable values
-    arguments: str = ''
     #: Concrete variable values
     values: dict[str, Any] = field(default_factory=dict)
     #: Unique context id which is auto generated if not specified
@@ -558,6 +556,8 @@ class Trace:
     cwd: Path
     #: The debloater engine used on the binary
     debloater_engine: str
+    #: The command line arguments
+    arguments: str = ''
     #: The subprocess
     process: Optional[subprocess.Popen] = None
     #: Process status, populated after the process exits. See :func:`os.waitpid`.
@@ -804,7 +804,7 @@ class CrashResult:
             'values': self.trace.context.values,
             'trace_directory': str(self.trace.cwd),
             'details': self.details,
-            'arguments': shlex.split(self.trace.context.arguments),
+            'arguments': shlex.split(self.trace.arguments),
         }
         if self.comparator:
             body['comparator'] = (

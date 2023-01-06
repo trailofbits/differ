@@ -36,7 +36,7 @@ class TestExecutorInputFiles:
         app.generate_input_file(trace, ifile)
 
         ifile.get_destination.assert_called_once_with(trace.cwd)
-        ifile.template.render.assert_called_once_with(**trace.context.values)
+        ifile.template.render.assert_called_once_with(trace=trace, **trace.context.values)
         mock_file.assert_called_once_with(dest, 'w')
         mock_file().write.assert_called_once_with(content)
         app.set_input_file_mode.assert_called_once_with(ifile, dest)
@@ -55,7 +55,7 @@ class TestExecutorInputFiles:
         app.generate_input_file(trace, ifile)
 
         ifile.get_destination.assert_called_once_with(trace.cwd)
-        ifile.template.render.assert_called_once_with(**trace.context.values)
+        ifile.template.render.assert_called_once_with(trace=trace, **trace.context.values)
         mock_file.assert_called_once_with(dest, 'w')
         mock_file().write.assert_called_once_with(content)
         app.set_input_file_mode.assert_called_once_with(ifile, dest)

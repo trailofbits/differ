@@ -34,7 +34,7 @@ class TestExecutorTraceStdin:
 
         mock_file.assert_called_once_with(trace.default_stdin_path, 'wb')
         mock_file().write.assert_called_once_with(template.render.return_value.encode.return_value)
-        template.render.assert_called_once_with(**trace.context.values)
+        template.render.assert_called_once_with(trace=trace, **trace.context.values)
 
     @patch.object(executor, 'open', new_callable=mock_open)
     def test_create_stdin_file_empty_str(self, mock_file):
