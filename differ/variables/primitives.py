@@ -81,7 +81,7 @@ class StringVariable(FuzzVariable):
 
     def __init__(self, name: str, config: dict):
         super().__init__(name, config)
-        self.values: list[int] = config.get('values') or []
+        self.values: list[str] = config.get('values') or []
         if regex := config.get('regex'):
             self.pattern = regex['pattern']
             self.count = regex.get('count', self.DEFAULT_SAMPLE_COUNT)
