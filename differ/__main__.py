@@ -1,6 +1,5 @@
-if __name__ == '__main__':
+def main() -> int:
     import argparse
-    import sys
     from pathlib import Path
 
     from .core import Project
@@ -45,4 +44,11 @@ if __name__ == '__main__':
     project = Project.load(app.root, args.project_filename)
     error_count = app.run_project(project)
 
-    sys.exit(error_count)
+    return error_count
+
+
+if __name__ == '__main__':  # pragma: no cover
+    import sys
+
+    rc = main()
+    sys.exit(rc)

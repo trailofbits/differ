@@ -41,6 +41,26 @@ class TestExecutorInputFiles:
         mock_file().write.assert_called_once_with(content)
         app.set_input_file_mode.assert_called_once_with(ifile, dest)
 
+    @patch.object(executor, 'open', new_callable=mock_open)
+    def test_generate_input_file_mkdir(self, mock_file):
+        ifile = MagicMock()
+        trace = MagicMock()
+        trace.context.values = {'x': 1}
+        dest = ifile.get_destination.return_value = MagicMock()
+        dest.parent.exists.return_value = False
+
+        content = ifile.template.render.return_value
+        app = executor.Executor(Path('/'))
+        app.set_input_file_mode = MagicMock()
+        app.generate_input_file(trace, ifile)
+
+        ifile.get_destination.assert_called_once_with(trace.cwd)
+        ifile.template.render.assert_called_once_with(**trace.context.values)
+        mock_file.assert_called_once_with(dest, 'w')
+        mock_file().write.assert_called_once_with(content)
+        app.set_input_file_mode.assert_called_once_with(ifile, dest)
+        dest.parent.mkdir.assert_called_once_with(parents=True)
+
     @patch.object(executor.shutil, 'copy')
     def test_copy_input_files(self, mock_copy):
         trace = MagicMock()

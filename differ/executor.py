@@ -32,10 +32,10 @@ class ExecutorComparator(Comparator):
     id: str = '__executor__'
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
-        return ComparisonResult.success(self, debloated)
+        return ComparisonResult.success(self, debloated)  # pragma: no cover
 
     def verify_original(self, original: Trace) -> Optional[CrashResult]:
-        pass
+        pass    # pragma: no cover
 
 
 #: Singleton for the executor comparator
