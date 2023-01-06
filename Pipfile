@@ -8,6 +8,7 @@ pyyaml = "*"
 jinja2 = "*"
 exrex = "*"
 ssdeep = "*"
+pytest = "*"
 
 [dev-packages]
 blue = "*"
