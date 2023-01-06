@@ -1,13 +1,13 @@
 from differ.core import TraceTemplate
 from differ.parameters import CombinationParameterGenerator
-from differ.variables.primitives import IntVariable, StubStringVariable
+from differ.variables.primitives import IntVariable, StringVariable
 
 
 class TestCombinationParameterGenerator:
     def test_combination(self):
         template = TraceTemplate(
             variables={
-                'color': StubStringVariable('color', {'values': ['red', 'blue', 'green']}),
+                'color': StringVariable('color', {'values': ['red', 'blue', 'green']}),
                 'saturation': IntVariable('saturation', {'values': [0, 50, 100]}),
                 'factor': IntVariable('factor', {'values': [1, 2]}),
             }
