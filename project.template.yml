@@ -75,6 +75,12 @@ templates:
     # then any crashes or comparison failures are treated as successful (default: true).
     # expect_success: true
 
+    # Expect that the trace will exit because of a specific signal. When this configuration is not
+    # specified, then all signals are treated as crashes. A use case for this configuration is when
+    # testing a server that is terminated via a signal. This accepts either the signal number or
+    # the signal name (SIGINT, SIGTERM, etc.).
+    # expect_signal: SIGINT
+
     # Bash script to execute prior to launching each trace. The body is a Jinja2 template
     # and can reference template variables. The script is run from the trace directory and differ
     # blocks until the script completes. The setup commands are run after input files are

@@ -14,8 +14,7 @@ class TestExecutorRunTrace:
         trace_cwd = MagicMock()
         link_cwd = trace_cwd.parent / 'current_trace'
         link_cwd.exists.return_value = True
-        trace = MagicMock(cwd=trace_cwd)
-        trace.context.arguments = 'hello world'
+        trace = MagicMock(cwd=trace_cwd, arguments='hello world')
 
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
@@ -53,8 +52,7 @@ class TestExecutorRunTrace:
         link_cwd = trace_cwd.parent / 'current_trace'
         link_cwd.exists.return_value = False
         link_filename = trace_cwd / 'my_binary'
-        trace = MagicMock(cwd=trace_cwd)
-        trace.context.arguments = 'hello world'
+        trace = MagicMock(cwd=trace_cwd, arguments='hello world')
 
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
