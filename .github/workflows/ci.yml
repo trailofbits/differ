@@ -28,6 +28,7 @@ jobs:
           # Python virtual env management
           pipx install pipenv
           npm install -g cspell
+          sudo apt-get update
           sudo apt-get install -y libfuzzy-dev
 
       - name: 'Init Python'
@@ -56,6 +57,7 @@ jobs:
         run: |
           # Python virtual env management
           pipx install pipenv
+          sudo apt-get update
           sudo apt-get install -y libfuzzy-dev
 
       - name: 'Init Python'

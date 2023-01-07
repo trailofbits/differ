@@ -1,6 +1,8 @@
 import random
 from typing import Iterator, Optional
 
+import exrex
+
 from ..core import FuzzVariable, TraceTemplate
 from . import register
 
@@ -55,12 +57,43 @@ class IntVariable(FuzzVariable):
 
 
 @register('str')
-class StubStringVariable(FuzzVariable):
-    # TODO: this is a stub, remove this when ready to merge the full string variable
+class StringVariable(FuzzVariable):
+    """
+    A string fuzzing variable. This accepts the following configuration options:
 
-    def __init__(self, name, config):
+    .. code-block:: yaml
+
+        - type: str
+          # There are two methods of specifying fuzzing inputs. They can be used together.
+          # A specific list of strings that must be used:
+          values:
+            - 'hello world'
+
+          # A regex pattern to create semi-random/random strings
+          regex:
+            # The regex pattern
+            pattern: 'hello [a-zA-Z0-9]{1,10}'
+            # The sample size (default: 5)
+            size: 3
+    """
+
+    DEFAULT_SAMPLE_COUNT = 5
+
+    def __init__(self, name: str, config: dict):
         super().__init__(name, config)
-        self.values = config['values']
+        self.values: list[str] = config.get('values') or []
+        if regex := config.get('regex'):
+            self.pattern = regex['pattern']
+            self.count = regex.get('count', self.DEFAULT_SAMPLE_COUNT)
+        else:
+            self.pattern = None
+            self.count = 0
 
-    def generate_values(self, template: TraceTemplate) -> Iterator:
-        return iter(self.values)
+    def generate_values(self, template: TraceTemplate) -> Iterator[str]:
+        if self.values:
+            yield from self.values
+        if self.pattern:
+            yield from [self.generate_string(self.pattern) for _ in range(self.count)]
+
+    def generate_string(self, regex: str) -> str:
+        return exrex.getone(regex)
