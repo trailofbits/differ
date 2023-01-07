@@ -1,0 +1,32 @@
+name: bftpd
+link_filename: bftpd
+original: bin/bftpd.original
+debloaters:
+  original: bin/bftpd.original
+
+templates:
+  - arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+
+      - source: serve
+        static: true
+
+    concurrent:
+      run: |
+        curl -O --retry 5 --retry-connrefused -u ftp: ftp://127.0.0.1:8021/myfile.txt 2> /dev/null || true
+        kill -SIGINT $DIFFER_TRACE_PID
+        while ps -p $DIFFER_TRACE_PID > /dev/null; do sleep 0.2; done
+        cmp myfile.txt serve/myfile.txt
+
+    expect_signal: SIGINT
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: myfile.txt
