@@ -13,6 +13,7 @@ pytest = "*"
 [dev-packages]
 blue = "*"
 isort = "*"
+flake8 = "*"
 pyright = "*"
 invoke = "*"
 coverage = "*"
