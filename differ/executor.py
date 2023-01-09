@@ -22,8 +22,30 @@ from .core import (
     TraceTemplate,
 )
 from .parameters import CombinationParameterGenerator
+from .template import JINJA_ENVIRONMENT
 
 logger = logging.getLogger(__name__)
+
+SCRIPT_RETRY_TEMPLATE = JINJA_ENVIRONMENT.from_string(
+    """
+cycle=0
+while [ $cycle -lt {{retries}} ];
+do
+  if [ ! {{script}} ];
+  then
+    # the script was successful, exit
+    exit 0
+  fi
+
+  # The script failed, sleep and retry
+  sleep {{delay}}
+  ((cycle++))
+done
+
+# One final attempt, keeping the exit code from the script
+{{script}}
+"""
+)
 
 
 class ExecutorComparator(Comparator):
@@ -128,7 +150,7 @@ class Executor:
         """
         Run a trace context against the original binary and each debloated binary.
         """
-        logger.debug('running trace context: %s', context.id)
+        logger.debug('running trace context: %s', context)
         context_dir = project.context_directory(context)
         if context_dir.exists():
             raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), str(context_dir))
@@ -254,7 +276,7 @@ class Executor:
         """
         Run a single trace.
         """
-        logger.debug('running trace for context %s: %s', trace.context.id, trace.debloater_engine)
+        logger.debug('running trace: %s', trace)
 
         # copy and generate any input files
         self.copy_input_files(trace)
@@ -311,9 +333,7 @@ class Executor:
             return
 
         # Run the trace setup script
-        logger.debug(
-            'running trace setup for context %s: %s', trace.context.id, trace.debloater_engine
-        )
+        logger.debug('running trace setup %s', trace)
         trace.setup_script = subprocess.run(
             [f'./{trace.setup_script_path.name}'],
             cwd=str(cwd),
@@ -334,11 +354,7 @@ class Executor:
 
         if trace.teardown_script_path.exists():
             # Run the trace teardown script
-            logger.debug(
-                'running trace teardown for context %s: %s',
-                trace.context.id,
-                trace.debloater_engine,
-            )
+            logger.debug('running trace teardown %s: %s', trace)
             trace.teardown_script = subprocess.run(
                 [f'./{trace.teardown_script_path.name}'],
                 cwd=str(cwd),
@@ -359,7 +375,7 @@ class Executor:
             try:
                 trace.concurrent_script.wait(wait_time)
             except subprocess.TimeoutExpired:
-                logger.error('terminating concurrent script')
+                logger.error('terminating trace concurrent script: %s', trace)
                 trace.concurrent_script.terminate()
                 trace.concurrent_script.wait()
 
@@ -398,18 +414,14 @@ class Executor:
 
         if running:
             # timeout reached
-            logger.warning(
-                'process reached timeout; terminating: %s: %s',
-                trace.context.id,
-                trace.debloater_engine,
-            )
+            logger.warning('process reached timeout; terminating: %s', trace)
             trace.process.terminate()
             _, status = os.waitpid(trace.process.pid, 0)
             trace.timed_out = True
 
         trace.process_status = status
         trace.process.returncode = os.waitstatus_to_exitcode(status)
-        logger.debug('process exited with code %d', trace.process.returncode)
+        logger.debug('process exited with code %s: %d', trace, trace.process.returncode)
 
     def _wait_process(self, process: subprocess.Popen, end_time: float) -> tuple[bool, int]:
         """
@@ -473,9 +485,7 @@ class Executor:
         client_running, client_status = self._wait_process(trace.concurrent_script, end_time)
 
         if not client_running:
-            logger.debug(
-                'client has completed for trace: %s[%s]', trace.context.id, trace.debloater_engine
-            )
+            logger.debug('client has completed for trace: %s', trace)
             # In client mode, the trace process is terminated when the concurrent script completes.
             # Set the concurrent script exit code
             trace.concurrent_script.returncode = os.waitstatus_to_exitcode(client_status)
@@ -485,11 +495,7 @@ class Executor:
             running, status = self._wait_process(trace.process, delay_end_time)
 
             if running:
-                logger.debug(
-                    'terminating trace with SIGINT: %s[%s]',
-                    trace.context.id,
-                    trace.debloater_engine,
-                )
+                logger.debug('terminating trace with SIGINT: %s', trace)
                 # The trace is still running, now we terminate it
                 trace.process.send_signal(signal.SIGINT.value)
                 # Allow the process 5 seconds to cleanly exit
@@ -514,14 +520,15 @@ class Executor:
         """
         comparators = original.context.template.comparators
         results = []
-        logger.debug(
-            'comparing results for trace context %s: %s',
-            original.context.id,
-            debloated.debloater_engine,
-        )
+        logger.debug('comparing results for trace %s', debloated)
         for comparator in comparators:
             result = comparator.compare(original, debloated)
-            logger.debug('comparator %s result: %s', comparator.id, result.status.value)
+            logger.debug(
+                'comparator %s result for trace %s: %s',
+                comparator.id,
+                debloated,
+                result.status.value,
+            )
 
             results.append(result)
 
@@ -540,9 +547,7 @@ class Executor:
         :param debloater_engine: debloater engine name
         :returns: the created trace object
         """
-        logger.debug(
-            'creating trace for context %s: %s (%s)', context.id, binary, debloater_engine
-        )
+        logger.debug('creating trace %s[%s]: %s', context.id, debloater_engine, binary)
         cwd = project.trace_directory(context, debloater_engine)
         if cwd.exists():
             raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), str(cwd))
@@ -570,7 +575,7 @@ class Executor:
         for id, values in enumerate(self.generate_parameters(template), start=1):
             contexts.append(TraceContext(template, values, id=f'{template.id}-{id:03}'))
 
-        logger.debug('generated %d trace contexts for template %s', len(contexts), template.id)
+        logger.debug('generated %d trace contexts for template %s', len(contexts), template)
         return contexts
 
     def generate_parameters(self, template: TraceTemplate) -> list[dict]:
@@ -594,7 +599,7 @@ class Executor:
             if count >= self.max_permutations:
                 break
 
-        logger.debug('generated %d value sets for template %s', len(values), template.id)
+        logger.debug('generated %d value sets for template %s', len(values), template)
         return values
 
     def copy_input_files(self, trace: Trace) -> None:
@@ -620,9 +625,7 @@ class Executor:
         """
         Render an input file with the trace context variable values.
         """
-        logger.debug(
-            'generating input file for trace %s: %s', trace.debloater_engine, input_file.source
-        )
+        logger.debug('generating input file for trace %s: %s', trace, input_file.source)
         dest = input_file.get_destination(trace.cwd)
         if not dest.parent.exists():
             dest.parent.mkdir(parents=True)
@@ -679,17 +682,44 @@ class Executor:
         :returns: a tuple containing the paths to the ``setup`` and ``teardown`` scripts to execute
         """
         templates = [
-            (trace.context.template.setup_template, trace.setup_script_path),
-            (trace.context.template.concurrent_template, trace.concurrent_script_path),
-            (trace.context.template.teardown_template, trace.teardown_script_path),
+            (trace.context.template.setup_template, trace.setup_script_path, trace.context.values),
+            (
+                trace.context.template.teardown_template,
+                trace.teardown_script_path,
+                trace.context.values,
+            ),
         ]
 
-        for template, filename in templates:
+        # The concurrent script may be called multiple times if the concurrent.retries setting is
+        # enabled. When enabled, we generate the concurrent script to a separate bash file that is
+        # called repeatedly by the concurrent script.
+        concurrent_body_path = trace.concurrent_script_path
+        concurrent = trace.context.template.concurrent
+        if concurrent and concurrent.retries:
+            # we need to retry the concurrent script. Write the concurrent script to a different
+            # file that the main script will run multiple times.
+            concurrent_body_path = concurrent_body_path.with_suffix('.body.sh')
+            kwargs = {
+                'retries': concurrent.retries,
+                'script': f'./{concurrent_body_path.name}',
+                'delay': concurrent.delay,
+            }
+            templates.append((SCRIPT_RETRY_TEMPLATE, trace.concurrent_script_path, kwargs))
+
+        templates.append(
+            (
+                trace.context.template.concurrent_template,
+                concurrent_body_path,
+                trace.context.values,
+            )
+        )
+
+        for template, filename, values in templates:
             if not template:
                 continue
 
             with open(filename, 'w') as file:
                 print('#!/bin/bash', file=file)
-                print(template.render(trace=trace, **trace.context.values), file=file)
+                print(template.render(trace=trace, **values), file=file)
 
             os.chmod(filename, 0o755)
