@@ -1,4 +1,5 @@
 import os
+import signal
 import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
@@ -6,6 +7,7 @@ from unittest.mock import MagicMock, call, patch
 import pytest
 
 from differ import executor
+from differ.core import ConcurrentHookMode
 
 
 class TestExecutorRunTrace:
@@ -206,14 +208,12 @@ class TestExecutorRunTrace:
         trace.context.template.timeout.seconds = 5
 
         app = executor.Executor(Path('/'))
-        app._wait_process = MagicMock(side_effect=[(True, 0), (False, 100)])
-
+        app._wait_process = MagicMock(return_value=(True, 0))
+        app._monitor_concurrent_mode = MagicMock(return_value=(False, 100))
         app._monitor_trace(trace, cwd)
 
-        assert app._wait_process.call_args_list == [
-            call(trace.process, 12),  # 10 + 5
-            call(trace.process, 15),
-        ]
+        app._monitor_concurrent_mode.assert_called_once_with(trace, 15)
+        app._wait_process.assert_called_once_with(trace.process, 12)
         assert trace.process_status == 100
         assert trace.process.returncode == mock_exitcode.return_value
         mock_exitcode.assert_called_once_with(100)
@@ -256,7 +256,7 @@ class TestExecutorRunTrace:
     def test_monitor_trace_not_running(self):
         trace = MagicMock(process=None)
         app = executor.Executor(Path('/'))
-        with pytest.raises(TypeError):
+        with pytest.raises(AssertionError):
             app._monitor_trace(trace, MagicMock())
 
     @patch.object(executor.time, 'monotonic')
@@ -293,3 +293,82 @@ class TestExecutorRunTrace:
             call(proc.pid, os.WNOHANG),
         ]
         assert mock_sleep.call_args_list == [call(0.001), call(0.001), call(0.001)]
+
+    def test_monitor_concurrent_mode_no_action(self):
+        trace = MagicMock()
+        trace.context.template.concurrent = MagicMock(mode=None)
+
+        app = executor.Executor(Path('/'))
+        app._wait_process = MagicMock()
+        assert app._monitor_concurrent_mode(trace, 10.0) is app._wait_process.return_value
+        app._wait_process.assert_called_once_with(trace.process, 10.0)
+
+    def test_monitor_concurrent_mode_client(self):
+        trace = MagicMock()
+        trace.context.template.concurrent = MagicMock(mode=ConcurrentHookMode.client)
+
+        app = executor.Executor(Path('/'))
+        app._monitor_concurrent_client = MagicMock()
+        assert (
+            app._monitor_concurrent_mode(trace, 10.0)
+            is app._monitor_concurrent_client.return_value
+        )
+        app._monitor_concurrent_client.assert_called_once_with(trace, 10.0)
+
+    def test_monitor_concurrent_mode_unknown(self):
+        trace = MagicMock()
+        trace.context.template.concurrent = MagicMock(mode=MagicMock())
+
+        app = executor.Executor(Path('/'))
+        app._monitor_concurrent_client = MagicMock()
+        app._wait_process = MagicMock()
+
+        with pytest.raises(TypeError):
+            app._monitor_concurrent_mode(trace, 10.0)
+
+    @patch.object(executor.time, 'monotonic')
+    def test_monitor_concurrent_client(self, mock_time):
+        mock_time.return_value = 20.0
+        trace = MagicMock()
+        trace.concurrent_script.returncode = None
+        trace.context.template.concurrent.delay = 1.0
+
+        app = executor.Executor(Path('/'))
+        app._wait_process = MagicMock(side_effect=[(False, 100), (False, 200)])
+        assert app._monitor_concurrent_client(trace, 10.0) == (False, 200)
+        assert app._wait_process.call_args_list == [
+            call(trace.concurrent_script, 10.0),
+            call(trace.process, 20.0 + 1.0),
+        ]
+
+    @patch.object(executor.time, 'monotonic')
+    def test_monitor_concurrent_client_terminate_trace(self, mock_time):
+        mock_time.side_effect = [20.0, 30.0]
+        trace = MagicMock()
+        trace.concurrent_script.returncode = None
+        trace.context.template.concurrent.delay = 1.0
+
+        app = executor.Executor(Path('/'))
+        app._wait_process = MagicMock(side_effect=[(False, 100), (True, 0), (False, 200)])
+        assert app._monitor_concurrent_client(trace, 10.0) == (False, 200)
+        assert app._wait_process.call_args_list == [
+            call(trace.concurrent_script, 10.0),
+            call(trace.process, 20.0 + 1.0),
+            call(trace.process, 30.0 + 5.0),
+        ]
+        trace.process.send_signal.assert_called_once_with(signal.SIGINT.value)
+
+    @patch.object(executor.time, 'monotonic')
+    def test_monitor_concurrent_client_time_out(self, mock_time):
+        mock_time.return_value = 20.0
+        trace = MagicMock()
+        trace.concurrent_script.returncode = None
+        trace.context.template.concurrent.delay = 1.0
+
+        app = executor.Executor(Path('/'))
+        app._wait_process = MagicMock(side_effect=[(True, 0), (True, 10)])
+        assert app._monitor_concurrent_client(trace, 10.0) == (True, 10)
+        assert app._wait_process.call_args_list == [
+            call(trace.concurrent_script, 10.0),
+            call(trace.process, 20.0 + 1.0),
+        ]

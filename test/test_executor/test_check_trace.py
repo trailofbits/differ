@@ -1,7 +1,9 @@
+import signal
 from pathlib import Path
 from unittest.mock import MagicMock
 
 from differ import executor
+from differ.core import ConcurrentHookMode
 
 
 class TestExecutorCheckTrace:
@@ -105,6 +107,26 @@ class TestExecutorCheckTrace:
         trace.timed_out = True
         trace.context.template.timeout.expected = True
         trace.crash_result = object()
+
+        app = executor.Executor(Path('/'))
+        assert app.check_trace_crash(trace) is None
+
+    def test_check_trace_crash_concurrent_client(self):
+        trace = MagicMock(timed_out=False)
+        trace.context.template.timeout.expected = False
+        trace.crash_result = MagicMock()
+        trace.crash_signal = signal.SIGINT
+        trace.context.template.concurrent.mode = ConcurrentHookMode.client
+
+        app = executor.Executor(Path('/'))
+        assert app.check_trace_crash(trace) is None
+
+    def test_check_trace_crash_expected_signal(self):
+        trace = MagicMock(timed_out=False)
+        trace.context.template.timeout.expected = False
+        trace.crash_result = MagicMock()
+        trace.crash_signal = signal.SIGTERM
+        trace.context.template.expect_signal = signal.SIGTERM.value
 
         app = executor.Executor(Path('/'))
         assert app.check_trace_crash(trace) is None

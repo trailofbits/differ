@@ -320,6 +320,16 @@ class TimeoutConstraint:
         return cls(**body)
 
 
+class ConcurrentHookMode(Enum):
+    client = 'client'
+
+    @classmethod
+    def parse(cls, val: Optional[str]) -> Optional['ConcurrentHookMode']:
+        if not val:
+            return None
+        return cls(val)
+
+
 @dataclass
 class ConcurrentHook:
     """
@@ -330,12 +340,16 @@ class ConcurrentHook:
     run: str
     #: The delay time, in seconds, prior to launching the concurrent process
     delay: float = 1.0
+    #: The connect script mode
+    mode: Optional[ConcurrentHookMode] = None
 
     @classmethod
     def load_dict(cls, body: Union[str, dict]) -> 'ConcurrentHook':
         if isinstance(body, str):
             return cls(body)
-        return cls(body['run'], float(body.get('delay', 1.0)))
+        return cls(
+            body['run'], float(body.get('delay', 1.0)), ConcurrentHookMode.parse(body.get('mode'))
+        )
 
 
 @dataclass

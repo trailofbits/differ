@@ -149,6 +149,17 @@ templates:
     #   # commands in the "run" body. This is optional (default: 1.0)
     #   #
     #   # delay: 1.0
+    #
+    #   # The concurrent script execution mode. This controls how DIFFER runs the concurrent script
+    #   # and when the trace is considered completed. By default, no mode is set and the trace
+    #   # execution proceeds as normal. Available options are:
+    #   #
+    #   # 'client': The concurrent script is a client that interacts with the trace binary being
+    #   # tested. In this mode, the trace is terminated after the concurrent script completes. use
+    #   # the client mode when testing a network server that will run forever but should be stopped
+    #   # after one or more requests that are issued by the concurrent script.
+    #   #
+    #   # mode: client
 
     # Controls whether each hook script will exit immediately if a command exits with a non-zero
     # status (the Bash "set -e" option). This configuration affects the setup, concurrent, and

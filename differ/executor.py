@@ -3,6 +3,7 @@ import logging
 import os
 import shlex
 import shutil
+import signal
 import subprocess
 import time
 from pathlib import Path
@@ -12,6 +13,7 @@ from .core import (
     Comparator,
     ComparisonResult,
     ComparisonStatus,
+    ConcurrentHookMode,
     CrashResult,
     InputFile,
     Project,
@@ -222,19 +224,31 @@ class Executor:
         """
         Check if the trash crashed and return a ``CrashResult`` if it did.
         """
+        # Check if we timed out in an expected way
         if trace.timed_out and not trace.context.template.timeout.expected:
             return CrashResult(trace, 'Process was terminated because of an unexpected timeout')
 
+        # Check if we expected to time out but didn't
         if not trace.timed_out and trace.context.template.timeout.expected:
             return CrashResult(trace, 'Process was expected to time out but exited early')
 
         crash = trace.crash_result
-        if crash and not trace.timed_out:
-            # An expected timeout will have a signal of SIGTERM because we had to terminate the
-            # process. So, we only return a crash result on a signal if the process didn't timeout.
-            return crash
+        if not crash or trace.timed_out:
+            # The trace didn't crash or it timed out expectedly
+            return None
 
-        return None
+        crash_signal = trace.crash_signal
+
+        # Check if we crash in an expected way
+        if crash_signal and trace.context.template.expect_signal == crash_signal.value:
+            return None
+
+        if concurrent := trace.context.template.concurrent:
+            if concurrent.mode is ConcurrentHookMode.client and crash_signal is signal.SIGINT:
+                # Check if the the concurrent client sent SIGINT to the trace
+                return None
+
+        return crash
 
     def run_trace(self, project: Project, trace: Trace) -> None:
         """
@@ -354,8 +368,7 @@ class Executor:
         Monitor the trace as it is running and block until it either finishes execution or the
         trace times out and is terminated by differ.
         """
-        if not trace.process:
-            raise TypeError('trace process is not active')
+        assert trace.process, 'trace process is not active'
 
         running = True
         status = 0
@@ -381,7 +394,7 @@ class Executor:
                 env=trace.env(inherit=True),
             )
 
-            running, status = self._wait_process(trace.process, end_time)
+            running, status = self._monitor_concurrent_mode(trace, end_time)
 
         if running:
             # timeout reached
@@ -415,6 +428,78 @@ class Executor:
             running = pid != process.pid
 
         return running, status
+
+    def _monitor_concurrent_mode(self, trace: Trace, end_time: float) -> tuple[bool, int]:
+        """
+        Monitor the trace honoring the concurrent script mode. The return value of this method is
+        the same as :meth:`_wait_process`.
+
+        :param trace: the trace to monitor
+        :param end_time: the moment in time to wait until
+        :returns: a tuple containing ``(is_still_running, wait_status)``
+        """
+        config = trace.context.template.concurrent
+
+        assert config, 'no concurrent script configuration set'  # pragma: no cover
+
+        if not config.mode:
+            assert trace.process  # pragma: no cover
+            # no mode, wait for the trace to complete
+            return self._wait_process(trace.process, end_time)
+
+        if config.mode is ConcurrentHookMode.client:
+            # client mode: wait for the concurrent script to complete
+            return self._monitor_concurrent_client(trace, end_time)
+
+        raise TypeError(f'unsupported concurrent script mode: {config.mode.name}')
+
+    def _monitor_concurrent_client(self, trace: Trace, end_time: float) -> tuple[bool, int]:
+        """
+        Monitor the trace client. The return value of this method is the same as
+        :meth:`_wait_process`.
+
+        :param trace: the trace to monitor
+        :param end_time: the moment in time to wait until
+        :returns: a tuple containing ``(is_still_running, wait_status)``
+        """
+        config = trace.context.template.concurrent
+
+        assert config, 'No concurrent configuration set'  # pragma: no cover
+        assert trace.concurrent_script, 'Concurrent script is not running'  # pragma: no cover
+        assert trace.process, 'Trace is not running'  # pragma: no cover
+
+        # In client mode, we wait for the concurrent script to complete instead of the trace
+        # process.
+        client_running, client_status = self._wait_process(trace.concurrent_script, end_time)
+
+        if not client_running:
+            logger.debug(
+                'client has completed for trace: %s[%s]', trace.context.id, trace.debloater_engine
+            )
+            # In client mode, the trace process is terminated when the concurrent script completes.
+            # Set the concurrent script exit code
+            trace.concurrent_script.returncode = os.waitstatus_to_exitcode(client_status)
+
+            # We allow the main process the delay_time to exit on its own before we terminate it.
+            delay_end_time = time.monotonic() + config.delay
+            running, status = self._wait_process(trace.process, delay_end_time)
+
+            if running:
+                logger.debug(
+                    'terminating trace with SIGINT: %s[%s]',
+                    trace.context.id,
+                    trace.debloater_engine,
+                )
+                # The trace is still running, now we terminate it
+                trace.process.send_signal(signal.SIGINT.value)
+                # Allow the process 5 seconds to cleanly exit
+                return self._wait_process(trace.process, time.monotonic() + 5.0)
+            else:
+                # The trace completed on its own
+                return running, status
+
+        # The client is still running, check to see if the trace process has terminated
+        return self._wait_process(trace.process, time.monotonic() + 1.0)
 
     def compare_trace(
         self, project: Project, original: Trace, debloated: Trace
