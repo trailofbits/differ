@@ -36,8 +36,16 @@ Project Configuration
         # The concurrent commands to execute while the trace is running. This will be our call to
         # netcat to send the message. We do this in a loop until the server starts and accepts the
         # connection.
+        #
+        # The mode is set to client which will make sure that the netcat server is terminated when
+        # the concurrent script exits if we were unable to make a connection.
+        #
+        # We also disable 'script_exit_on_first_error' because netcat is allowed to retry the
+        # connection up to 5 times to accomdate the time the netcat server needs to start.
+        script_exit_on_first_error: false
         concurrent:
-          delay: 0.0  # we do our own sleeping in the concurrent script
+          delay: 0.5
+          mode: client
           run: |
             cycle=0
             rc=1
@@ -48,12 +56,11 @@ Project Configuration
               nc -N 127.0.0.1 8080 < client-message.txt
               rc=$?
 
-              echo netcat client attempt $cycle = $rc
-
               ((cycle++))
             done
 
             exit $rc
+
         # Finally, the list of comparators we run
         comparators:
           # Verify the exit code of the server matches

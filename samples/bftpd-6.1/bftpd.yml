@@ -13,13 +13,10 @@ templates:
         static: true
 
     concurrent:
+      mode: client
       run: |
-        curl -O --retry 5 --retry-connrefused -u ftp: ftp://127.0.0.1:8021/myfile.txt 2> /dev/null || true
-        kill -SIGINT $DIFFER_TRACE_PID
-        while ps -p $DIFFER_TRACE_PID > /dev/null; do sleep 0.2; done
-        cmp myfile.txt serve/myfile.txt
-
-    expect_signal: SIGINT
+        curl -O --retry 5 --retry-connrefused -u ftp: ftp://127.0.0.1:8021/myfile.txt 2> /dev/null
+        cmp myfile.txt ./serve/myfile.txt
 
     comparators:
       - stdout
