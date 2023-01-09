@@ -33,33 +33,22 @@ Project Configuration
               maximum: 1024
               count: 5
 
+        # Generate the input message file
+        setup: |
+          echo hello: {{number}} > ./client-message.txt
+
         # The concurrent commands to execute while the trace is running. This will be our call to
-        # netcat to send the message. We do this in a loop until the server starts and accepts the
-        # connection.
+        # netcat to send the message. We allow 5 attempts because the netcat server to accommodate
+        # the netcat server startup time.
         #
         # The mode is set to client which will make sure that the netcat server is terminated when
         # the concurrent script exits if we were unable to make a connection.
-        #
-        # We also disable 'script_exit_on_first_error' because netcat is allowed to retry the
-        # connection up to 5 times to accomdate the time the netcat server needs to start.
-        script_exit_on_first_error: false
         concurrent:
           delay: 0.5
           mode: client
+          retries: 5
           run: |
-            cycle=0
-            rc=1
-            echo 'hello world: {{number}}' > ./client-message.txt
-            while [ $cycle -lt 10 ] && [ $rc -ne 0 ];
-            do
-              sleep 0.1
-              nc -N 127.0.0.1 8080 < client-message.txt
-              rc=$?
-
-              ((cycle++))
-            done
-
-            exit $rc
+            nc -N 127.0.0.1 8080 < ./client-message.txt
 
         # Finally, the list of comparators we run
         comparators:
