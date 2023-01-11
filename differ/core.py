@@ -519,7 +519,9 @@ class TraceTemplate:
                 stdin = string
 
         kwargs = {}
-        if template_id:
+        if id := body.get('id'):
+            kwargs['id'] = f'{id}-{template_id}' if template_id else id
+        elif template_id:
             kwargs['id'] = template_id
 
         timeout_dict = body.get('timeout')
