@@ -590,16 +590,16 @@ class Executor:
         count = 0
         values: list[dict] = []
 
-        for value_set in generator.generate():
-            # Populate a dictionary of the generated values
-            values.append(value_set)
+        for parameters in generator.generate():
+            # Populate a dictionary of the generated parameters
+            values.append(parameters)
             count += 1
-            # We are done when every variable has been exhausted or the number of value sets
+            # We are done when every variable has been exhausted or the number of parameters
             # generated is greater than the max_permutations setting.
             if count >= self.max_permutations:
                 break
 
-        logger.debug('generated %d value sets for template %s', len(values), template)
+        logger.debug('generated %d parameters for template %s', len(values), template)
         return values
 
     def copy_input_files(self, trace: Trace) -> None:
