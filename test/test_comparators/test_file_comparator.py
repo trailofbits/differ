@@ -323,6 +323,37 @@ class TestFileComparator:
         mock_group.assert_called_once_with('sudo')
         mock_user.assert_called_once_with('root')
 
+    def test_compare_target(self):
+        original = MagicMock()
+        debloated = MagicMock()
+
+        target = MagicMock()
+        source = MagicMock()
+        debloated.cwd.__truediv__.side_effect = [source, target]
+
+        ext = files.FileComparator({'filename': 'filename', 'target': 'target'})
+        ext.compare_file = MagicMock(return_value=100)
+        ext.check_file_type = MagicMock(return_value=None)
+        result = ext.compare(original, debloated)
+        assert result.status is ComparisonStatus.success
+        ext.compare_file.assert_called_once_with(original, target, source)
+
+    def test_compare_target_does_not_exist(self):
+        original = MagicMock()
+        debloated = MagicMock()
+
+        target = MagicMock()
+        source = MagicMock()
+        debloated.cwd.__truediv__.side_effect = [source, target]
+        target.exists.return_value = False
+
+        ext = files.FileComparator({'filename': 'filename', 'target': 'target'})
+        ext.compare_file = MagicMock(return_value=100)
+        ext.check_file_type = MagicMock(return_value=None)
+        result = ext.compare(original, debloated)
+        assert result.status is ComparisonStatus.error
+        ext.compare_file.assert_not_called()
+
 
 class TestOctalRef:
     def test_get(self):

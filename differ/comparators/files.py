@@ -281,7 +281,7 @@ class FileComparator(Comparator):
         filename = debloated.cwd / self.filename
         if self.target:
             # compare two files within the debloated trace
-            original_filename = debloated.cwd / self.target  # TODO test this
+            original_filename = debloated.cwd / self.target
         else:
             # compare an original file against a debloated file
             original_filename = original.cwd / self.filename
@@ -293,7 +293,6 @@ class FileComparator(Comparator):
             return ComparisonResult.success(self, debloated)
 
         if not original_filename.exists():
-            # TODO test this
             return ComparisonResult.error(
                 self, debloated, f'comparison target file does not exist: {original_filename}'
             )
