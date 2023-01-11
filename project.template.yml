@@ -160,6 +160,14 @@ templates:
     #   # after one or more requests that are issued by the concurrent script.
     #   #
     #   # mode: client
+    #
+    #   # The number of times to run the concurrent script until it is successful. This option is
+    #   # useful when testing a network server that requires some time to start and accept incoming
+    #   # connections and a network client is used as part of the concurrent script. This option is
+    #   # disabled by default and the concurrent is only run once. When enabled, the `delay` option
+    #   # is used to sleep between attempts.
+    #   #
+    #   # retries: 5
 
     # Controls whether each hook script will exit immediately if a command exits with a non-zero
     # status (the Bash "set -e" option). This configuration affects the setup, concurrent, and
