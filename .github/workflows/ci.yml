@@ -58,7 +58,7 @@ jobs:
           # Python virtual env management
           pipx install pipenv
           sudo apt-get update
-          sudo apt-get install -y libfuzzy-dev
+          sudo apt-get install -y libfuzzy-dev lftp
 
       - name: 'Init Python'
         run: |
@@ -66,11 +66,6 @@ jobs:
 
       - name: 'Tests'
         run: |
-          echo whoami:
-          whoami
-          echo groups:
-          groups
-          echo =====
           pipenv run tests
 
   # pip-audit:

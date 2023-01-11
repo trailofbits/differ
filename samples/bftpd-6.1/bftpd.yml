@@ -5,17 +5,23 @@ debloaters:
   original: bin/bftpd.original
 
 templates:
-  - arguments: '-D -c default-anon.conf'
+  # Get a file
+  - id: get
+    arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
-
+      - source: lftp.rc
+        static: true
       - source: serve
         static: true
 
     concurrent:
       mode: client
       run: |
-        curl -O --retry 5 --retry-connrefused -u ftp: ftp://127.0.0.1:8021/myfile.txt 2> /dev/null
+        lftp --rcfile lftp.rc <<EOF
+        get myfile.txt
+        EOF
+
         cmp myfile.txt ./serve/myfile.txt
 
     comparators:
@@ -27,3 +33,365 @@ templates:
           expect: 0
       - id: file
         filename: myfile.txt
+        target: serve/myfile.txt
+
+  # Navigate (cd, ls)
+  - id: navigation
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        ls
+        cd child
+        ls
+        cd ..
+        ls
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+  # chmod
+  - id: chmod
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        chmod 440 myfile.txt
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/myfile.txt
+        mode: 440
+
+  # put
+  - id: put
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      echo hello world > file
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        put file
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/file
+        target: file
+
+  # ln
+
+  # mkdir
+  - id: mkdir
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        mkdir second
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/second
+        type: directory
+
+  # mv
+  - id: mv
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      cp serve/myfile.txt myfile_original.txt
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        mv myfile.txt myfile2.txt
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/myfile2.txt
+        target: myfile_original.txt
+      - id: file
+        filename: serve/myfile.txt
+        exists: false
+
+  # pwd
+  - id: pwd
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        cd ..
+        cd ..
+        pwd
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+  # rm
+  - id: rm
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        rm myfile.txt
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/myfile.txt
+        exists: false
+
+  # rmdir
+  - id: rmdir
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      mkdir serve/delete_me
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        rmdir delete_me
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/delete_me
+        exists: false
+
+  #####################
+  # Disabled Commands #
+  #####################
+  # rm
+  - id: rm_disabled
+    arguments: '-D -c disabled-cmds-anon.conf'
+    input_files:
+      - disabled-cmds-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        rm myfile.txt
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 1
+      - id: file
+        filename: serve/myfile.txt
+
+  # rmdir
+  - id: rmdir_disabled
+    arguments: '-D -c disabled-cmds-anon.conf'
+    input_files:
+      - disabled-cmds-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      mkdir serve/delete_me
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        rmdir delete_me
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 1
+      - id: file
+        filename: serve/delete_me
+        type: directory
+
+  # chmod
+  - id: chmod_disabled
+    arguments: '-D -c disabled-cmds-anon.conf'
+    input_files:
+      - disabled-cmds-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      chmod 664 serve/myfile.txt
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        chmod 440 myfile.txt
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 1
+      - id: file
+        filename: serve/myfile.txt
+        mode: 664
+
+  # put
+  - id: put_disabled
+    arguments: '-D -c disabled-cmds-anon.conf'
+    input_files:
+      - disabled-cmds-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      echo hello world > file
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        put file
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 1
+      - id: file
+        filename: serve/file
+        exists: false
