@@ -28,6 +28,38 @@ class TestFileComparator:
         assert result.trace is trace
         assert result.comparator is ext
 
+    @patch.object(files.FileComparator, 'hash_file')
+    def test_verify_original_target_match(self, mock_hash_file):
+        mock_hash_file.return_value = ('sha1', 'ssdeep')
+        trace = MagicMock()
+        trace.cwd = Path('./')
+        trace.cache = {}
+        filename = trace.cwd / __file__
+
+        ext = files.FileComparator({'filename': __file__, 'target': 'target'})
+        ext.compare_file = MagicMock(return_value=100)
+        assert ext.verify_original(trace) is None
+        assert trace.cache == {f'{__file__}_sha1': 'sha1', f'{__file__}_ssdeep': 'ssdeep'}
+        mock_hash_file.assert_called_once_with(filename)
+        ext.compare_file.assert_called_once_with(trace, filename, trace.cwd / 'target')
+
+    @patch.object(files.FileComparator, 'hash_file')
+    def test_verify_original_target_error(self, mock_hash_file):
+        mock_hash_file.return_value = ('sha1', 'ssdeep')
+        trace = MagicMock()
+        trace.cwd = Path('./')
+        trace.cache = {}
+        filename = trace.cwd / __file__
+
+        ext = files.FileComparator({'filename': __file__, 'target': 'target'})
+        ext.compare_file = MagicMock(return_value=50)
+
+        result = ext.verify_original(trace)
+        assert result is not None
+        assert result.trace is trace
+        assert result.comparator is ext
+        ext.compare_file.assert_called_once_with(trace, filename, trace.cwd / 'target')
+
     @patch.object(files.hashlib, 'sha1')
     @patch.object(files.ssdeep, 'Hash')
     def test_hash_file(self, mock_ssdeep_cls, mock_sha1_cls):
@@ -70,11 +102,17 @@ class TestFileComparator:
     @patch.object(files.FileComparator, 'hash_file')
     def test_compare_ssdeep_matches(self, mock_hash_file, mock_compare):
         original = MagicMock()
-        original.cache = {'filename_sha1': 'sha1', 'filename_ssdeep': 'ssdeep'}
         debloated = MagicMock()
         debloated.cwd = MagicMock()
         filename = debloated.cwd / 'filename'
         filename.exists.return_value = True
+
+        original_filename = str(original.cwd / 'filename')
+        original.cache = {
+            f'{original_filename}_sha1': 'sha1',
+            f'{original_filename}_ssdeep': 'ssdeep',
+        }
+
         mock_hash_file.return_value = ('sha1_2', 'ssdeep_2')
         mock_compare.return_value = 95
 
@@ -89,13 +127,18 @@ class TestFileComparator:
     @patch.object(files.FileComparator, 'hash_file')
     def test_compare_no_match(self, mock_hash_file, mock_compare):
         original = MagicMock()
-        original.cache = {'filename_sha1': 'sha1', 'filename_ssdeep': 'ssdeep'}
         debloated = MagicMock()
         debloated.cwd = MagicMock()
         filename = debloated.cwd / 'filename'
         filename.exists.return_value = True
         mock_hash_file.return_value = ('sha1_2', 'ssdeep_2')
         mock_compare.return_value = 89
+
+        original_filename = str(original.cwd / 'filename')
+        original.cache = {
+            f'{original_filename}_sha1': 'sha1',
+            f'{original_filename}_ssdeep': 'ssdeep',
+        }
 
         ext = files.FileComparator({'filename': 'filename', 'similarity': 90})
         ext.check_file_type = MagicMock(return_value=None)
