@@ -16,6 +16,7 @@ getpwnam
 getgrnam
 exrex
 getone
+SIGINT
 
 # sphinx / restructuredText directives
 toctree

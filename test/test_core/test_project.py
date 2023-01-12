@@ -56,7 +56,7 @@ class TestProject:
     @patch.object(core.yaml, 'safe_dump')
     def test_save_report_error(self, mock_yaml_dump, mock_file):
         trace = MagicMock(process=None)
-        trace.context.arguments = 'x y'
+        trace.arguments = 'x y'
 
         results = [
             MagicMock(comparator=MockComparator()),

@@ -15,8 +15,7 @@ class TestCrashResult:
     @patch.object(core, 'open', new_callable=mock_open)
     @patch.object(core.yaml, 'safe_dump')
     def test_save(self, mock_safe_dump, mock_file):
-        trace = MagicMock()
-        trace.context.arguments = 'x y'
+        trace = MagicMock(arguments='x y')
         details = 'DETAILS'
         comparator = MockComparator()
         filename = Path('/asdf')
@@ -40,8 +39,7 @@ class TestCrashResult:
     @patch.object(core, 'open', new_callable=mock_open)
     @patch.object(core.yaml, 'safe_dump')
     def test_save_id(self, mock_safe_dump, mock_file):
-        trace = MagicMock()
-        trace.context.arguments = 'x y'
+        trace = MagicMock(arguments='x y')
         details = 'DETAILS'
         filename = Path('/asdf')
 

@@ -75,6 +75,12 @@ templates:
     # then any crashes or comparison failures are treated as successful (default: true).
     # expect_success: true
 
+    # Expect that the trace will exit because of a specific signal. When this configuration is not
+    # specified, then all signals are treated as crashes. A use case for this configuration is when
+    # testing a server that is terminated via a signal. This accepts either the signal number or
+    # the signal name (SIGINT, SIGTERM, etc.).
+    # expect_signal: SIGINT
+
     # Bash script to execute prior to launching each trace. The body is a Jinja2 template
     # and can reference template variables. The script is run from the trace directory and differ
     # blocks until the script completes. The setup commands are run after input files are
@@ -143,6 +149,25 @@ templates:
     #   # commands in the "run" body. This is optional (default: 1.0)
     #   #
     #   # delay: 1.0
+    #
+    #   # The concurrent script execution mode. This controls how DIFFER runs the concurrent script
+    #   # and when the trace is considered completed. By default, no mode is set and the trace
+    #   # execution proceeds as normal. Available options are:
+    #   #
+    #   # 'client': The concurrent script is a client that interacts with the trace binary being
+    #   # tested. In this mode, the trace is terminated after the concurrent script completes. use
+    #   # the client mode when testing a network server that will run forever but should be stopped
+    #   # after one or more requests that are issued by the concurrent script.
+    #   #
+    #   # mode: client
+    #
+    #   # The number of times to run the concurrent script until it is successful. This option is
+    #   # useful when testing a network server that requires some time to start and accept incoming
+    #   # connections and a network client is used as part of the concurrent script. This option is
+    #   # disabled by default and the concurrent is only run once. When enabled, the `delay` option
+    #   # is used to sleep between attempts.
+    #   #
+    #   # retries: 5
 
     # Controls whether each hook script will exit immediately if a command exits with a non-zero
     # status (the Bash "set -e" option). This configuration affects the setup, concurrent, and

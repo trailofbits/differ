@@ -114,19 +114,23 @@ class FileComparator(Comparator):
           # algorithm to compare the file content. This option is only honored if the path is a
           # file (`type: file`) and the path must exist (`exists: true`). This is optional with the
           # default value being 100 (files must match exactly).
+          #
           # similarity: 100
 
           # The file must or must not exist. This is optional with the default value being `true`
           # (the file must exist).
+          #
           # exists: true
 
           # The file type, either "file" or "directory". This is optional with the default value
           # being "file" (the path must refer to a normal file).
+          #
           # type: file
 
           # The file mode in octal representation. When specified, the file must have the specified
           # mode. The value can be a string, integer, or variable reference. This is optional with
           # the default value being none.
+          #
           # Mode as a string
           # mode: "755"
           #
@@ -136,6 +140,14 @@ class FileComparator(Comparator):
           # Mode as a variable reference
           # mode:
           #   variable: file_mode
+
+          # The target file to compare against. By default, the file comparator compares a file in
+          # the original trace against a file in the debloated trace. The 'target' option changes
+          # this behavior and, instead of comparing a file between traces, two files within the
+          # same trace are compared. The 'target' is the filename to compare against and must exist
+          # within the trace.
+          #
+          # target: other_file.txt
 
           # The file owner. This can either be "true" to compare both the owner user and group or
           # it can be a dictionary specifying how to compare the owner user and group. This is
@@ -147,6 +159,7 @@ class FileComparator(Comparator):
           #   #  - false: do not compare the owner username
           #   #  - <str>: expect a specific owner username
           #   #  - <int>: expect a specific owner uid
+          #   #
           #   user: root
           #
           #   # The file owner group name. Similar tot the user, his can be either:
@@ -155,6 +168,7 @@ class FileComparator(Comparator):
           #   #  - false: do not compare the owner group
           #   #  - <str>: expect a specific owner group name
           #   #  - <int>: expect a specific owner gid
+          #   #
           #   group: sudo
     """
 
@@ -163,6 +177,7 @@ class FileComparator(Comparator):
         self.filename: str = config['filename']
         self.exists = config.get('exists', True)
         self.path_type = PathType(config.get('type', 'file'))
+        self.target: Optional[str] = config.get('target')
         mode = OctalRef.try_parse(config.get('mode'))
         owner = config.get('owner')
 
@@ -203,6 +218,17 @@ class FileComparator(Comparator):
 
         trace.cache[f'{self.filename}_sha1'] = sha1
         trace.cache[f'{self.filename}_ssdeep'] = fuzzy
+
+        if self.target:
+            # Compare two files within the original trace
+            similarity = self.compare_file(trace, filename, trace.cwd / self.target)
+            if similarity < self.similarity:
+                return CrashResult(
+                    trace,
+                    f'file content does not meet similarity requirement: {self.filename} '
+                    f'({similarity}% similar)',
+                    comparator=self,
+                )
 
     def check_file_type(self, trace: Trace, filename: Path) -> Optional[str]:
         """
@@ -252,13 +278,24 @@ class FileComparator(Comparator):
         return sha1.hexdigest(), fuzzy.digest()
 
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
-        original_filename = original.cwd / self.filename
         filename = debloated.cwd / self.filename
+        if self.target:
+            # compare two files within the debloated trace
+            original_filename = debloated.cwd / self.target
+        else:
+            # compare an original file against a debloated file
+            original_filename = original.cwd / self.filename
+
         if error := self.check_file_type(debloated, filename):
             return ComparisonResult.error(self, debloated, error)
 
         if not filename.exists():
             return ComparisonResult.success(self, debloated)
+
+        if not original_filename.exists():
+            return ComparisonResult.error(
+                self, debloated, f'comparison target file does not exist: {original_filename}'
+            )
 
         if self.owner and not self.owner.compare_file_owner(original_filename, filename):
             return ComparisonResult.error(f'{self.id}[owner]', debloated, 'unexpected file owner')
@@ -266,12 +303,7 @@ class FileComparator(Comparator):
         if not self.similarity:
             return ComparisonResult.success(self, debloated)
 
-        sha1, fuzzy = self.hash_file(filename)
-        if sha1 == original.cache[f'{self.filename}_sha1']:
-            similarity = 100
-        else:
-            similarity = ssdeep.compare(original.cache[f'{self.filename}_ssdeep'], fuzzy)
-
+        similarity = self.compare_file(original, original_filename, filename)
         if similarity < self.similarity:
             return ComparisonResult.error(
                 self,
@@ -280,3 +312,35 @@ class FileComparator(Comparator):
                 f'({similarity}% similar)',
             )
         return ComparisonResult.success(self, debloated)
+
+    def get_file_hashes(self, trace: Trace, filename: Path) -> tuple[str, str]:
+        """
+        Get the SHA1 and ssdeep hashes for the given file, first checking the trace cache and, if
+        the cache doesn't contain an entry for the file, hash the file.
+
+        :param trace: trace to lookup for cached hashes
+        :param filename: file to hash
+        :returns: a tuple of ``(sha1_hash, ssdeep_hash)``
+        """
+        if sha1 := trace.cache.get(f'{filename}_sha1'):
+            return sha1, trace.cache[f'{filename}_ssdeep']
+        return self.hash_file(filename)
+
+    def compare_file(self, trace: Trace, source: Path, target: Path) -> int:
+        """
+        Compare two files and return their similarity as a whole number percentage.
+
+        :param trace: trace to lookup for cached hashes
+        :param source: source filename
+        :param target: target filename
+        :returns: the similarity between the two files
+        """
+        source_sha1, source_fuzzy = self.get_file_hashes(trace, source)
+        target_sha1, target_fuzzy = self.get_file_hashes(trace, target)
+
+        if source_sha1 == target_sha1:
+            similarity = 100
+        else:
+            similarity = ssdeep.compare(source_fuzzy, target_fuzzy)
+
+        return similarity

@@ -1,0 +1,15 @@
+name: wget
+original: /usr/bin/wget
+debloaters:
+  # We are comparing wget against itself since we don't have a debloated version yet
+  original: /usr/bin/wget
+
+templates:
+  - id: download_text_https
+    arguments: https://digg.com/robots.txt
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: robots.txt

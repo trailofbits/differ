@@ -1,0 +1,6 @@
+set net:timeout 5m
+set net:reconnect-interval-base 2
+set net:reconnect-interval-multiplier 1.5
+set net:max-retries 5
+set cmd:fail-exit yes
+open -p 8021 -u ftp, 127.0.0.1
