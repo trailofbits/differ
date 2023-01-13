@@ -305,6 +305,7 @@ class Executor:
         self._setup_trace(trace, cwd)
 
         # start the binary
+        logger.debug('launching trace %s with arguments: %s', trace, repr(trace.arguments))
         args = [target] + shlex.split(trace.arguments)
         trace.process = subprocess.Popen(
             args,
