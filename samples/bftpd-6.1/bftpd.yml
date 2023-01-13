@@ -34,6 +34,8 @@ templates:
       - id: file
         filename: myfile.txt
         target: serve/myfile.txt
+      - id: file
+        filename: myfile.txt
 
   # Navigate (cd, ls)
   - id: navigation
@@ -122,6 +124,8 @@ templates:
       - id: file
         filename: serve/file
         target: file
+      - id: file
+        filename: file
 
   # ln
 
@@ -183,6 +187,8 @@ templates:
       - id: file
         filename: serve/myfile2.txt
         target: myfile_original.txt
+      - id: file
+        filename: serve/myfile2.txt
       - id: file
         filename: serve/myfile.txt
         exists: false

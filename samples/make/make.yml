@@ -82,8 +82,12 @@ templates:
         filename: file3
         target: file3-original
       - id: file
+        filename: file3
+      - id: file
         filename: deps
         target: deps-original
+      - id: file
+        filename: deps
 
   # make up to date (no-op)
   - id: low-deps-up_to_date
@@ -108,6 +112,8 @@ templates:
       - id: file
         filename: file3
         target: file3-expect
+      - id: file
+        filename: file3
       - id: file
         filename: deps
 
@@ -243,6 +249,8 @@ templates:
       - id: file
         filename: build/1/file1
         target: file1
+      - id: file
+        filename: build/1/file1
 
   ##################
   # Error Handling #
