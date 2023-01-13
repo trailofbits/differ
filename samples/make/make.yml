@@ -1,0 +1,281 @@
+name: make
+original: /usr/bin/make
+debloaters:
+  original: /usr/bin/make
+
+templates:
+  # make single target
+  - id: low-single_target
+    arguments: file1
+    input_files:
+      - source: input_files/low-single_target.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+
+  - id: low-multiple_targets
+    arguments: file1 file2
+    input_files:
+      - source: input_files/low-multi_targets.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+      - id: file
+        filename: file2
+
+  # dependencies
+  - id: low-deps
+    arguments: file3
+    input_files:
+      - source: input_files/low-deps.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file3
+      - id: file
+        filename: deps
+
+  # make update
+  - id: low-deps-update
+    arguments: file3
+    input_files:
+      - source: input_files/low-deps.mak
+        destination: Makefile
+
+    setup: |
+      # Goal: rebuild file3 but do not rebuild deps
+      make file3
+      cp file3 file3-original
+      echo more >> file3-original
+      # deps should not be rebuild
+      # modify deps
+      echo more >> deps
+      cp deps deps-original
+      # modify file3
+      echo asdf >> file3
+      # move file3 modification time to the past so it will be rebuilt
+      touch -t 2301010000 file3
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file3
+        target: file3-original
+      - id: file
+        filename: deps
+        target: deps-original
+
+  # make up to date (no-op)
+  - id: low-deps-up_to_date
+    arguments: file3
+    input_files:
+      - source: input_files/low-deps.mak
+        destination: Makefile
+
+    setup: |
+      make file3
+      echo asdf >> file3
+      cp file3 file3-expect
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file3
+        target: file3-expect
+      - id: file
+        filename: deps
+
+  # make default target
+  - id: low-default_target
+    input_files:
+      - source: input_files/low-single_target.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+      - id: file
+        filename: file2
+        exists: false
+
+  - id: low-custom_default_target
+    input_files:
+      - source: input_files/low-custom_default_target.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        exists: false
+      - id: file
+        filename: file2
+
+  # make stdin
+  - id: low-args_file-stdin
+    arguments: -f - file1
+    input_files:
+      - input_files/low-single_target.mak
+
+    stdin:
+      file: low-single_target.mak
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+
+  # make -f
+  - id: low-args_file
+    arguments: -f low-single_target.mak file1
+    input_files:
+      - input_files/low-single_target.mak
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+
+  # make phony
+  - id: med_phony
+    arguments: all
+    input_files:
+      - source: input_files/med-phony.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+      - id: file
+        filename: file2
+      - id: file
+        filename: file3
+      - id: file
+        filename: deps
+
+  # includes
+  - id: high-includes
+    arguments: file4
+    input_files:
+      - source: input_files/high-includes.mak
+        destination: Makefile
+      - input_files/med-phony.mak
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        exists: false
+      - id: file
+        filename: file2
+        exists: false
+      - id: file
+        filename: file3
+      - id: file
+        filename: file4
+      - id: file
+        filename: deps
+
+  # vars
+  - id: high-vars
+    arguments: install
+    input_files:
+      - source: input_files/high-vars.mak
+        destination: Makefile
+
+    comparators:
+      # - stdout  # stdout content will not match because the ${CURDIR} is not the same
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: build
+        type: directory
+      - id: file
+        filename: build/1
+        type: directory
+      - id: file
+        filename: build/1/file1
+        target: file1
+
+  ##################
+  # Error Handling #
+  ##################
+  # make invalid target
+  - id: error-invalid_target
+    arguments: does_not_exist
+    input_files:
+      - source: input_files/low-single_target.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+      - id: file
+        filename: file1
+        exists: false
+
+  # no makefile
+  - id: error-no_makefile
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # -f file does not exist
+  - id: error-file_does_not_eist
+    arguments: -f does_not_exist
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
