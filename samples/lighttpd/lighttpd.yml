@@ -232,13 +232,31 @@ templates:
         filename: hello.txt
         target: serve-vhost/hello.txt
 
-
-  # get parameter route
-  # GET variables
-  # POST variables
-
   ##################
   # Error Handling #
   ##################
   # 404
-  # unauthorized (httaccess?)
+  - id: get-404
+    arguments: -D -f static-all.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-all.conf
+
+    concurrent:
+      run: |
+        wget http://localhost:3000/foo.html
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 8
+      - id: file
+        filename: foo.html
+        exists: false
