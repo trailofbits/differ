@@ -6,7 +6,8 @@ from differ import executor
 
 class TestExecutorInputFiles:
     @patch.object(executor.os, 'chmod')
-    def test_set_input_file_mode_copy(self, mock_chmod):
+    @patch.object(executor.os, 'utime')
+    def test_set_input_file_mode_copy(self, mock_utime, mock_chmod):
         dest = object()
         ifile = MagicMock(mode='')
         stat = ifile.source.stat.return_value
@@ -15,14 +16,18 @@ class TestExecutorInputFiles:
         app.set_input_file_mode(ifile, dest)
         mock_chmod.assert_called_once_with(dest, 0o755)
         ifile.source.stat.assert_called_once()
+        mock_utime.assert_called_once_with(dest, ns=(stat.st_atime_ns, stat.st_mtime_ns))
 
     @patch.object(executor.os, 'chmod')
-    def test_set_input_file_mode_explicit(self, mock_chmod):
+    @patch.object(executor.os, 'utime')
+    def test_set_input_file_mode_explicit(self, mock_utime, mock_chmod):
         dest = object()
         ifile = MagicMock(mode='755')
+        stat = ifile.source.stat.return_value
         app = executor.Executor(Path('/'))
         app.set_input_file_mode(ifile, dest)
         mock_chmod.assert_called_once_with(dest, 0o755)
+        mock_utime.assert_called_once_with(dest, ns=(stat.st_atime_ns, stat.st_mtime_ns))
 
     @patch.object(executor, 'open', new_callable=mock_open)
     def test_generate_input_file(self, mock_file):
