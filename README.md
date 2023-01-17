@@ -12,7 +12,7 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    ```bash
    $ sudo add-apt-repository ppa:deadsnakes/ppa
    $ sudo apt update
-   $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp
+   $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp lighttpd
    ```
 2. Install `pipenv`, which manages the virtual environment.
    ```bash
@@ -164,5 +164,5 @@ $ pipenv run ci
 ```
 
 <!--
-spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy lftp
+spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy lftp lighttpd
 -->

@@ -90,6 +90,19 @@ class TestHookScriptComparator:
             'test_script[exit_code]', debloated, result.details
         )
 
+    def test_compare_skip_output(self):
+        original = MagicMock()
+        original.setup_script.returncode = 0
+        original.setup_script_output.read_bytes.return_value = b'hello'
+
+        debloated = MagicMock()
+        debloated.setup_script.returncode = 0
+        debloated.setup_script_output.read_bytes.return_value = b'goodbye'
+
+        ext = HookComparator({'output': False})
+        result = ext.compare(original, debloated)
+        assert result == ComparisonResult.success('test_script', debloated)
+
     def test_verify_original_skip(self):
         ext = HookComparator()
         assert ext.verify_original(MagicMock()) is None

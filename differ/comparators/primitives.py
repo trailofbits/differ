@@ -211,7 +211,13 @@ class HookScriptComparator(Comparator):
           #
           # This is optional with the default being enabled with the default exit code comparator
           # configuration.
+          #
           # exit_code: {}
+
+          # Controls whether the stdout/stderr content is compared. The default value is true
+          # (compare stdout/stderr content) but can be disabled by setting this to false.
+          #
+          # output: false
     """
 
     def __init__(self, hook: str, config: dict):
@@ -227,6 +233,8 @@ class HookScriptComparator(Comparator):
             self.exit_code = _ExitCodeComparator(exit_code_config)
         else:
             self.exit_code = None
+
+        self.output = config.get('output', True)
 
     def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
         """
@@ -265,7 +273,7 @@ class HookScriptComparator(Comparator):
                 f'debloated={debloated_proc.returncode}',
             )
 
-        if original_output.read_bytes() != debloated_output.read_bytes():
+        if self.output and original_output.read_bytes() != debloated_output.read_bytes():
             return ComparisonResult.error(
                 f'{self.id}[output]',
                 debloated,

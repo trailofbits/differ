@@ -641,13 +641,16 @@ class Executor:
         """
         Set the copied input file mode.
         """
+        stat = input_file.source.stat()
         if not input_file.mode:
             # copy source file mode
-            perms = input_file.source.stat().st_mode & 0o777
+            perms = stat.st_mode & 0o777
         else:
             perms = int(input_file.mode, 8)
 
         os.chmod(destination, perms)
+        # preserve access and modified times
+        os.utime(destination, ns=(stat.st_atime_ns, stat.st_mtime_ns))
 
     def create_stdin_file(self, trace: Trace) -> Path:
         """
