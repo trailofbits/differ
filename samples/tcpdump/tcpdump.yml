@@ -1,0 +1,32 @@
+name: tcpdump
+original: /usr/sbin/tcpdump
+debloaters:
+  original: /usr/sbin/tcpdump
+
+templates:
+  # capture everything
+  # filter port
+  # filter tcp
+  # filter udp
+  - arguments: '-i lo -w capture.pcap'
+    setup: |
+      nc -l 8080 & <<EOF
+      Hello, client
+      EOF
+      echo $$ > server.pid
+
+    concurrent:
+      mode: client
+      retries: 3
+      run: |
+        (sleep 1.0; echo Goodbye, server) | nc -N 127.0.0.1 8080
+
+    teardown: |
+      server_pid=$(cat server.pid)
+      while ps -p $server_pid > /dev/null; do sleep 1; done
+
+    comparators:
+      - id: pcap
+        filename: capture.pcap
+        port: 8080
+        protocol: tcp

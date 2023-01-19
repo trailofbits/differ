@@ -9,6 +9,7 @@ jinja2 = "*"
 exrex = "*"
 ssdeep = "*"
 pytest = "*"
+scapy = "*"
 
 [dev-packages]
 blue = "*"

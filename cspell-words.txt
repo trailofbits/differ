@@ -17,6 +17,7 @@ getgrnam
 exrex
 getone
 SIGINT
+pcap
 
 # sphinx / restructuredText directives
 toctree
