@@ -39,8 +39,8 @@ class Payload:
         :param pkt: the packet
         :returns: the extracted payload if the payload is not empty
         """
-        if protocol in (UDP, TCP) and Raw in pkt:
-            if data := pkt[Raw.load]:
+        if protocol in (Protocol.tcp, Protocol.udp) and Raw in pkt:
+            if data := pkt[Raw].load:
                 return Payload(origin, data)
         return None
 
@@ -99,6 +99,14 @@ class PcapComparatorConfig:
             address=config.get('address', ''),
         )
 
+    def describe_filter(self) -> str:
+        return f'{self.protocol.name}/{self.address or "*"}:{self.port}'
+
+    def pcap_filename(self, trace: Trace) -> Path:
+        if self.filename.is_absolute():
+            return self.filename
+        return trace.cwd / self.filename
+
 
 @register('pcap')
 class PcapComparator(Comparator):
@@ -111,7 +119,7 @@ class PcapComparator(Comparator):
         self.config = PcapComparatorConfig.parse(config)
 
     def verify_original(self, original: Trace) -> Optional[CrashResult]:
-        filename = self.pcap_filename(original)
+        filename = self.config.pcap_filename(original)
         if not filename.is_file():
             return CrashResult(original, f'pcap file does not exist: {filename}', self)
 
@@ -120,7 +128,7 @@ class PcapComparator(Comparator):
 
         if not packets:
             return CrashResult(
-                original, f'flow does not exist in pcap: {self.describe_filter()}', self
+                original, f'flow does not exist in pcap: {self.config.describe_filter()}', self
             )
 
         original.cache[self.flow_cache_key()] = self.extract_flows(packets)
@@ -128,7 +136,7 @@ class PcapComparator(Comparator):
     def compare(self, original: Trace, debloated: Trace) -> ComparisonResult:
         original_flows = original.cache[self.flow_cache_key()]
 
-        filename = self.pcap_filename(debloated)
+        filename = self.config.pcap_filename(debloated)
         if not filename.is_file():
             return ComparisonResult.error(self, debloated, f'pcap file does not exist: {filename}')
 
@@ -179,14 +187,15 @@ class PcapComparator(Comparator):
         return None
 
     def flow_cache_key(self) -> str:
-        return f'{self.describe_filter()}_flows'
+        return f'{self.config.describe_filter()}_flows'
 
     def extract_flows(self, packets: list[Packet]) -> list[Flow]:
         flows_lookup: dict[str, Flow] = {}
         flows: list[Flow] = []
+        proto = self.config.protocol.value
         for pkt in packets:
-            source = f'{pkt[IP].src}:{pkt.sport}'
-            dest = f'{pkt[IP].dst}:{pkt.dport}'
+            source = f'{pkt[IP].src}:{pkt[proto].sport}'
+            dest = f'{pkt[IP].dst}:{pkt[proto].dport}'
             key = '|'.join(sorted([source, dest]))
             flow = flows_lookup.get(key)
             if not flow:
@@ -204,18 +213,10 @@ class PcapComparator(Comparator):
 
         return flows
 
-    def describe_filter(self) -> str:
-        return f'{self.config.protocol.name}/{self.config.address or "*"}:{self.config.port}'
-
-    def pcap_filename(self, trace: Trace) -> Path:
-        if self.config.filename.is_absolute():
-            return self.config.filename
-        return trace.cwd / self.config.filename
-
     def _filter_pcap(self, pcap: PacketList) -> list[Packet]:
-        proto = self.config.protocol
+        proto = self.config.protocol.value
         checks: list[Callable[[Packet], bool]] = [
-            lambda pkt: proto in pkt,
+            lambda pkt: proto in pkt and IP in pkt,
             lambda pkt: self.config.port in (pkt[proto].sport, pkt[proto].dport),
         ]
 
