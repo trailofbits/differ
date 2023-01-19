@@ -355,7 +355,7 @@ class Executor:
 
         if trace.teardown_script_path.exists():
             # Run the trace teardown script
-            logger.debug('running trace teardown %s: %s', trace)
+            logger.debug('running trace teardown %s', trace)
             trace.teardown_script = subprocess.run(
                 [f'./{trace.teardown_script_path.name}'],
                 cwd=str(cwd),
