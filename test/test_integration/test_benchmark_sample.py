@@ -33,7 +33,11 @@ def pytest_generate_tests(metafunc: Metafunc):
                     app.setup_project(project)
                     params.extend((app, project, template) for template in project.templates)
 
-    metafunc.parametrize('app,project,template', params, ids=[f'{project.name}_{template.id}' for _, project, template in params])
+    metafunc.parametrize(
+        'app,project,template',
+        params,
+        ids=[f'{project.name}_{template.id}' for _, project, template in params],
+    )
 
 
 def test_benchmark_sample(app: Executor, project: Project, template: TraceTemplate):
