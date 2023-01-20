@@ -1,0 +1,53 @@
+name: memcached
+original: /usr/bin/memcached
+debloaters:
+  original: /usr/bin/memcached
+
+templates:
+  # set and get command (store and retrieve value)
+  - concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        nc -C -N 127.0.0.1 11211 <<EOF
+        set x 0 0 11
+        hello world
+
+        get x
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+  # set with expiration
+  - concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        nc -C -N 127.0.0.1 11211 <<EOF
+        set x 0 2 11
+        hello world
+
+        get x
+        EOF
+
+        sleep 2
+
+        nc -C -N 127.0.0.1 11211 <<EOF
+        get x
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
