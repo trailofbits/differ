@@ -111,13 +111,10 @@ class Executor:
         if not self.root.exists():
             self.root.mkdir()
 
-    def run_project(self, project: Project) -> int:
+    def setup_project(self, project: Project) -> None:
         """
-        Run a project.
-
-        :param project: the project
+        Setup a project.
         """
-        logger.info('running project: %s', project.name)
         if project.directory.exists():
             if not self.overwrite_existing_report:
                 # The project directory must not exist
@@ -128,15 +125,22 @@ class Executor:
 
         project.directory.mkdir()
 
-        error_count = 0
-        context_count = 0
-        for template in project.templates:
-            contexts = self.generate_contexts(project, template)
-            for context in contexts:
-                context_count += 1
-                error_count += self.run_context(project, context)
+    def run_project(self, project: Project) -> int:
+        """
+        Run a project.
 
-        trace_count = context_count * (len(project.debloaters) + 1)
+        :param project: the project
+        """
+        logger.info('running project: %s', project.name)
+        self.setup_project(project)
+
+        error_count = 0
+        trace_count = 0
+        for template in project.templates:
+            traces, errors = self.run_template(project, template)
+            trace_count += traces
+            error_count += errors
+
         if not error_count:
             logger.info('project %s ran %d traces successfully', project.name, trace_count)
         else:
@@ -145,6 +149,23 @@ class Executor:
             )
 
         return error_count
+
+    def run_template(self, project: Project, template: TraceTemplate) -> tuple[int, int]:
+        """
+        Run a project template. The return value is a tuple containing the total number of traces
+        executed and the number of traces that failed with an error.
+
+        :returns: a tuple of ``(trace_count, error_count)``
+        """
+        error_count = 0
+        context_count = 0
+        contexts = self.generate_contexts(project, template)
+        for context in contexts:
+            context_count += 1
+            error_count += self.run_context(project, context)
+
+        trace_count = context_count * (len(project.debloaters) + 1)
+        return trace_count, error_count
 
     def run_context(self, project: Project, context: TraceContext) -> int:
         """
