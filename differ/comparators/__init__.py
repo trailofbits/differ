@@ -1,10 +1,12 @@
-from typing import Callable
+from typing import Callable, TypeVar
 
 from ..core import COMPARATOR_TYPE_REGISTRY, Comparator
 
+T = TypeVar('T', bound=Comparator)
 
-def register(id: str) -> Callable[[type[Comparator]], type[Comparator]]:
-    def wrapper(cls: type[Comparator]) -> type[Comparator]:
+
+def register(id: str) -> Callable[[type[T]], type[T]]:
+    def wrapper(cls: type[T]) -> type[T]:
         cls.id = id
         COMPARATOR_TYPE_REGISTRY[id] = cls
         return cls
