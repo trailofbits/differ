@@ -322,6 +322,13 @@ class Executor:
 
         cwd.symlink_to(trace.cwd)
 
+        if trace.context.template.pcap:
+            # start the packet capture
+            pcap = self._start_packet_capture(trace)
+            time.sleep(1.0)
+        else:
+            pcap = None
+
         # run setup hooks and setup script
         self._setup_trace(trace, cwd)
 
@@ -342,7 +349,35 @@ class Executor:
         # run the teardown hooks, teardown script, and terminate the concurrent script
         self._teardown_trace(trace, cwd)
 
+        if pcap:
+            if pcap.poll() is None:
+                time.sleep(1.0)
+                pcap.send_signal(signal.SIGINT.value)
+                pcap.wait()
+
+            if not trace.pcap_path.is_file() or trace.pcap_path.stat().st_size == 0:
+                logger.warn(
+                    'pcap file is empty, tcpdump may not have executed: %s, %s',
+                    trace,
+                    trace.pcap_path,
+                )
+
         cwd.unlink()
+
+    def _start_packet_capture(self, trace: Trace) -> subprocess.Popen:
+        pcap = trace.context.template.pcap
+        assert pcap
+
+        trace.pcap_path.touch(mode=0o666)
+
+        logger.debug('starting packet capture for trace %s on interface %s', trace, pcap.interface)
+        return subprocess.Popen(
+            ['tcpdump', '-i', pcap.interface, '-w', str(trace.pcap_path)],
+            cwd=str(trace.cwd),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
 
     def _setup_trace(self, trace: Trace, cwd: Path) -> None:
         """
@@ -359,7 +394,7 @@ class Executor:
         trace.setup_script = subprocess.run(
             [f'./{trace.setup_script_path.name}'],
             cwd=str(cwd),
-            stdout=trace.setup_script_output.open('wb'),
+            stdout=trace.setup_script_output_path.open('wb'),
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             env=trace.env(inherit=True),
@@ -380,7 +415,7 @@ class Executor:
             trace.teardown_script = subprocess.run(
                 [f'./{trace.teardown_script_path.name}'],
                 cwd=str(cwd),
-                stdout=trace.teardown_script_output.open('wb'),
+                stdout=trace.teardown_script_output_path.open('wb'),
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL,
                 env=trace.env(inherit=True),
@@ -426,7 +461,7 @@ class Executor:
             trace.concurrent_script = subprocess.Popen(
                 [f'./{trace.concurrent_script_path.name}'],
                 cwd=str(cwd),
-                stdout=trace.concurrent_script_output.open('wb'),
+                stdout=trace.concurrent_script_output_path.open('wb'),
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL,
                 env=trace.env(inherit=True),
