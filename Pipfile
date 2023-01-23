@@ -10,6 +10,7 @@ exrex = "*"
 ssdeep = "*"
 pytest = "*"
 scapy = "*"
+python-memcached = "*"
 
 [dev-packages]
 blue = "*"

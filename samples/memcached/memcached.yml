@@ -10,12 +10,17 @@ templates:
       mode: client
       retries: 3
       run: |
-        nc -C -N 127.0.0.1 11211 <<EOF
-        set x 0 0 11
-        hello world
+        python <<EOF
+        from memcache import Client
 
-        get x
+        client = Client('127.0.0.1')
+        client.set('x', '10')
+        assert client.get('x') == '10'
         EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
 
     comparators:
       - stdout
@@ -24,6 +29,11 @@ templates:
       - id: concurrent_script
         exit_code:
           expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
 
   # set with expiration
   - concurrent:
@@ -31,18 +41,21 @@ templates:
       mode: client
       retries: 3
       run: |
-        nc -C -N 127.0.0.1 11211 <<EOF
-        set x 0 2 11
-        hello world
+        python <<EOF
+        import time
+        from memcache import Client
 
-        get x
+        client = Client('127.0.0.1')
+        client.set('x', '10', time=2)
+        assert client.get('x') == '10', 'value was not set'
+
+        time.sleep(3.0)
+        assert client.get('x') is None, 'value did not expire'
         EOF
 
-        sleep 2
-
-        nc -C -N 127.0.0.1 11211 <<EOF
-        get x
-        EOF
+    pcap:
+      filename: capture.pcap
+      interface: lo
 
     comparators:
       - stdout
@@ -51,3 +64,8 @@ templates:
       - id: concurrent_script
         exit_code:
           expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
