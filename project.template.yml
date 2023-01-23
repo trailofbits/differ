@@ -187,7 +187,7 @@ templates:
     #   # filename: capture.pcap
     #   #
     #   #
-    #   # The netowrk interface to capture packets on. This option is passed to `tcpdump` in the
+    #   # The network interface to capture packets on. This option is passed to `tcpdump` in the
     #   # `-i/--interface` argument.
     #   #
     #   # interface: lo

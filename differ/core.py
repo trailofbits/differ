@@ -363,6 +363,7 @@ class PcapConfig:
     """
     Configuration for capturing packets during trace execution.
     """
+
     #: The filename to store the pcap to, relative to the trace working directory
     filename: Path
     #: The network interface to capture on

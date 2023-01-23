@@ -46,7 +46,7 @@ The current user will need to be able to run `tcpdump` without `sudo` in order f
    $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
    ```
 
-4. Verify that you can run `tcpdump` without sudo. The folllwing command should work properly and produce a pcap file.
+4. Verify that you can run `tcpdump` without sudo. The following command should work properly and produce a pcap file.
    ```bash
    $ tcpdump -i lo -w test.pcap
    # wait a few seconds
@@ -193,5 +193,5 @@ $ pipenv run ci
 ```
 
 <!--
-spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy lftp lighttpd
+spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy lftp lighttpd chgrp setcap usermod
 -->
