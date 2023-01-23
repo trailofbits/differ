@@ -176,6 +176,22 @@ templates:
     #
     # script_exit_on_first_error: true
 
+    # Perform a packet capture during trace execution. Packet captures are performed by the
+    # `tcpdump` tool and the output is a pcap file that can be used by the pcap comparator. This
+    # feature is disabled by default.
+    #
+    # pcap:
+    #   # The filename to store the pcap file, relative to the trace working directory. This
+    #   # argument is passed to `tcpdump` in the `-w` argument.
+    #   #
+    #   # filename: capture.pcap
+    #   #
+    #   #
+    #   # The netowrk interface to capture packets on. This option is passed to `tcpdump` in the
+    #   # `-i/--interface` argument.
+    #   #
+    #   # interface: lo
+
     # A set of variables that will be generated for each trace.
     variables:
       # The key is the variable name
