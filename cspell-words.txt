@@ -18,6 +18,8 @@ exrex
 getone
 SIGINT
 pcap
+tcpdump
+
 
 # sphinx / restructuredText directives
 toctree
