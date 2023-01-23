@@ -99,12 +99,12 @@ class TestExecutorRunTrace:
         mock_run.assert_called_once_with(
             [f'./{trace.setup_script_path.name}'],
             cwd=str(cwd),
-            stdout=trace.setup_script_output.open.return_value,
+            stdout=trace.setup_script_output_path.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             env=trace.env.return_value,
         )
-        trace.setup_script_output.open.assert_called_once_with('wb')
+        trace.setup_script_output_path.open.assert_called_once_with('wb')
 
     @patch.object(executor.subprocess, 'run')
     def test_setup_trace_no_script(self, mock_run):
@@ -143,12 +143,12 @@ class TestExecutorRunTrace:
         mock_run.assert_called_once_with(
             [f'./{trace.teardown_script_path.name}'],
             cwd=str(cwd),
-            stdout=trace.teardown_script_output.open.return_value,
+            stdout=trace.teardown_script_output_path.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             env=trace.env.return_value,
         )
-        trace.teardown_script_output.open.assert_called_once_with('wb')
+        trace.teardown_script_output_path.open.assert_called_once_with('wb')
         trace.concurrent_script.wait.assert_called_once_with(10.0 - (4.0 - 0.0))
 
     @patch.object(executor.time, 'monotonic')
@@ -220,12 +220,12 @@ class TestExecutorRunTrace:
         mock_popen.assert_called_once_with(
             [f'./{trace.concurrent_script_path.name}'],
             cwd=str(cwd),
-            stdout=trace.concurrent_script_output.open.return_value,
+            stdout=trace.concurrent_script_output_path.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             env=trace.env.return_value,
         )
-        trace.concurrent_script_output.open.assert_called_once_with('wb')
+        trace.concurrent_script_output_path.open.assert_called_once_with('wb')
 
     @patch.object(executor.subprocess, 'Popen')
     @patch.object(executor.time, 'monotonic')

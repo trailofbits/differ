@@ -296,7 +296,7 @@ class SetupScriptComparator(HookScriptComparator):
         super().__init__('setup', config)
 
     def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
-        return trace.setup_script, trace.setup_script_output
+        return trace.setup_script, trace.setup_script_output_path
 
 
 @register('teardown_script')
@@ -311,7 +311,7 @@ class TeardownScriptComparator(HookScriptComparator):
         super().__init__('teardown', config)
 
     def get_output(self, trace: Trace) -> tuple[Optional[CompletedProcess], Path]:
-        return trace.teardown_script, trace.teardown_script_output
+        return trace.teardown_script, trace.teardown_script_output_path
 
 
 @register('concurrent_script')
@@ -332,4 +332,4 @@ class ConcurrentScriptComparator(HookScriptComparator):
             )
         else:
             proc = None
-        return proc, trace.concurrent_script_output
+        return proc, trace.concurrent_script_output_path
