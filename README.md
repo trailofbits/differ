@@ -24,6 +24,35 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    ```
 4. Install [Node.js](https://nodejs.org/en/), which is required by the type checker (pyright). On Linux, use the [node version manager](https://github.com/nvm-sh/nvm) and on Windows install Node.js 18+ and add `node.exe` to the `PATH`.
 
+### Allow current user to execute tcpdump
+
+The current user will need to be able to run `tcpdump` without `sudo` in order for the packet capture functionality to work properly. This is not necessary if DIFFER is being run as `root`.
+
+1. Create a new `pcap` group and add it to the current user.
+   ```bash
+   $ sudo groupadd pcap
+   $ sudo usermod -a -G pcap $USER
+   ```
+
+   **Note:** the change won't take affect until you logout and log back in.
+
+2. Change the group owner of `tcpdump` to the new `pcap` group.
+   ```bash
+   $ sudo chgrp pcap /usr/sbin/tcpdump
+   ```
+
+3. Enable the network traffic capture capabilities for the `tcpdump` binary.
+   ```bash
+   $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
+   ```
+
+4. Verify that you can run `tcpdump` without sudo. The folllwing command should work properly and produce a pcap file.
+   ```bash
+   $ tcpdump -i lo -w test.pcap
+   # wait a few seconds
+   # ctrl+c
+   ```
+
 ## Running Differ
 
 **Sample Project Configuration**
