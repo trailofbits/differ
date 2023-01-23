@@ -17,6 +17,7 @@ class TestExecutorRunTrace:
         link_cwd = trace_cwd.parent / 'current_trace'
         link_cwd.exists.return_value = True
         trace = MagicMock(cwd=trace_cwd, arguments='hello world')
+        trace.context.template.pcap = None
 
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
@@ -47,14 +48,12 @@ class TestExecutorRunTrace:
 
     @patch.object(executor.subprocess, 'Popen')
     def test_run_trace_link_filename(self, mock_popen):
-        setup = Path('/path/to/setup.sh')
-        teardown = Path('/path/to/teardown.sh')
-
         trace_cwd = MagicMock()
         link_cwd = trace_cwd.parent / 'current_trace'
         link_cwd.exists.return_value = False
         link_filename = trace_cwd / 'my_binary'
         trace = MagicMock(cwd=trace_cwd, arguments='hello world')
+        trace.context.template.pcap = None
 
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
