@@ -59,6 +59,7 @@ jobs:
           pipx install pipenv
           sudo apt-get update
           sudo apt-get install -y libfuzzy-dev lftp lighttpd memcached tcpdump
+          sudo systemctl stop memcached
 
       - name: 'Init Python'
         run: |
