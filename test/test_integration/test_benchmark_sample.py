@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from _pytest.python import Metafunc
@@ -21,17 +22,23 @@ def pytest_generate_tests(metafunc: Metafunc):
 
     params: list[tuple[Executor, Project, TraceTemplate]] = []
     for project_dir in PROJECTS_DIR.iterdir():
-        if project_dir.is_dir():
-            name = project_dir.name.split('-')[0]
-            project_filename = project_dir / (name + '.yml')
-            if project_filename.is_file():
-                try:
-                    project = Project.load(REPORT_DIR, project_filename)
-                except:  # noqa: E722
-                    pass
-                else:
-                    app.setup_project(project)
-                    params.extend((app, project, template) for template in project.templates)
+        if not project_dir.is_dir():
+            continue
+
+        name = project_dir.name.split('-')[0]
+        project_filename = project_dir / (name + '.yml')
+        if not project_filename.is_file():
+            continue
+
+        try:
+            project = Project.load(REPORT_DIR, project_filename)
+        except:  # noqa: E722
+            pass
+        else:
+            exclude = os.getenv('CI') == 'true' and any(template.pcap for template in project.templates)
+            if not exclude:
+                app.setup_project(project)
+                params.extend((app, project, template) for template in project.templates)
 
     metafunc.parametrize(
         'app,project,template',
