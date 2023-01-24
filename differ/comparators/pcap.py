@@ -1,5 +1,5 @@
 # spell-checker:ignore rdpcap scapy sport dport
-import logging
+# import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -14,7 +14,7 @@ from differ.core import Comparator, ComparisonResult, CrashResult, Trace
 
 from . import register
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -199,16 +199,16 @@ class PcapComparator(Comparator):
             key = '|'.join(sorted([source, dest]))
             flow = flows_lookup.get(key)
             if not flow:
-                logger.debug('detected new float: %s -> %s', source, dest)
+                # logger.debug('detected new flow: %s -> %s', source, dest)
                 flow = flows_lookup[key] = Flow(source, dest)
                 flows.append(flow)
 
             origin = 'client' if source == flow.client else 'server'
             payload = Payload.extract(self.config.protocol, origin, pkt)
             if payload:
-                logger.debug(
-                    'detected new payload: %s -> %s: %s', source, dest, repr(payload.data)
-                )
+                # logger.debug(
+                #     'detected new payload: %s -> %s: %s', source, dest, repr(payload.data)
+                # )
                 flow.payloads.append(payload)
 
         return flows
