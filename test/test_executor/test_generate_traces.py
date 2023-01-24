@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from differ import executor
+from differ.core import TraceContext
 
 
 class TestExecutorGenerateTraces:
@@ -70,3 +71,13 @@ class TestExecutorGenerateTraces:
         assert app.generate_parameters(template) == [value_sets[0]]
         mock_param_gen_cls.assert_called_once_with(template)
         param_gen.generate.assert_called_once()
+
+    def test_generate_contexts(self):
+        project = MagicMock()
+        template = MagicMock(id='test')
+        app = executor.Executor(Path('/'))
+        app.generate_parameters = MagicMock(return_value=[{'x': 1}, {'y': 2}])
+        assert app.generate_contexts(project, template) == [
+            TraceContext(template, {'x': 1}, id=f'test-001'),
+            TraceContext(template, {'y': 2}, id=f'test-002'),
+        ]

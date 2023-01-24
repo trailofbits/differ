@@ -1,8 +1,9 @@
+import os
 from pathlib import Path
 
 from _pytest.python import Metafunc
 
-from differ.core import Project
+from differ.core import Project, TraceTemplate
 from differ.executor import Executor
 
 REPORT_DIR = Path(__file__).parents[2] / 'integration_test_reports'
@@ -16,32 +17,45 @@ def pytest_generate_tests(metafunc: Metafunc):
     if 'project' not in metafunc.fixturenames:
         return
 
-    if not REPORT_DIR.exists():
-        REPORT_DIR.mkdir()
-
-    load_variables()
-    load_comparators()
-
-    projects = []
-    for project_dir in PROJECTS_DIR.iterdir():
-        if project_dir.is_dir():
-            name = project_dir.name.split('-')[0]
-            project_filename = project_dir / (name + '.yml')
-            if project_filename.is_file():
-                try:
-                    project = Project.load(REPORT_DIR, project_filename)
-                except:  # noqa: E722
-                    pass
-                else:
-                    projects.append(project)
-
-    metafunc.parametrize('project', projects, ids=[project.name for project in projects])
-
-
-def test_benchmark_sample(project: Project):
     app = Executor(REPORT_DIR, overwrite_existing_report=True)
     app.setup()
-    error_count = app.run_project(project)
+
+    params: list[tuple[Executor, Project, TraceTemplate]] = []
+    for project_dir in PROJECTS_DIR.iterdir():
+        if not project_dir.is_dir():
+            continue
+
+        name = project_dir.name.split('-')[0]
+        project_filename = project_dir / (name + '.yml')
+        if not project_filename.is_file():
+            continue
+
+        try:
+            project = Project.load(REPORT_DIR, project_filename)
+        except:  # noqa: E722
+            pass
+        else:
+            # The following check is disabled which makes it so pcap templates are not run in CI.
+            # This appears to be working but, if these samples become flaky or begin breaking, we
+            # should disable them again.
+            #
+            # exclude = os.getenv('CI') == 'true' and any(
+            #     template.pcap for template in project.templates
+            # )
+            # if not exclude:
+            app.setup_project(project)
+            params.extend((app, project, template) for template in project.templates)
+
+    metafunc.parametrize(
+        'app,project,template',
+        params,
+        ids=[f'{project.name}_{template.id}' for _, project, template in params],
+    )
+
+
+def test_benchmark_sample(app: Executor, project: Project, template: TraceTemplate):
+    # error_count = app.run_project(project)
+    _, error_count = app.run_template(project, template)
 
     if error_count:
         for filename in project.directory.iterdir():

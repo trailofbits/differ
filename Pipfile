@@ -9,6 +9,8 @@ jinja2 = "*"
 exrex = "*"
 ssdeep = "*"
 pytest = "*"
+scapy = "*"
+python-memcached = "*"
 
 [dev-packages]
 blue = "*"

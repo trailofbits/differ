@@ -111,13 +111,10 @@ class Executor:
         if not self.root.exists():
             self.root.mkdir()
 
-    def run_project(self, project: Project) -> int:
+    def setup_project(self, project: Project) -> None:
         """
-        Run a project.
-
-        :param project: the project
+        Setup a project.
         """
-        logger.info('running project: %s', project.name)
         if project.directory.exists():
             if not self.overwrite_existing_report:
                 # The project directory must not exist
@@ -128,15 +125,22 @@ class Executor:
 
         project.directory.mkdir()
 
-        error_count = 0
-        context_count = 0
-        for template in project.templates:
-            contexts = self.generate_contexts(project, template)
-            for context in contexts:
-                context_count += 1
-                error_count += self.run_context(project, context)
+    def run_project(self, project: Project) -> int:
+        """
+        Run a project.
 
-        trace_count = context_count * (len(project.debloaters) + 1)
+        :param project: the project
+        """
+        logger.info('running project: %s', project.name)
+        self.setup_project(project)
+
+        error_count = 0
+        trace_count = 0
+        for template in project.templates:
+            traces, errors = self.run_template(project, template)
+            trace_count += traces
+            error_count += errors
+
         if not error_count:
             logger.info('project %s ran %d traces successfully', project.name, trace_count)
         else:
@@ -145,6 +149,23 @@ class Executor:
             )
 
         return error_count
+
+    def run_template(self, project: Project, template: TraceTemplate) -> tuple[int, int]:
+        """
+        Run a project template. The return value is a tuple containing the total number of traces
+        executed and the number of traces that failed with an error.
+
+        :returns: a tuple of ``(trace_count, error_count)``
+        """
+        error_count = 0
+        context_count = 0
+        contexts = self.generate_contexts(project, template)
+        for context in contexts:
+            context_count += 1
+            error_count += self.run_context(project, context)
+
+        trace_count = context_count * (len(project.debloaters) + 1)
+        return trace_count, error_count
 
     def run_context(self, project: Project, context: TraceContext) -> int:
         """
@@ -301,6 +322,13 @@ class Executor:
 
         cwd.symlink_to(trace.cwd)
 
+        if trace.context.template.pcap:
+            # start the packet capture
+            pcap = self._start_packet_capture(trace)
+            time.sleep(1.0)
+        else:
+            pcap = None
+
         # run setup hooks and setup script
         self._setup_trace(trace, cwd)
 
@@ -321,7 +349,38 @@ class Executor:
         # run the teardown hooks, teardown script, and terminate the concurrent script
         self._teardown_trace(trace, cwd)
 
+        if pcap:
+            if pcap.poll() is None:
+                time.sleep(1.0)
+                pcap.send_signal(signal.SIGINT.value)
+                pcap.wait()
+
+            if not trace.pcap_path.is_file() or trace.pcap_path.stat().st_size == 0:
+                logger.warn(  # pragma: no cover
+                    'pcap file is empty, tcpdump may not have executed: %s, %s',
+                    trace,
+                    trace.pcap_path,
+                )
+
         cwd.unlink()
+
+    def _start_packet_capture(self, trace: Trace) -> subprocess.Popen:
+        """
+        Start the packet capture for the trace using ``tcpdump``.
+        """
+        pcap = trace.context.template.pcap
+        assert pcap
+
+        trace.pcap_path.touch(mode=0o666)
+
+        logger.debug('starting packet capture for trace %s on interface %s', trace, pcap.interface)
+        return subprocess.Popen(
+            ['tcpdump', '-i', pcap.interface, '-w', str(trace.pcap_path)],
+            cwd=str(trace.cwd),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
 
     def _setup_trace(self, trace: Trace, cwd: Path) -> None:
         """
@@ -338,7 +397,7 @@ class Executor:
         trace.setup_script = subprocess.run(
             [f'./{trace.setup_script_path.name}'],
             cwd=str(cwd),
-            stdout=trace.setup_script_output.open('wb'),
+            stdout=trace.setup_script_output_path.open('wb'),
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             env=trace.env(inherit=True),
@@ -355,11 +414,11 @@ class Executor:
 
         if trace.teardown_script_path.exists():
             # Run the trace teardown script
-            logger.debug('running trace teardown %s: %s', trace)
+            logger.debug('running trace teardown %s', trace)
             trace.teardown_script = subprocess.run(
                 [f'./{trace.teardown_script_path.name}'],
                 cwd=str(cwd),
-                stdout=trace.teardown_script_output.open('wb'),
+                stdout=trace.teardown_script_output_path.open('wb'),
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL,
                 env=trace.env(inherit=True),
@@ -405,7 +464,7 @@ class Executor:
             trace.concurrent_script = subprocess.Popen(
                 [f'./{trace.concurrent_script_path.name}'],
                 cwd=str(cwd),
-                stdout=trace.concurrent_script_output.open('wb'),
+                stdout=trace.concurrent_script_output_path.open('wb'),
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL,
                 env=trace.env(inherit=True),

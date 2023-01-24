@@ -17,6 +17,7 @@ class TestExecutorRunTrace:
         link_cwd = trace_cwd.parent / 'current_trace'
         link_cwd.exists.return_value = True
         trace = MagicMock(cwd=trace_cwd, arguments='hello world')
+        trace.context.template.pcap = None
 
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
@@ -47,14 +48,12 @@ class TestExecutorRunTrace:
 
     @patch.object(executor.subprocess, 'Popen')
     def test_run_trace_link_filename(self, mock_popen):
-        setup = Path('/path/to/setup.sh')
-        teardown = Path('/path/to/teardown.sh')
-
         trace_cwd = MagicMock()
         link_cwd = trace_cwd.parent / 'current_trace'
         link_cwd.exists.return_value = False
         link_filename = trace_cwd / 'my_binary'
         trace = MagicMock(cwd=trace_cwd, arguments='hello world')
+        trace.context.template.pcap = None
 
         app = executor.Executor(Path('/'))
         app.create_stdin_file = MagicMock()
@@ -84,6 +83,49 @@ class TestExecutorRunTrace:
         link_cwd.symlink_to.assert_called_once_with(trace_cwd)
         link_filename.symlink_to.assert_called_once_with(trace.binary)
 
+    @patch.object(executor.subprocess, 'Popen')
+    @patch.object(executor.time, 'sleep')
+    def test_run_trace_pcap(self, mock_sleep, mock_popen):
+        trace_cwd = MagicMock()
+        link_cwd = trace_cwd.parent / 'current_trace'
+        link_cwd.exists.return_value = True
+        trace = MagicMock(cwd=trace_cwd, arguments='hello world')
+
+        app = executor.Executor(Path('/'))
+        app.create_stdin_file = MagicMock()
+        app.write_hook_scripts = MagicMock()
+        app._setup_trace = MagicMock()
+        app._monitor_trace = MagicMock()
+        app._teardown_trace = MagicMock()
+        app._start_packet_capture = MagicMock()
+        pcap = app._start_packet_capture.return_value
+        pcap.poll.return_value = None
+
+        app.run_trace(MagicMock(link_filename=''), trace)
+
+        mock_popen.assert_called_once_with(
+            [f'./{trace.binary.name}', 'hello', 'world'],
+            cwd=str(link_cwd),
+            stdout=trace.stdout_path.open.return_value,
+            stderr=trace.stderr_path.open.return_value,
+            stdin=app.create_stdin_file.return_value.open.return_value,
+        )
+
+        app.write_hook_scripts.assert_called_once_with(trace)
+        app.create_stdin_file.assert_called_once_with(trace)
+        app._setup_trace.assert_called_once_with(trace, link_cwd)
+        app._teardown_trace.assert_called_once_with(trace, link_cwd)
+        app._monitor_trace.assert_called_once_with(trace, link_cwd)
+
+        link_cwd.exists.assert_called_once()
+        assert link_cwd.unlink.call_count == 2
+        link_cwd.symlink_to.assert_called_once_with(trace_cwd)
+
+        app._start_packet_capture.assert_called_once_with(trace)
+        pcap.poll.assert_called_once()
+        pcap.send_signal.assert_called_once_with(signal.SIGINT.value)
+        pcap.wait.assert_called_once()
+
     @patch.object(executor.subprocess, 'run')
     def test_setup_trace(self, mock_run):
         hook = MagicMock()
@@ -99,12 +141,12 @@ class TestExecutorRunTrace:
         mock_run.assert_called_once_with(
             [f'./{trace.setup_script_path.name}'],
             cwd=str(cwd),
-            stdout=trace.setup_script_output.open.return_value,
+            stdout=trace.setup_script_output_path.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             env=trace.env.return_value,
         )
-        trace.setup_script_output.open.assert_called_once_with('wb')
+        trace.setup_script_output_path.open.assert_called_once_with('wb')
 
     @patch.object(executor.subprocess, 'run')
     def test_setup_trace_no_script(self, mock_run):
@@ -143,12 +185,12 @@ class TestExecutorRunTrace:
         mock_run.assert_called_once_with(
             [f'./{trace.teardown_script_path.name}'],
             cwd=str(cwd),
-            stdout=trace.teardown_script_output.open.return_value,
+            stdout=trace.teardown_script_output_path.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             env=trace.env.return_value,
         )
-        trace.teardown_script_output.open.assert_called_once_with('wb')
+        trace.teardown_script_output_path.open.assert_called_once_with('wb')
         trace.concurrent_script.wait.assert_called_once_with(10.0 - (4.0 - 0.0))
 
     @patch.object(executor.time, 'monotonic')
@@ -220,12 +262,12 @@ class TestExecutorRunTrace:
         mock_popen.assert_called_once_with(
             [f'./{trace.concurrent_script_path.name}'],
             cwd=str(cwd),
-            stdout=trace.concurrent_script_output.open.return_value,
+            stdout=trace.concurrent_script_output_path.open.return_value,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             env=trace.env.return_value,
         )
-        trace.concurrent_script_output.open.assert_called_once_with('wb')
+        trace.concurrent_script_output_path.open.assert_called_once_with('wb')
 
     @patch.object(executor.subprocess, 'Popen')
     @patch.object(executor.time, 'monotonic')
@@ -372,3 +414,19 @@ class TestExecutorRunTrace:
             call(trace.concurrent_script, 10.0),
             call(trace.process, 20.0 + 1.0),
         ]
+
+    @patch.object(executor.subprocess, 'Popen')
+    def test_start_packet_capture(self, mock_popen):
+        trace = MagicMock()
+        trace.context.template.pcap.interface = 'lo'
+
+        app = executor.Executor(Path('/'))
+        assert app._start_packet_capture(trace) is mock_popen.return_value
+        mock_popen.assert_called_once_with(
+            ['tcpdump', '-i', 'lo', '-w', str(trace.pcap_path)],
+            cwd=str(trace.cwd),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
+        trace.pcap_path.touch.assert_called_once_with(mode=0o666)

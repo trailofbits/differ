@@ -12,7 +12,9 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    ```bash
    $ sudo add-apt-repository ppa:deadsnakes/ppa
    $ sudo apt update
-   $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp lighttpd
+   $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp lighttpd memcached tcpdump
+   $ sudo systemctl stop memcached
+   $ sudo systemctl disable memcached
    ```
 2. Install `pipenv`, which manages the virtual environment.
    ```bash
@@ -23,6 +25,25 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    $ pipenv sync --dev
    ```
 4. Install [Node.js](https://nodejs.org/en/), which is required by the type checker (pyright). On Linux, use the [node version manager](https://github.com/nvm-sh/nvm) and on Windows install Node.js 18+ and add `node.exe` to the `PATH`.
+
+### Allow current user to execute tcpdump
+
+The current user will need to be able to run `tcpdump` without `sudo` in order for the packet capture functionality to work properly. This is not necessary if DIFFER is being run as `root`.
+
+1. Enable the network traffic capture capabilities for the `tcpdump` binary.
+   ```bash
+   $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
+   ```
+
+2. Verify that you can run `tcpdump` without sudo. The following command should work properly and produce a pcap file.
+   ```bash
+   $ tcpdump -i lo -w test.pcap
+   # wait a few seconds
+   # ctrl+c
+
+   $ ls -l test.pcap
+   # verify that the file exists and is not empty
+   ```
 
 ## Running Differ
 
@@ -164,5 +185,5 @@ $ pipenv run ci
 ```
 
 <!--
-spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy lftp lighttpd
+spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy lftp lighttpd chgrp setcap usermod
 -->
