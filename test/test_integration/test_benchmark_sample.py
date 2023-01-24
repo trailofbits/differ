@@ -35,12 +35,16 @@ def pytest_generate_tests(metafunc: Metafunc):
         except:  # noqa: E722
             pass
         else:
-            exclude = os.getenv('CI') == 'true_nope' and any(
-                template.pcap for template in project.templates
-            )
-            if not exclude:
-                app.setup_project(project)
-                params.extend((app, project, template) for template in project.templates)
+            # The following check is disabled which makes it so pcap templates are not run in CI.
+            # This appears to be working but, if these samples become flaky or begin breaking, we
+            # should disable them again.
+            #
+            # exclude = os.getenv('CI') == 'true' and any(
+            #     template.pcap for template in project.templates
+            # )
+            # if not exclude:
+            app.setup_project(project)
+            params.extend((app, project, template) for template in project.templates)
 
     metafunc.parametrize(
         'app,project,template',
