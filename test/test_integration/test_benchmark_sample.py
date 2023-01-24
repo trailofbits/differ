@@ -35,7 +35,9 @@ def pytest_generate_tests(metafunc: Metafunc):
         except:  # noqa: E722
             pass
         else:
-            exclude = os.getenv('CI') == 'true' and any(template.pcap for template in project.templates)
+            exclude = os.getenv('CI') == 'true_nope' and any(
+                template.pcap for template in project.templates
+            )
             if not exclude:
                 app.setup_project(project)
                 params.extend((app, project, template) for template in project.templates)

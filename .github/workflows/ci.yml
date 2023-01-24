@@ -66,6 +66,9 @@ jobs:
 
       - name: 'Tests'
         run: |
+          whoami
+          echo user: $USER
+          sudo setcap cap_net_raw,cap_net_admin=eip $(which tcpdump)
           pipenv run tests
 
   # pip-audit:
