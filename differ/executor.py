@@ -356,7 +356,7 @@ class Executor:
                 pcap.wait()
 
             if not trace.pcap_path.is_file() or trace.pcap_path.stat().st_size == 0:
-                logger.warn(
+                logger.warn(  # pragma: no cover
                     'pcap file is empty, tcpdump may not have executed: %s, %s',
                     trace,
                     trace.pcap_path,
@@ -365,6 +365,9 @@ class Executor:
         cwd.unlink()
 
     def _start_packet_capture(self, trace: Trace) -> subprocess.Popen:
+        """
+        Start the packet capture for the trace using ``tcpdump``.
+        """
         pcap = trace.context.template.pcap
         assert pcap
 
