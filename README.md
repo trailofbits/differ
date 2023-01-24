@@ -28,29 +28,19 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
 
 The current user will need to be able to run `tcpdump` without `sudo` in order for the packet capture functionality to work properly. This is not necessary if DIFFER is being run as `root`.
 
-1. Create a new `pcap` group and add it to the current user.
-   ```bash
-   $ sudo groupadd pcap
-   $ sudo usermod -a -G pcap $USER
-   ```
-
-   **Note:** the change won't take affect until you logout and log back in.
-
-2. Change the group owner of `tcpdump` to the new `pcap` group.
-   ```bash
-   $ sudo chgrp pcap /usr/sbin/tcpdump
-   ```
-
-3. Enable the network traffic capture capabilities for the `tcpdump` binary.
+1. Enable the network traffic capture capabilities for the `tcpdump` binary.
    ```bash
    $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
    ```
 
-4. Verify that you can run `tcpdump` without sudo. The following command should work properly and produce a pcap file.
+2. Verify that you can run `tcpdump` without sudo. The following command should work properly and produce a pcap file.
    ```bash
    $ tcpdump -i lo -w test.pcap
    # wait a few seconds
    # ctrl+c
+
+   $ ls -l test.pcap
+   # verify that the file exists and is not empty
    ```
 
 ## Running Differ
