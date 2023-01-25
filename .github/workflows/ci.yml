@@ -58,7 +58,7 @@ jobs:
           # Python virtual env management
           pipx install pipenv
           sudo apt-get update
-          sudo apt-get install -y libfuzzy-dev lftp lighttpd memcached tcpdump
+          sudo apt-get install -y libfuzzy-dev lftp lighttpd memcached tcpdump binutils
           sudo systemctl stop memcached
 
       - name: 'Init Python'
