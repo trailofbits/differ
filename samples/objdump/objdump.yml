@@ -1,0 +1,120 @@
+name: objdump
+original: /usr/bin/objdump
+debloaters:
+  original: /usr/bin/objdump
+
+templates:
+  - id: flag
+    arguments: "{{flag}} {{binary}}"
+    variables:
+      flag:
+        type: str
+        values:
+          - '-a'
+          - '-f'
+          - '-p'
+          - '-h'
+          - '-x'
+          - '-d'
+          - '-D'
+          - '-S'
+          - '-s'
+          - '-g'
+          - '-e'
+          - '-G'
+          - '-t'
+          - '-r'
+
+      binary:
+        type: str
+        values:
+          # amd64 binary
+          - '/bin/bash'
+          # amd64 shared library
+          - '/lib64/ld-linux-x86-64.so.2'
+          # i386 shared library
+          - '/lib/i386-linux-gnu/libz.so'
+          # amd64 static library
+          - '/lib/x86_64-linux-gnu/libffi.a'
+          # # i386 static library
+          - '/lib/i386-linux-gnu/libffi.a'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - id: flag-dyn
+    arguments: "{{flag}} {{binary}}"
+    variables:
+      flag:
+        type: str
+        values:
+          - '-T'
+          - '-R'
+
+      binary:
+        type: str
+        values:
+          # amd64 binary
+          - '/bin/bash'
+          # amd64 shared library
+          - '/lib64/ld-linux-x86-64.so.2'
+          # i386 shared library
+          - '/lib/i386-linux-gnu/libz.so'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - id: flag-dyn_static_error
+    arguments: "{{flag}} {{binary}}"
+    variables:
+      flag:
+        type: str
+        values:
+          - '-T'
+          - '-R'
+
+      binary:
+        type: str
+        values:
+          # amd64 static library
+          - '/lib/x86_64-linux-gnu/libffi.a'
+          # # i386 static library
+          - '/lib/i386-linux-gnu/libffi.a'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  - id: error-file_not_exist
+    arguments: '-x file_does_not_exist'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  # invalid object file
+  - id: error-not_obj_file
+    arguments: '-x /etc/passwd'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  # directory
+  - id: error-directory
+    arguments: '-x /home'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
