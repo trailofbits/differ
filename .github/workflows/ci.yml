@@ -58,7 +58,7 @@ jobs:
           # Python virtual env management
           pipx install pipenv
           sudo apt-get update
-          sudo apt-get install -y libfuzzy-dev lftp lighttpd memcached tcpdump binutils
+          sudo apt-get install -y libfuzzy-dev lftp lighttpd memcached tcpdump binutils zlib1g:i386
           sudo systemctl stop memcached
 
       - name: 'Init Python'
@@ -70,8 +70,8 @@ jobs:
           # echo /lib/
           # ls -l '/lib/'
           # echo ===============
-          # echo /lib/i386-linux-gnu:
-          # ls -l '/lib/i386-linux-gnu/'
+          echo /lib/i386-linux-gnu:
+          ls -l '/lib/i386-linux-gnu/'
           # echo ===============
           # echo /lib/x86_64-linux-gnu:
           # ls -l '/lib/x86_64-linux-gnu/'
