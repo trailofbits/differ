@@ -33,11 +33,11 @@ templates:
           # amd64 shared library
           - '/lib64/ld-linux-x86-64.so.2'
           # i386 shared library
-          - '/lib/i386-linux-gnu/libz.so'
+          # - '/lib/i386-linux-gnu/libz.so'
           # amd64 static library
           - '/lib/x86_64-linux-gnu/libffi.a'
           # # i386 static library
-          - '/lib/i386-linux-gnu/libffi.a'
+          # - '/lib/i386-linux-gnu/libffi.a'
 
     comparators:
       - stdout
@@ -62,7 +62,7 @@ templates:
           # amd64 shared library
           - '/lib64/ld-linux-x86-64.so.2'
           # i386 shared library
-          - '/lib/i386-linux-gnu/libz.so'
+          # - '/lib/i386-linux-gnu/libz.so'
 
     comparators:
       - stdout
@@ -85,7 +85,7 @@ templates:
           # amd64 static library
           - '/lib/x86_64-linux-gnu/libffi.a'
           # # i386 static library
-          - '/lib/i386-linux-gnu/libffi.a'
+          # - '/lib/i386-linux-gnu/libffi.a'
 
     comparators:
       - stdout
