@@ -67,6 +67,9 @@ jobs:
 
       - name: 'Tests'
         run: |
+          echo /lib/
+          ls -l '/lib/'
+          echo ===============
           echo /lib/i386-linux-gnu:
           ls -l '/lib/i386-linux-gnu/'
           echo ===============
