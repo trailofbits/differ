@@ -67,15 +67,6 @@ jobs:
 
       - name: 'Tests'
         run: |
-          # echo /lib/
-          # ls -l '/lib/'
-          # echo ===============
-          echo /lib/i386-linux-gnu:
-          ls -l '/lib/i386-linux-gnu/'
-          # echo ===============
-          # echo /lib/x86_64-linux-gnu:
-          # ls -l '/lib/x86_64-linux-gnu/'
-          # echo ===============
           sudo setcap cap_net_raw,cap_net_admin=eip $(which tcpdump)
           pipenv run tests
 
