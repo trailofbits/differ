@@ -9,7 +9,7 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
 ### Installing Dependencies
 
 1. Install Python 3.9 and dependencies. For Ubuntu 20.04, the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) can be used:
-   ```
+   ```bash
    $ sudo add-apt-repository ppa:deadsnakes/ppa
    $ sudo apt update
    $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp lighttpd memcached tcpdump binutils unzip poppler-utils
@@ -17,11 +17,11 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    $ sudo systemctl disable memcached
    ```
 2. Install `pipenv`, which manages the virtual environment.
-   ```
+   ```bash
    $ python3.9 -m pip install pipenv
    ```
 3. Create the virtual environment and install development dependencies:
-   ```
+   ```bash
    $ pipenv sync --dev
    ```
 4. Install [Node.js](https://nodejs.org/en/), which is required by the type checker (pyright). On Linux, use the [node version manager](https://github.com/nvm-sh/nvm) and on Windows install Node.js 18+ and add `node.exe` to the `PATH`.
@@ -31,12 +31,12 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
 The current user will need to be able to run `tcpdump` without `sudo` in order for the packet capture functionality to work properly. This is not necessary if DIFFER is being run as `root`.
 
 1. Enable the network traffic capture capabilities for the `tcpdump` binary.
-   ```
+   ```bash
    $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
    ```
 
 2. Verify that you can run `tcpdump` without sudo. The following command should work properly and produce a pcap file.
-   ```
+   ```bash
    $ tcpdump -i lo -w test.pcap
    # wait a few seconds
    # ctrl+c
@@ -49,7 +49,7 @@ The current user will need to be able to run `tcpdump` without `sudo` in order f
 
 **Sample Project Configuration**
 
-```
+```yaml
 # Sample project configuration file: project.yml
 
 # Unique name
@@ -101,20 +101,20 @@ templates:
 
 To run this project:
 
-```
+```bash
 $ pipenv run python -m differ --verbose project.yml
 ```
 
 The output is stored in the `./reports` directory by default and only errors are recorded. To change the output directory and output all reports, including successful runs:
 
-```
+```bash
 $ pipenv run python -m differ --verbose --report-successes --report-dir ./output project.yml
 ```
 
 Reports are stored in `{report_dir}/{project.name}/report-{engine}-[success|error]-{trace.id}.yml`. For example, a trace of the `binrec` debloater for the `coreutils_echo` project that failed would have a report located at:
 
-```
-$ cat ./reports/coreutils_echo/report-binrec-error-001.yml
+```yaml
+# $ cat ./reports/coreutils_echo/report-binrec-error-001.yml
 
 arguments:
 - '70'
@@ -167,7 +167,7 @@ The CI pipeline runs multiple tools that can also be run locally:
 
 These tools can be run locally using `pipenv`:
 
-```
+```bash
 # Run linting checks (static analysis)
 $ pipenv run lint
 
