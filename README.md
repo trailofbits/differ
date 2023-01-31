@@ -12,7 +12,8 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    ```bash
    $ sudo add-apt-repository ppa:deadsnakes/ppa
    $ sudo apt update
-   $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp lighttpd memcached tcpdump binutils unzip poppler-utils
+   $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp lighttpd memcached \
+       tcpdump binutils unzip poppler-utils imagemagick
    $ sudo systemctl stop memcached
    $ sudo systemctl disable memcached
    ```
@@ -185,5 +186,5 @@ $ pipenv run ci
 ```
 
 <!--
-spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy lftp lighttpd chgrp setcap usermod binutils poppler
+spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy lftp lighttpd chgrp setcap usermod binutils poppler imagemagick
 -->

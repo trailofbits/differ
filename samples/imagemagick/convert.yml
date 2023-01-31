@@ -1,0 +1,255 @@
+name: imagemagick_convert
+original: /usr/bin/convert
+debloaters:
+  original: /usr/bin/convert
+
+templates:
+  - id: convert-format
+    arguments: input_files/eggs.{{from}} eggs.{{to}}
+    input_files:
+      - source: input_files
+        static: true
+
+    teardown: |
+      # Some image files will not be identical because they will each have different EXIF data. We
+      # strip this using the system's imagemagick binary.
+      convert eggs.{{to}} -strip stripped-image
+
+    variables:
+      from:
+        type: str
+        values:
+          - jpg
+          - png
+          - bmp
+          - gif
+
+      to:
+        type: str
+        values:
+          - jpg
+          - png
+          - bmp
+          - gif
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: stripped-image
+
+  - id: resize
+    arguments: eggs.jpg -resize {{scale}} eggs-resized.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      scale:
+        type: str
+        values:
+          - 50%
+          - 150%
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-resized.jpg
+
+  - id: flip
+    arguments: eggs.jpg -flip eggs-flipped.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-flipped.jpg
+
+  - id: flop
+    arguments: eggs.jpg -flop eggs-flopped.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-flopped.jpg
+
+  - id: negate
+    arguments: eggs.jpg {{flag}} eggs-negate.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      flag:
+        type: str
+        values:
+          - '-negate'
+          - '+negate'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-negate.jpg
+
+  - id: scale
+    arguments: eggs.jpg -scale {{scale}} eggs-scaled.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      scale:
+        type: str
+        values:
+          - 50%
+          - 150%
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-scaled.jpg
+
+  - id: roll
+    arguments: eggs.jpg -roll {{x}}{{y}} eggs-rolled.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      x:
+        type: str
+        values:
+          - '+0'
+          - '-270'
+          - '+270'
+
+      y:
+        type: str
+        values:
+          - '+0'
+          - '-270'
+          - '+270'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-rolled.jpg
+
+  - id: transverse
+    arguments: eggs.jpg -transverse eggs-transversed.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-transversed.jpg
+
+  - id: transpose
+    arguments: eggs.jpg -transpose eggs-transposed.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-transposed.jpg
+
+  - id: rotate
+    arguments: eggs.jpg -rotate {{deg}} eggs-transversed.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      deg:
+        type: int
+        values:
+          - 0
+          - -270
+          - -90
+          - 90
+          - 270
+          - 360
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-transversed.jpg
+
+  - id: crop
+    arguments: eggs.jpg -crop {{width}}x{{height}}{{x}}{{y}} eggs-cropped.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      width:
+        type: int
+        range:
+          minimum: 6
+          maximum: 399
+          count: 3
+
+      height:
+        type: int
+        range:
+          minimum: 6
+          maximum: 399
+          count: 3
+
+      x:
+        type: str
+        values:
+          - '+0'
+          - '+90'
+
+      y:
+        type: str
+        values:
+          - '+0'
+          - '+90'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-cropped.jpg

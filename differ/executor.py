@@ -177,6 +177,8 @@ class Executor:
             raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), str(context_dir))
 
         context_dir.mkdir()
+        # Save the context parameters to context.yml
+        context.save(context_dir / 'context.yml')
 
         # First, run the original trace and verify it worked as expected
         original_trace = self.create_trace(project, context, project.original, '__original__')
