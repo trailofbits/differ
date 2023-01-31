@@ -594,11 +594,7 @@ class TraceContext:
         """
         Save the context parameters to a file.
         """
-        body = {
-            'id': self.id,
-            'arguments': self.template.arguments,
-            'values': self.values
-        }
+        body = {'id': self.id, 'arguments': self.template.arguments, 'values': self.values}
         with open(filename, 'w') as file:
             file.write(yaml.safe_dump(body))
 
