@@ -585,14 +585,22 @@ class TraceContext:
     #: Concrete variable values
     values: dict[str, Any] = field(default_factory=dict)
     #: Unique context id which is auto generated if not specified
-    id: str = ''
+    id: str = field(default_factory=lambda: str(uuid4()))
 
     def __str__(self) -> str:
         return self.id
 
-    def __post_init__(self):
-        if not self.id:
-            self.id = str(uuid4())
+    def save(self, filename: Path) -> None:
+        """
+        Save the context parameters to a file.
+        """
+        body = {
+            'id': self.id,
+            'arguments': self.template.arguments,
+            'values': self.values
+        }
+        with open(filename, 'w') as file:
+            file.write(yaml.safe_dump(body))
 
 
 @dataclass

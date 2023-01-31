@@ -72,6 +72,8 @@ class TestExecutorRunContext:
             call(project, context, debloater.binary, debloater.engine),
         ]
 
+        context.save.assert_called_once_with(context_dir / 'context.yml')
+
     def test_run_context_save_crash(self):
         debloater = MagicMock()
         project = MagicMock(debloaters={'x': debloater})
