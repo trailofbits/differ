@@ -106,3 +106,12 @@ class TestProject:
             project.report_filename(trace, False)
             == project.directory / 'report-engine-error-id.yml'
         )
+
+    def test_paths(self):
+        context = MagicMock()
+        context.id = 'blah'
+        trace = MagicMock(debloater_engine='chisel', context=context)
+        project = core.Project('proj', Path('/'), Path('original'))
+        assert project.context_directory(context) == Path('/') / 'trace-blah'
+        assert project.trace_directory(context, 'chisel') == Path('/') / 'trace-blah' / 'chisel'
+        assert project.crash_filename(trace) == Path('/') / 'crash-chisel-blah.yml'
