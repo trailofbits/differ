@@ -5,7 +5,7 @@ debloaters:
   original: /usr/bin/wget
 
 templates:
-  - id: download_text_https
+  - id: proto-https
     arguments: https://digg.com/robots.txt
     comparators:
       - stdout
@@ -13,3 +13,55 @@ templates:
         expect: 0
       - id: file
         filename: robots.txt
+
+  - id: proto-http
+    arguments: http://echo.jsontest.com/key/value
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: value
+
+  - id: proto-ip
+    arguments: "--header 'Host: echo.jsontest.com' http://{{'echo.jsontest.com'|gethostbyname}}/key/value"
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: value
+
+  - id: opts-output
+    arguments: -O data.json http://echo.jsontest.com/key/value/key2/value2
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: data.json
+
+  # -T - timeout
+  - id: opts-timeout_expired
+    timeout:
+      seconds: 2
+      expected: true
+
+    arguments: -T 10 http://echoss.jsontest.com/
+
+  - id: opts-timeout_ok
+    timeout: 5
+    arguments: -T 2 http://echoss.jsontest.com/
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 4
+
+  - id: get-param
+    arguments: -O data.json http://md5.jsontest.com/?text=hello_world
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: data.json
