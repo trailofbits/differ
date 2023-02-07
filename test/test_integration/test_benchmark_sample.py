@@ -1,18 +1,17 @@
-import os
 from pathlib import Path
 
 from _pytest.python import Metafunc
 
 from differ.core import Project, TraceTemplate
 from differ.executor import Executor
+from differ.util import discover_projects
 
 REPORT_DIR = Path(__file__).parents[2] / 'integration_test_reports'
-PROJECTS_DIR = Path(__file__).parents[2] / 'samples'
 
 
 def pytest_generate_tests(metafunc: Metafunc):
-    from differ.comparators import load_comparators
-    from differ.variables import load_variables
+    # from differ.comparators import load_comparators
+    # from differ.variables import load_variables
 
     if 'project' not in metafunc.fixturenames:
         return
@@ -21,30 +20,17 @@ def pytest_generate_tests(metafunc: Metafunc):
     app.setup()
 
     params: list[tuple[Executor, Project, TraceTemplate]] = []
-    for project_dir in PROJECTS_DIR.iterdir():
-        if not project_dir.is_dir():
-            continue
-
-        name = project_dir.name.split('-')[0]
-        project_filename = project_dir / (name + '.yml')
-        if not project_filename.is_file():
-            continue
-
-        try:
-            project = Project.load(REPORT_DIR, project_filename)
-        except:  # noqa: E722
-            pass
-        else:
-            # The following check is disabled which makes it so pcap templates are not run in CI.
-            # This appears to be working but, if these samples become flaky or begin breaking, we
-            # should disable them again.
-            #
-            # exclude = os.getenv('CI') == 'true' and any(
-            #     template.pcap for template in project.templates
-            # )
-            # if not exclude:
-            app.setup_project(project)
-            params.extend((app, project, template) for template in project.templates)
+    for project in discover_projects(report_dir=REPORT_DIR):
+        # The following check is disabled which makes it so pcap templates are not run in CI.
+        # This appears to be working but, if these samples become flaky or begin breaking, we
+        # should disable them again.
+        #
+        # exclude = os.getenv('CI') == 'true' and any(
+        #     template.pcap for template in project.templates
+        # )
+        # if not exclude:
+        app.setup_project(project)
+        params.extend((app, project, template) for template in project.templates)
 
     metafunc.parametrize(
         'app,project,template',

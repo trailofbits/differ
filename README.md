@@ -140,6 +140,14 @@ values:
 
 In this example, the stdout content did not match the original's.
 
+## Getting Benchmark Sample Specs
+
+The `differ.spec` module loads all benchmark sample projects and outputs a CSV report containing all the command line argument invocations that will be executed. This is useful when determining what features are expected to be present in debloated samples.
+
+```bash
+$ pipenv run python -m differ.spec -o specs.csv
+```
+
 ## Development
 
 ### Formatting, Linting, and CI
