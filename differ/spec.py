@@ -3,7 +3,8 @@ from pathlib import Path
 from .core import Project
 from .util import REPORT_DIR, discover_projects
 
-if __name__ == '__main__':
+
+def main():
     import argparse
     import csv
     import sys
@@ -55,3 +56,7 @@ if __name__ == '__main__':
 
     if args.output:
         file.close()
+
+
+if __name__ == '__main__':
+    main()  # pragma: no cover
