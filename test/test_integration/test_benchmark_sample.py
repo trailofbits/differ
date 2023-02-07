@@ -1,6 +1,8 @@
+import warnings
 from pathlib import Path
 
 from _pytest.python import Metafunc
+from cffi import vengine_cpy
 
 from differ.core import Project, TraceTemplate
 from differ.executor import Executor
@@ -10,11 +12,14 @@ REPORT_DIR = Path(__file__).parents[2] / 'integration_test_reports'
 
 
 def pytest_generate_tests(metafunc: Metafunc):
-    # from differ.comparators import load_comparators
-    # from differ.variables import load_variables
-
     if 'project' not in metafunc.fixturenames:
         return
+
+    # cffi/vengine_cpy.py will import the 'imp' module which triggers the following warning. We
+    # don't want pytest to ignore this warning so that we don't confuse the user or CI.
+    # warnings.filterwarnings(
+    #     'ignore', category=DeprecationWarning, message='the imp module is deprecated'
+    # )
 
     app = Executor(REPORT_DIR, overwrite_existing_report=True)
     app.setup()
