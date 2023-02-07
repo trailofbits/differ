@@ -1,12 +1,14 @@
 name: coreutils_mkdir
 link_filename: mkdir
 original: bin/mkdir.original
+version: '5.2.1'
 debloaters:
   chisel: bin/mkdir.chisel
 
 
 templates:
-  - arguments: d1
+  - name: absolute
+    arguments: "{{trace.cwd}}/d1"
     comparators:
       - stdout
       - stderr
@@ -15,7 +17,18 @@ templates:
         type: directory
         filename: d1
 
-  - arguments: -p d1/d2
+  - name: relative
+    arguments: d1
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - name: relative-parent
+    arguments: -p d1/d2
     comparators:
       - stdout
       - stderr
@@ -24,7 +37,8 @@ templates:
         type: directory
         filename: d1/d2
 
-  - arguments: -p d1/d2/d3/d4
+  - name: relative-parents
+    arguments: -p d1/d2/d3/d4
     comparators:
       - stdout
       - stderr
@@ -33,7 +47,8 @@ templates:
         type: directory
         filename: d1/d2/d3/d4
 
-  - setup: mkdir d1
+  - name: exists_ok
+    setup: mkdir d1
     arguments: -p d1
     comparators:
       - stdout
@@ -43,7 +58,8 @@ templates:
         type: directory
         filename: d1
 
-  - setup: mkdir d1
+  - name: exists_ok-parent
+    setup: mkdir d1
     arguments: -p d1/d2
     comparators:
       - stdout
@@ -56,7 +72,8 @@ templates:
   ###################
   # Expected Errors #
   ###################
-  - arguments: d1/d2
+  - name: error-parent_does_not_exist
+    arguments: d1/d2
     comparators:
       - stdout
       # - stderr  # chisel stderr output is incorrect
@@ -65,7 +82,8 @@ templates:
         exists: false
         filename: d1
 
-  - arguments: -m 12341234 d1
+  - name: error-invalid_mode
+    arguments: -m 12341234 d1
     comparators:
       - stdout
       # - stderr  # chisel stderr output is incorrect
@@ -74,7 +92,8 @@ templates:
         exists: false
         filename: d1
 
-  - arguments: -m d1
+  - name: error-missing_dirname
+    arguments: -m d1
     comparators:
       - stdout
       # - stderr  # chisel stderr output is incorrect
@@ -83,7 +102,8 @@ templates:
         exists: false
         filename: d1
 
-  - setup: mkdir d1
+  - name: error-exists
+    setup: mkdir d1
     arguments: d1
     comparators:
       - stdout

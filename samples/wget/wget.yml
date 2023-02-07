@@ -1,11 +1,12 @@
 name: wget
 original: /usr/bin/wget
+version: '1.20.3'
 debloaters:
   # We are comparing wget against itself since we don't have a debloated version yet
   original: /usr/bin/wget
 
 templates:
-  - id: proto-https
+  - name: proto-https
     arguments: https://digg.com/robots.txt
     comparators:
       - stdout
@@ -14,7 +15,7 @@ templates:
       - id: file
         filename: robots.txt
 
-  - id: proto-http
+  - name: proto-http
     arguments: http://echo.jsontest.com/key/value
     comparators:
       - stdout
@@ -23,7 +24,7 @@ templates:
       - id: file
         filename: value
 
-  - id: proto-ip
+  - name: proto-ip
     arguments: "--header 'Host: echo.jsontest.com' http://{{'echo.jsontest.com'|gethostbyname}}/key/value"
     comparators:
       - stdout
@@ -32,7 +33,7 @@ templates:
       - id: file
         filename: value
 
-  - id: opts-output
+  - name: opts-output
     arguments: -O data.json http://echo.jsontest.com/key/value/key2/value2
     comparators:
       - stdout
@@ -42,14 +43,14 @@ templates:
         filename: data.json
 
   # -T - timeout
-  - id: opts-timeout_expired
+  - name: opts-timeout_expired
     timeout:
       seconds: 2
       expected: true
 
     arguments: -T 10 http://echoss.jsontest.com/
 
-  - id: opts-timeout_ok
+  - name: opts-timeout_ok
     timeout: 5
     arguments: -T 2 http://echoss.jsontest.com/
     comparators:
@@ -57,7 +58,7 @@ templates:
       - id: exit_code
         expect: 4
 
-  - id: get-param
+  - name: get-param
     arguments: -O data.json http://md5.jsontest.com/?text=hello_world
     comparators:
       - stdout

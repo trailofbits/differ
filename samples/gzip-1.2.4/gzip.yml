@@ -1,13 +1,15 @@
 name: coreutils_gzip
 link_filename: gzip
 original: bin/gzip.original
+version: '1.2.4'
 debloaters:
   # The chisel debloated gzip does not run correctly so we test against the original
   original: bin/gzip.original
 
 templates:
   # -c (compress to stdout)
-  - arguments: -c
+  - name: compress-stdin_stdout
+    arguments: -c
     input_files:
       - source: inputs
         static: true
@@ -31,7 +33,8 @@ templates:
         filename: sample1.extracted
 
   # -d (decomparess)
-  - arguments: -d
+  - name: decompress-stdin_stdout
+    arguments: -d
     input_files:
       - source: inputs
         static: true
@@ -52,7 +55,8 @@ templates:
           expect: 0
 
   # -f (overwrite)
-  - arguments: -f foo
+  - name: compress-overwrite
+    arguments: -f foo
     setup: |
       echo 1234 > foo
       echo 4567 > foo.gz
@@ -76,7 +80,8 @@ templates:
           expect: 0
 
   # -t (test) invalid
-  - arguments: -t inputs/sample1.ref
+  - name: test-invalid
+    arguments: -t inputs/sample1.ref
     input_files:
       - source: inputs
         static: true
@@ -88,7 +93,8 @@ templates:
         expect: 1
 
   # -t (test) valid
-  - arguments: -t inputs/sample1.gz.ref
+  - name: test-valid
+    arguments: -t inputs/sample1.gz.ref
     input_files:
       - source: inputs
         static: true
@@ -104,7 +110,8 @@ templates:
   #####################
 
   # File does not exist
-  - arguments: foo
+  - name: error-file_does_not_exist
+    arguments: foo
     comparators:
       - stdout
       - stderr
@@ -112,7 +119,9 @@ templates:
         expect: false
 
   # Invalid arguments (help or missing operand)
-  - arguments: '{{arg}}'
+  - name: error-missing_operand
+    summary: Trigger a usage error by not providing a required argument for a flag
+    arguments: '{{arg}}'
     variables:
       arg:
         type: str

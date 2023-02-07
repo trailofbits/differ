@@ -16,11 +16,24 @@ debloaters:
 # binary, which may be necessary for uniform behavior and output. This is optional.
 # link_filename: binary
 
+# The binary version being targeted.
+# version: 1.0.0
+
 # List of templates that define variables, comparators, command line arguments, etc.
 templates:
 
   # command line arguments (default: '')
   - arguments: '--name {{full_name}}'
+
+    # A short, descriptive name for the template that'll be used in the template id and the
+    # working directory.
+    #
+    # name: do-something
+
+    # A brief summary of the template used to convey what is actually being tested.
+    #
+    # summary: |
+    #   Load the configuration from stdin and execute a command.
 
     # Timeout constraints
     timeout:

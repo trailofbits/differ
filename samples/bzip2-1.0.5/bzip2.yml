@@ -1,13 +1,15 @@
 name: coreutils_bzip2
 link_filename: bzip2
 original: bin/bzip2.original
+version: '1.0.5'
 debloaters:
   # the chisel binary does not run, so we test against the original
   original: bin/bzip2.original
 
 templates:
   # output to stdout
-  - arguments: -c
+  - name: compress-stdin_stdout
+    arguments: -c
     input_files:
       - source: inputs
         static: true
@@ -28,7 +30,8 @@ templates:
           expect: 0
 
   # decompress
-  - arguments: -d
+  - name: decompress-stdin_stdout
+    arguments: -d
     input_files:
       - source: inputs
         static: true
@@ -49,7 +52,8 @@ templates:
           expect: 0
 
   # overwrite
-  - arguments: -f foo
+  - name: compress-overwrite
+    arguments: -f foo
     setup: |
       echo 1234 > foo
       echo 4567 > foo.bz2
@@ -71,7 +75,8 @@ templates:
         filename: foo.bz2
 
   # test invalid
-  - arguments: -t foo
+  - name: test-invalid
+    arguments: -t foo
     setup: |
       echo 1234 > foo
 
@@ -82,7 +87,8 @@ templates:
         expect: false
 
   # test valid
-  - arguments: -t inputs/sample1.bz2.ref
+  - name: test-valid
+    arguments: -t inputs/sample1.bz2.ref
     input_files:
       - source: inputs
         static: true
@@ -94,7 +100,8 @@ templates:
         expect: 0
 
   # keep original file
-  - arguments: -k foo
+  - name: compress-keep
+    arguments: -k foo
     setup: |
       echo 1234 > foo
 

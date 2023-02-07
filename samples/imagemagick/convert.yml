@@ -1,10 +1,13 @@
 name: imagemagick_convert
 original: /usr/bin/convert
+version: '6.9.10-23'
 debloaters:
   original: /usr/bin/convert
 
 templates:
-  - id: convert-format
+  - name: convert-format
+    summary: >
+      Convert between formats: jpg, png, bmp, gif
     arguments: input_files/eggs.{{from}} eggs.{{to}}
     input_files:
       - source: input_files
@@ -40,7 +43,7 @@ templates:
       - id: file
         filename: stripped-image
 
-  - id: resize
+  - name: resize
     arguments: eggs.jpg -resize {{scale}} eggs-resized.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -61,7 +64,7 @@ templates:
       - id: file
         filename: eggs-resized.jpg
 
-  - id: flip
+  - name: flip
     arguments: eggs.jpg -flip eggs-flipped.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -75,7 +78,7 @@ templates:
       - id: file
         filename: eggs-flipped.jpg
 
-  - id: flop
+  - name: flop
     arguments: eggs.jpg -flop eggs-flopped.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -89,7 +92,7 @@ templates:
       - id: file
         filename: eggs-flopped.jpg
 
-  - id: negate
+  - name: negate
     arguments: eggs.jpg {{flag}} eggs-negate.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -110,7 +113,7 @@ templates:
       - id: file
         filename: eggs-negate.jpg
 
-  - id: scale
+  - name: scale
     arguments: eggs.jpg -scale {{scale}} eggs-scaled.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -131,7 +134,7 @@ templates:
       - id: file
         filename: eggs-scaled.jpg
 
-  - id: roll
+  - name: roll
     arguments: eggs.jpg -roll {{x}}{{y}} eggs-rolled.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -160,7 +163,7 @@ templates:
       - id: file
         filename: eggs-rolled.jpg
 
-  - id: transverse
+  - name: transverse
     arguments: eggs.jpg -transverse eggs-transversed.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -174,7 +177,7 @@ templates:
       - id: file
         filename: eggs-transversed.jpg
 
-  - id: transpose
+  - name: transpose
     arguments: eggs.jpg -transpose eggs-transposed.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -188,7 +191,7 @@ templates:
       - id: file
         filename: eggs-transposed.jpg
 
-  - id: rotate
+  - name: rotate
     arguments: eggs.jpg -rotate {{deg}} eggs-transversed.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -213,7 +216,7 @@ templates:
       - id: file
         filename: eggs-transversed.jpg
 
-  - id: crop
+  - name: crop
     arguments: eggs.jpg -crop {{width}}x{{height}}{{x}}{{y}} eggs-cropped.jpg
     input_files:
       - source: input_files/eggs.jpg

@@ -1,10 +1,14 @@
 name: objdump
 original: /usr/bin/objdump
+version: '2.34'
 debloaters:
   original: /usr/bin/objdump
 
 templates:
-  - id: flag
+  - name: flag
+    summary: >
+      Test output flags against an executable, dynamic library, and static library: -a, -f, -p, -h,
+      -x, -d, -D, -S, -s, -g, -e, -G, -t, -r
     arguments: "{{flag}} {{binary}}"
     variables:
       flag:
@@ -41,7 +45,9 @@ templates:
       - id: exit_code
         expect: 0
 
-  - id: flag-dyn
+  - name: flag-dyn
+    summary: >
+      Test output flags for parsing dynamic tables on an executable and dynamic library: -T, -R
     arguments: "{{flag}} {{binary}}"
     variables:
       flag:
@@ -64,7 +70,8 @@ templates:
       - id: exit_code
         expect: 0
 
-  - id: flag-dyn_static_error
+  - name: flag-dyn_static_error
+    summary: Trigger an error when trying to parse dynamic tables from a static library
     arguments: "{{flag}} {{binary}}"
     variables:
       flag:
@@ -85,7 +92,7 @@ templates:
       - id: exit_code
         expect: 1
 
-  - id: error-file_not_exist
+  - name: error-file_not_exist
     arguments: '-x file_does_not_exist'
     comparators:
       - stdout
@@ -94,7 +101,7 @@ templates:
         expect: 1
 
   # invalid object file
-  - id: error-not_obj_file
+  - name: error-not_obj_file
     arguments: '-x /etc/passwd'
     comparators:
       - stdout
@@ -103,7 +110,7 @@ templates:
         expect: 1
 
   # directory
-  - id: error-directory
+  - name: error-directory
     arguments: '-x /home'
     comparators:
       - stdout

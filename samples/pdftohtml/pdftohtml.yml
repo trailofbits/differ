@@ -1,10 +1,12 @@
 name: pdftohtml
 original: /usr/bin/pdftohtml
+version: '0.86.1'
 debloaters:
   original: /usr/bin/pdftohtml
 
 templates:
-  - id: markdown
+  - name: markdown
+    summary: Convert a relatively low complexity PDF that was generated from Markdown text
     input_files:
       - source: input_files/markdown.pdf
         static: true
@@ -22,7 +24,7 @@ templates:
       - id: file
         filename: markdowns.html
 
-  - id: opts-range
+  - name: opts-range
     input_files:
       - source: input_files/markdown.pdf
         static: true
@@ -40,7 +42,7 @@ templates:
       - id: file
         filename: markdowns.html
 
-  - id: opts-sinlge_doc
+  - name: opts-sinlge_doc
     input_files:
       - source: input_files/markdown.pdf
         static: true
@@ -59,7 +61,7 @@ templates:
       - id: file
         filename: markdowns.html
 
-  - id: opts-stdout
+  - name: opts-stdout
     input_files:
       - source: input_files/markdown.pdf
         static: true
@@ -80,7 +82,8 @@ templates:
         filename: markdowns.html
         exists: false
 
-  - id: images
+  - name: images
+    summary: Convert a more complex PDF that contains images
     input_files:
       - source: input_files/BinRec.pdf
         static: true
@@ -104,7 +107,10 @@ templates:
       - id: file
         filename: BinRec-10_3.jpg
 
-  - id: openpdf-corpus
+  - name: openpdf-corpus
+    summary: >
+      Run against the openpdf corpus produced by the SafeDocs DARPA program:
+      https://corpora.tika.apache.org/base/packaged/pdfs/archive/pdfs_202002/
     input_files:
       - source: input_files/openpdf.zip
         static: true

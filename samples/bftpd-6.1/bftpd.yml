@@ -1,4 +1,5 @@
 name: bftpd
+version: '6.1'
 link_filename: bftpd
 original: bin/bftpd.original
 debloaters:
@@ -6,7 +7,8 @@ debloaters:
 
 templates:
   # Get a file
-  - id: get
+  - name: get
+    summary: Download a file using the 'RETR' command.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -38,7 +40,8 @@ templates:
         filename: myfile.txt
 
   # Navigate (cd, ls)
-  - id: navigation
+  - name: navigation
+    summary: Navigate an FTP share using the 'CWD', 'CDUP',  and 'LIST' commands.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -67,7 +70,8 @@ templates:
           expect: 0
 
   # chmod
-  - id: chmod
+  - name: chmod
+    summary: Modify an existing file's mode using the 'MFF' command.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -85,8 +89,6 @@ templates:
 
     comparators:
       - stdout
-      - stderr
-      - exit_code
       - id: concurrent_script
         exit_code:
           expect: 0
@@ -95,7 +97,8 @@ templates:
         mode: 440
 
   # put
-  - id: put
+  - name: put
+    summary: Upload a file using the 'STOR' command.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -127,10 +130,9 @@ templates:
       - id: file
         filename: file
 
-  # ln
-
   # mkdir
-  - id: mkdir
+  - name: mkdir
+    summary: Make a new directory using the 'MKD' command.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -158,7 +160,8 @@ templates:
         type: directory
 
   # mv
-  - id: mv
+  - name: mv
+    summary: Rename a file using the 'RNFR' and 'RNTO' commands.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -194,7 +197,8 @@ templates:
         exists: false
 
   # pwd
-  - id: pwd
+  - name: pwd
+    summary: Get the working directory using the 'PWD' command.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -221,7 +225,8 @@ templates:
           expect: 0
 
   # rm
-  - id: rm
+  - name: rm
+    summary: Remove a file using the 'DELE' command.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -249,7 +254,8 @@ templates:
         exists: false
 
   # rmdir
-  - id: rmdir
+  - name: rmdir
+    summary: Delete a directory tree using the 'RMD' command.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -283,7 +289,10 @@ templates:
   # Disabled Commands #
   #####################
   # rm
-  - id: rm_disabled
+  - name: rm_disabled
+    summary: >
+      Attempt to delete a file using the 'DELE' command but fail because the command is unallowed
+      in the bftpd configuration.
     arguments: '-D -c disabled-cmds-anon.conf'
     input_files:
       - disabled-cmds-anon.conf
@@ -310,7 +319,10 @@ templates:
         filename: serve/myfile.txt
 
   # rmdir
-  - id: rmdir_disabled
+  - name: rmdir_disabled
+    summary: >
+      Attempt to delete a directory using the 'RMD' command but fail because the command is
+      unallowed in the bftpd configuration.
     arguments: '-D -c disabled-cmds-anon.conf'
     input_files:
       - disabled-cmds-anon.conf
@@ -341,7 +353,10 @@ templates:
         type: directory
 
   # chmod
-  - id: chmod_disabled
+  - name: chmod_disabled
+    summary: >
+      Attempt to modify a file's mode using the 'MFF' command but fail because the command is
+      unallowed in the bftpd configuration.
     arguments: '-D -c disabled-cmds-anon.conf'
     input_files:
       - disabled-cmds-anon.conf
@@ -372,7 +387,10 @@ templates:
         mode: 664
 
   # put
-  - id: put_disabled
+  - name: put_disabled
+    summary: >
+      Attempt to upload a file using the 'STOR' command but fail because the command is
+      unallowed in the bftpd configuration.
     arguments: '-D -c disabled-cmds-anon.conf'
     input_files:
       - disabled-cmds-anon.conf

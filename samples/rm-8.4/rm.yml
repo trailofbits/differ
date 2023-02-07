@@ -1,13 +1,15 @@
 name: coreutils_rm
 link_filename: rm
 original: bin/rm.original
+version: '8.4'
 debloaters:
   # The CHISEL binary does not work properly so we compare the original against itself
   original: bin/rm.original
 
 templates:
   # remove file
-  - arguments: file
+  - name: file
+    arguments: file
     setup: |
       touch file
 
@@ -21,7 +23,8 @@ templates:
         exists: false
 
   # -r (recrusive remove directory)
-  - arguments: -r dir
+  - name: directory-recursive
+    arguments: -r dir
     setup: |
       mkdir dir
 
@@ -35,7 +38,8 @@ templates:
         exists: false
 
   # -r -f (recrusive remove directory force)
-  - arguments: -r -f dir
+  - name: directory-recursive-force
+    arguments: -r -f dir
     setup: |
       mkdir dir
 
@@ -49,7 +53,8 @@ templates:
         exists: false
 
   # -y YES (prompt before removing)
-  - arguments: -i file
+  - name: confirmation-yes
+    arguments: -i file
     setup: |
       touch file
 
@@ -66,7 +71,8 @@ templates:
         exists: false
 
   # -y NO (prompt before removing)
-  - arguments: -i file
+  - name: confirmation-no
+    arguments: -i file
     setup: |
       touch file
 
@@ -87,7 +93,8 @@ templates:
   ##################
 
   # file does not exist
-  - arguments: file
+  - name: error-file_not_exist
+    arguments: file
     comparators:
       - stdout
       - stderr
@@ -95,7 +102,8 @@ templates:
         expect: false
 
   # -f (force directory)
-  - arguments: -f dir
+  - name: error-directory
+    arguments: -f dir
     setup: |
       mkdir dir
 
@@ -109,7 +117,8 @@ templates:
         type: directory
 
   # missing operand
-  - arguments: ''
+  - name: error-no_file
+    arguments: ''
     comparators:
       - stdout
       - stderr

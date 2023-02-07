@@ -1,11 +1,13 @@
 name: make
 original: /usr/bin/make
+version: '4.2.1'
 debloaters:
   original: /usr/bin/make
 
 templates:
   # make single target
-  - id: low-single_target
+  - name: low-single_target
+    summary: Make a single target without any dependencies
     arguments: file1
     input_files:
       - source: input_files/low-single_target.mak
@@ -19,7 +21,8 @@ templates:
       - id: file
         filename: file1
 
-  - id: low-multiple_targets
+  - name: low-multiple_targets
+    summary: Make multiple targets without any dependencies
     arguments: file1 file2
     input_files:
       - source: input_files/low-multi_targets.mak
@@ -36,7 +39,8 @@ templates:
         filename: file2
 
   # dependencies
-  - id: low-deps
+  - name: low-deps
+    summary: Make a target that has a dependency
     arguments: file3
     input_files:
       - source: input_files/low-deps.mak
@@ -53,7 +57,8 @@ templates:
         filename: deps
 
   # make update
-  - id: low-deps-update
+  - name: low-deps-update
+    summary: Perform a partial make by only running targets that are out of date
     arguments: file3
     input_files:
       - source: input_files/low-deps.mak
@@ -90,7 +95,8 @@ templates:
         filename: deps
 
   # make up to date (no-op)
-  - id: low-deps-up_to_date
+  - name: low-deps-up_to_date
+    summary: Do not run any targets because they are all up to date
     arguments: file3
     input_files:
       - source: input_files/low-deps.mak
@@ -118,7 +124,8 @@ templates:
         filename: deps
 
   # make default target
-  - id: low-default_target
+  - name: low-default_target
+    summary: Run the default target
     input_files:
       - source: input_files/low-single_target.mak
         destination: Makefile
@@ -134,7 +141,8 @@ templates:
         filename: file2
         exists: false
 
-  - id: low-custom_default_target
+  - name: low-custom_default_target
+    summary: Run the custom default target
     input_files:
       - source: input_files/low-custom_default_target.mak
         destination: Makefile
@@ -151,7 +159,8 @@ templates:
         filename: file2
 
   # make stdin
-  - id: low-args_file-stdin
+  - name: low-args_file-stdin
+    summary: Load Makefile from stdin
     arguments: -f - file1
     input_files:
       - input_files/low-single_target.mak
@@ -168,7 +177,7 @@ templates:
         filename: file1
 
   # make -f
-  - id: low-args_file
+  - name: low-args_file
     arguments: -f low-single_target.mak file1
     input_files:
       - input_files/low-single_target.mak
@@ -182,7 +191,8 @@ templates:
         filename: file1
 
   # make phony
-  - id: med_phony
+  - name: med_phony
+    summary: Make a phony target
     arguments: all
     input_files:
       - source: input_files/med-phony.mak
@@ -203,7 +213,8 @@ templates:
         filename: deps
 
   # includes
-  - id: high-includes
+  - name: high-includes
+    summary: Process include directives and make a target that depends on a separate Makefile
     arguments: file4
     input_files:
       - source: input_files/high-includes.mak
@@ -229,7 +240,8 @@ templates:
         filename: deps
 
   # vars
-  - id: high-vars
+  - name: high-vars
+    summary: Make a target that uses mutliple variables
     arguments: install
     input_files:
       - source: input_files/high-vars.mak
@@ -256,7 +268,8 @@ templates:
   # Error Handling #
   ##################
   # make invalid target
-  - id: error-invalid_target
+  - name: error-invalid_target
+    summary: Trigger an error when trying to make a target that does not exist
     arguments: does_not_exist
     input_files:
       - source: input_files/low-single_target.mak
@@ -272,7 +285,8 @@ templates:
         exists: false
 
   # no makefile
-  - id: error-no_makefile
+  - name: error-no_makefile
+    summary: Trigger an error when no Makefile exists
     comparators:
       - stdout
       - stderr
@@ -280,7 +294,8 @@ templates:
         expect: false
 
   # -f file does not exist
-  - id: error-file_does_not_eist
+  - name: error-file_does_not_eist
+    summary: Trigger an error when the specified Makefile does not exist
     arguments: -f does_not_exist
     comparators:
       - stdout
