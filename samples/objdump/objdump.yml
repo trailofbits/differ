@@ -117,3 +117,6 @@ templates:
       - stderr
       - id: exit_code
         expect: 1
+
+
+# spell-checker:ignore objdump

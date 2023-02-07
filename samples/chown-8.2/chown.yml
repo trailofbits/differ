@@ -1,4 +1,4 @@
-name: coreutils_chown
+name: chown
 link_filename: chown
 version: '8.2'
 original: bin/chown.original
@@ -92,7 +92,7 @@ templates:
     arguments: "-h {{env.USER}}:adm file1"
     setup: |
       touch file1
-      ln -s file1 symfile1
+      ln -s file1 symlink1
 
     comparators:
       - stdout
@@ -104,15 +104,15 @@ templates:
         owner:
           group: adm
       - id: file
-        filename: symfile1
+        filename: symlink1
         owner: true
 
   # -h symlink (do not dereference symlink)
   - name: no_deref-symlink
-    arguments: "-h {{env.USER}}:adm symfile1"
+    arguments: "-h {{env.USER}}:adm symlink1"
     setup: |
       touch file1
-      ln -s file1 symfile1
+      ln -s file1 symlink1
 
     comparators:
       - stdout
@@ -123,16 +123,16 @@ templates:
         filename: file1
         owner: true
       - id: file
-        filename: symfile1
+        filename: symlink1
         owner:
           group: adm
 
   # symlink
   - name: deref-symlink
-    arguments: "{{env.USER}}:adm symfile1"
+    arguments: "{{env.USER}}:adm symlink1"
     setup: |
       touch file1
-      ln -s file1 symfile1
+      ln -s file1 symlink1
 
     comparators:
       - stdout
@@ -144,7 +144,7 @@ templates:
         owner:
           group: adm
       - id: file
-        filename: symfile1
+        filename: symlink1
         owner: true
 
   # no arguments (missing operand)
@@ -158,7 +158,7 @@ templates:
 
   # invalid user
   - name: error-invalid_user
-    arguments: input1 input2 notexist
+    arguments: input1 input2 not_exist
     comparators:
       - stdout
       - stderr
@@ -167,7 +167,7 @@ templates:
 
   # missing operand
   - name: error-no_file
-    arguments: notexist
+    arguments: not_exist
     comparators:
       - stdout
       - stderr
@@ -176,7 +176,7 @@ templates:
 
     # missing operand
   - name: error-file_does_not_exist
-    arguments: "{{env.USER}}:adm notexist"
+    arguments: "{{env.USER}}:adm not_exist"
     comparators:
       - stdout
       - stderr

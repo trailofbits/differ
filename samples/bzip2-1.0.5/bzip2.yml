@@ -1,4 +1,4 @@
-name: coreutils_bzip2
+name: bzip2
 link_filename: bzip2
 original: bin/bzip2.original
 version: '1.0.5'
@@ -119,7 +119,7 @@ templates:
 
   # Test invalid arguments
   #
-  # TODO: This template is currently disabled because we don't have a way to emluate a TTY within
+  # TODO: This template is currently disabled because we don't have a way to emulate a TTY within
   # differ. See issue #XXX
   #
   # - arguments: '{{arg}}'
@@ -149,3 +149,4 @@ templates:
   #       expect: false
 
 
+# spell-checker:ignore bzcat

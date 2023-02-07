@@ -1,4 +1,4 @@
-name: coreutils_date
+name: date
 link_filename: date
 version: '8.21'
 original: bin/date.original
@@ -384,14 +384,16 @@ templates:
       - id: exit_code
         expect: 0
 
-  - arguments: -f datefile
+  - name: error-date-file_does_not_exist
+    arguments: -f not_exist
     comparators:
       - stdout
       - stderr
       - id: exit_code
         expect: false
 
-  - arguments: -r datefile
+  - name: error-file_does_not_exist
+    arguments: -r not_exist
     comparators:
       - stdout
       - stderr
@@ -402,7 +404,7 @@ templates:
   # Expected Failures (Debloated Features) #
   ##########################################
 
-  # TODO: these are disabled becuase the CHISEL binary does not work
+  # TODO: these are disabled because the CHISEL binary does not work
 
   # - arguments: -I -d '2006-04-23 21 days ago'
   #   expect_success: false
@@ -507,5 +509,3 @@ templates:
   #     - stderr
   #     - id: exit_code
   #       expect: false
-
-

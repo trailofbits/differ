@@ -1,4 +1,4 @@
-name: coreutils_uniq
+name: uniq
 link_filename: uniq
 version: '8.16'
 original: bin/uniq.original

@@ -241,7 +241,7 @@ templates:
 
   # vars
   - name: high-vars
-    summary: Make a target that uses mutliple variables
+    summary: Make a target that uses multiple variables
     arguments: install
     input_files:
       - source: input_files/high-vars.mak
@@ -294,7 +294,7 @@ templates:
         expect: false
 
   # -f file does not exist
-  - name: error-file_does_not_eist
+  - name: error-file_does_not_exist
     summary: Trigger an error when the specified Makefile does not exist
     arguments: -f does_not_exist
     comparators:
@@ -302,3 +302,6 @@ templates:
       - stderr
       - id: exit_code
         expect: false
+
+
+# spell-checker:ignore CURDIR

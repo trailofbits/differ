@@ -1,4 +1,4 @@
-name: coreutils_rm
+name: rm
 link_filename: rm
 original: bin/rm.original
 version: '8.4'
@@ -22,7 +22,7 @@ templates:
         filename: file
         exists: false
 
-  # -r (recrusive remove directory)
+  # -r (recursive remove directory)
   - name: directory-recursive
     arguments: -r dir
     setup: |
@@ -37,7 +37,7 @@ templates:
         filename: dir
         exists: false
 
-  # -r -f (recrusive remove directory force)
+  # -r -f (recursive remove directory force)
   - name: directory-recursive-force
     arguments: -r -f dir
     setup: |

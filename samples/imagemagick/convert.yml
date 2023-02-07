@@ -164,7 +164,7 @@ templates:
         filename: eggs-rolled.jpg
 
   - name: transverse
-    arguments: eggs.jpg -transverse eggs-transversed.jpg
+    arguments: eggs.jpg -transverse eggs-transverse.jpg
     input_files:
       - source: input_files/eggs.jpg
         static: true
@@ -175,7 +175,7 @@ templates:
       - id: exit_code
         expect: 0
       - id: file
-        filename: eggs-transversed.jpg
+        filename: eggs-transverse.jpg
 
   - name: transpose
     arguments: eggs.jpg -transpose eggs-transposed.jpg
@@ -192,7 +192,7 @@ templates:
         filename: eggs-transposed.jpg
 
   - name: rotate
-    arguments: eggs.jpg -rotate {{deg}} eggs-transversed.jpg
+    arguments: eggs.jpg -rotate {{deg}} eggs-transverse.jpg
     input_files:
       - source: input_files/eggs.jpg
         static: true
@@ -214,7 +214,7 @@ templates:
       - id: exit_code
         expect: 0
       - id: file
-        filename: eggs-transversed.jpg
+        filename: eggs-transverse.jpg
 
   - name: crop
     arguments: eggs.jpg -crop {{width}}x{{height}}{{x}}{{y}} eggs-cropped.jpg
@@ -256,3 +256,6 @@ templates:
         expect: 0
       - id: file
         filename: eggs-cropped.jpg
+
+
+# spell-checker:ignore EXIF

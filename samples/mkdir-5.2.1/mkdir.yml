@@ -1,4 +1,4 @@
-name: coreutils_mkdir
+name: mkdir
 link_filename: mkdir
 original: bin/mkdir.original
 version: '5.2.1'

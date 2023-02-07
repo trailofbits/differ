@@ -126,7 +126,7 @@ templates:
 
     concurrent:
       run: |
-        wget http://localhost:3000/runme.php
+        wget http://localhost:3000/run.php
 
       retries: 5
       mode: client
@@ -139,7 +139,7 @@ templates:
         exit_code:
           expect: 8
       - id: file
-        filename: runme.php
+        filename: run.php
         exists: false
 
   - name: get-vhost_1
@@ -261,3 +261,6 @@ templates:
       - id: file
         filename: foo.html
         exists: false
+
+
+# spell-checker:ignore lighttpd vhost

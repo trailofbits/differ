@@ -42,7 +42,7 @@ templates:
       - id: file
         filename: markdowns.html
 
-  - name: opts-sinlge_doc
+  - name: opts-single_doc
     input_files:
       - source: input_files/markdown.pdf
         static: true
@@ -161,3 +161,5 @@ templates:
       - exit_code
       - id: file
         filename: output.html
+
+# spell-checker:ignore openpdf pdftohtml DARPA

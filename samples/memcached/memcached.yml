@@ -542,3 +542,5 @@ templates:
         port: 11211
         protocol: tcp
 
+
+# spell-checker:ignore memcache memcached decr

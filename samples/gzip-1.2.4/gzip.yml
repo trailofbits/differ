@@ -1,4 +1,4 @@
-name: coreutils_gzip
+name: gzip
 link_filename: gzip
 original: bin/gzip.original
 version: '1.2.4'
@@ -32,7 +32,7 @@ templates:
       - id: file
         filename: sample1.extracted
 
-  # -d (decomparess)
+  # -d (decompress)
   - name: decompress-stdin_stdout
     arguments: -d
     input_files:
@@ -186,3 +186,6 @@ templates:
   #     - stdout
   #     - stderr
   #     - exit_code
+
+
+# spell-checker:ignore zcat

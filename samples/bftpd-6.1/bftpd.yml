@@ -21,10 +21,10 @@ templates:
       mode: client
       run: |
         lftp --rcfile lftp.rc <<EOF
-        get myfile.txt
+        get file.txt
         EOF
 
-        cmp myfile.txt ./serve/myfile.txt
+        cmp file.txt ./serve/file.txt
 
     comparators:
       - stdout
@@ -34,10 +34,10 @@ templates:
         exit_code:
           expect: 0
       - id: file
-        filename: myfile.txt
-        target: serve/myfile.txt
+        filename: file.txt
+        target: serve/file.txt
       - id: file
-        filename: myfile.txt
+        filename: file.txt
 
   # Navigate (cd, ls)
   - name: navigation
@@ -71,7 +71,7 @@ templates:
 
   # chmod
   - name: chmod
-    summary: Modify an existing file's mode using the 'MFF' command.
+    summary: Modify an existing file's mode using the 'SITE' command.
     arguments: '-D -c default-anon.conf'
     input_files:
       - default-anon.conf
@@ -84,7 +84,7 @@ templates:
       mode: client
       run: |
         lftp --rcfile lftp.rc <<EOF
-        chmod 440 myfile.txt
+        chmod 440 file.txt
         EOF
 
     comparators:
@@ -93,7 +93,7 @@ templates:
         exit_code:
           expect: 0
       - id: file
-        filename: serve/myfile.txt
+        filename: serve/file.txt
         mode: 440
 
   # put
@@ -171,13 +171,13 @@ templates:
         static: true
 
     setup: |
-      cp serve/myfile.txt myfile_original.txt
+      cp serve/file.txt file_original.txt
 
     concurrent:
       mode: client
       run: |
         lftp --rcfile lftp.rc <<EOF
-        mv myfile.txt myfile2.txt
+        mv file.txt file2.txt
         EOF
 
     comparators:
@@ -188,12 +188,12 @@ templates:
         exit_code:
           expect: 0
       - id: file
-        filename: serve/myfile2.txt
-        target: myfile_original.txt
+        filename: serve/file2.txt
+        target: file_original.txt
       - id: file
-        filename: serve/myfile2.txt
+        filename: serve/file2.txt
       - id: file
-        filename: serve/myfile.txt
+        filename: serve/file.txt
         exists: false
 
   # pwd
@@ -239,7 +239,7 @@ templates:
       mode: client
       run: |
         lftp --rcfile lftp.rc <<EOF
-        rm myfile.txt
+        rm file.txt
         EOF
 
     comparators:
@@ -250,7 +250,7 @@ templates:
         exit_code:
           expect: 0
       - id: file
-        filename: serve/myfile.txt
+        filename: serve/file.txt
         exists: false
 
   # rmdir
@@ -291,8 +291,8 @@ templates:
   # rm
   - name: rm_disabled
     summary: >
-      Attempt to delete a file using the 'DELE' command but fail because the command is unallowed
-      in the bftpd configuration.
+      Attempt to delete a file using the 'DELE' command but fail because the command is forbidden
+      in the bftpd configuration (ALLOWCOMMAND_DELE='no').
     arguments: '-D -c disabled-cmds-anon.conf'
     input_files:
       - disabled-cmds-anon.conf
@@ -305,7 +305,7 @@ templates:
       mode: client
       run: |
         lftp --rcfile lftp.rc <<EOF
-        rm myfile.txt
+        rm file.txt
         EOF
 
     comparators:
@@ -316,13 +316,13 @@ templates:
         exit_code:
           expect: 1
       - id: file
-        filename: serve/myfile.txt
+        filename: serve/file.txt
 
   # rmdir
   - name: rmdir_disabled
     summary: >
       Attempt to delete a directory using the 'RMD' command but fail because the command is
-      unallowed in the bftpd configuration.
+      forbidden in the bftpd configuration (ALLOWCOMMAND_RMD="no").
     arguments: '-D -c disabled-cmds-anon.conf'
     input_files:
       - disabled-cmds-anon.conf
@@ -355,8 +355,8 @@ templates:
   # chmod
   - name: chmod_disabled
     summary: >
-      Attempt to modify a file's mode using the 'MFF' command but fail because the command is
-      unallowed in the bftpd configuration.
+      Attempt to modify a file's mode using the 'SITE' command but fail because the command is
+      forbidden in the bftpd configuration (ALLOWCOMMAND_SITE='no').
     arguments: '-D -c disabled-cmds-anon.conf'
     input_files:
       - disabled-cmds-anon.conf
@@ -366,13 +366,13 @@ templates:
         static: true
 
     setup: |
-      chmod 664 serve/myfile.txt
+      chmod 664 serve/file.txt
 
     concurrent:
       mode: client
       run: |
         lftp --rcfile lftp.rc <<EOF
-        chmod 440 myfile.txt
+        chmod 440 file.txt
         EOF
 
     comparators:
@@ -383,14 +383,14 @@ templates:
         exit_code:
           expect: 1
       - id: file
-        filename: serve/myfile.txt
+        filename: serve/file.txt
         mode: 664
 
   # put
   - name: put_disabled
     summary: >
       Attempt to upload a file using the 'STOR' command but fail because the command is
-      unallowed in the bftpd configuration.
+      forbidden in the bftpd configuration (ALLOWCOMMAND_STOR='no').
     arguments: '-D -c disabled-cmds-anon.conf'
     input_files:
       - disabled-cmds-anon.conf
@@ -419,3 +419,5 @@ templates:
       - id: file
         filename: serve/file
         exists: false
+
+# spell-checker:ignore bftpd lftp retr rcfile cdup rnfr rnto allowcommand cmds

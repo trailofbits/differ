@@ -1,4 +1,4 @@
-name: coreutils_tar
+name: tar
 link_filename: tar
 version: '1.14'
 original: bin/tar.original
@@ -34,7 +34,7 @@ templates:
         filename: foo.tar
         similarity: 0
 
-  # tar-extracts-all-subdirs
+  # tar-extracts-all
   - name: extract-directory_subset
     arguments: xf foo.tar -C foo ./1/10
     setup: |
@@ -45,7 +45,7 @@ templates:
       rm -r foo/*
 
     teardown: |
-      find foo | sort >logfile
+      find foo | sort >log
 
     comparators:
       - stdout
@@ -59,7 +59,7 @@ templates:
         exit_code:
           expect: 0
       - id: file
-        filename: logfile
+        filename: log
 
   # tar-extracts-file
   - name: extract-file
@@ -173,7 +173,7 @@ templates:
     arguments: xf foo.tar foo bar -X foo.exclude
     setup: |
       echo "abcd abcd" > foo
-      echo "qwerqwerqwer" > bar
+      echo "bar bar bar" > bar
       echo "" > baz
       tar cf foo.tar foo bar baz
       echo foo >foo.exclude
