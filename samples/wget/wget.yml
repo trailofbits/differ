@@ -48,7 +48,7 @@ templates:
       seconds: 2
       expected: true
 
-    arguments: --no-config -T 10 http://echoss.jsontest.com/
+    arguments: --no-config -T 10 --dns-timeout 10 http://echoss.jsontest.com/
 
   - name: opts-timeout_ok
     timeout: 5
