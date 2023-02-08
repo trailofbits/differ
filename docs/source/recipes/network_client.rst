@@ -39,7 +39,7 @@ Project Configuration
         setup: |
           echo 'starting server'
           nc -l 8080 > server-out.bin 2>&1 &
-          echo $$ > server.pid
+          echo $! > server.pid
           sleep 2
 
         # When cleaning up the job, wait until the background server process exits cleanly, which
