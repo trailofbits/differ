@@ -1,0 +1,2 @@
+serve-ip/**/* filter=lfs diff=lfs merge=lfs -text
+serve-hostname/**/* filter=lfs diff=lfs merge=lfs -text
