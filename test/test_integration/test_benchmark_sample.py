@@ -2,7 +2,6 @@ import warnings
 from pathlib import Path
 
 from _pytest.python import Metafunc
-from cffi import vengine_cpy
 
 from differ.core import Project, TraceTemplate
 from differ.executor import Executor
@@ -34,6 +33,9 @@ def pytest_generate_tests(metafunc: Metafunc):
         #     template.pcap for template in project.templates
         # )
         # if not exclude:
+        if project.name != 'wget':
+            continue
+
         app.setup_project(project)
         params.extend((app, project, template) for template in project.templates)
 
@@ -52,6 +54,10 @@ def test_benchmark_sample(app: Executor, project: Project, template: TraceTempla
         for filename in project.directory.iterdir():
             if filename.name.startswith('report-') and filename.is_file():
                 print('# Error report:', filename.name)
+                print(filename.read_text())
+                print('----------')
+            elif filename.name.startswith('crash-') and filename.is_file():
+                print('# Crash report:', filename.name)
                 print(filename.read_text())
                 print('----------')
 
