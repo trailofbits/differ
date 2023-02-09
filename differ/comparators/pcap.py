@@ -102,7 +102,7 @@ class PcapComparatorConfig:
             port=int(config['port']),
             address=config.get('address', ''),
             compare_payload=config.get('compare_payload', True),
-            exists=config.get('exists', True)
+            exists=config.get('exists', True),
         )
 
     def describe_filter(self) -> str:
@@ -159,7 +159,9 @@ class PcapComparator(Comparator):
             # We expect that the flow does not exist
             if packets:
                 # Error: the flow exists
-                return ComparisonResult.error(self, debloated, f'unexpected flow in pcap: {self.config.describe_filter()}')
+                return ComparisonResult.error(
+                    self, debloated, f'unexpected flow in pcap: {self.config.describe_filter()}'
+                )
             else:
                 return ComparisonResult.success(self, debloated)
 
