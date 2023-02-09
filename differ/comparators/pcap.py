@@ -89,6 +89,10 @@ class PcapComparatorConfig:
     port: int
     #: Filter packets to a specific address matching on either the source or destination address
     address: str = ''
+    #: Compare flow payloads
+    compare_payload: bool = True
+    #: The flow must exist
+    exists: bool = True
 
     @classmethod
     def parse(cls, config: dict) -> 'PcapComparatorConfig':
@@ -97,6 +101,8 @@ class PcapComparatorConfig:
             protocol=Protocol[config['protocol']],
             port=int(config['port']),
             address=config.get('address', ''),
+            compare_payload=config.get('compare_payload', True),
+            exists=config.get('exists', True)
         )
 
     def describe_filter(self) -> str:
@@ -126,7 +132,13 @@ class PcapComparator(Comparator):
         pcap = rdpcap(filename.open('rb'))
         packets = self._filter_pcap(pcap)
 
-        if not packets:
+        if packets and not self.config.exists:
+            # There are packets that we did not expect
+            return CrashResult(
+                original, f'unexpected flow in pcap: {self.config.describe_filter()}', self
+            )
+        elif self.config.exists and not packets:
+            # There are no packets when we expected some
             return CrashResult(
                 original, f'flow does not exist in pcap: {self.config.describe_filter()}', self
             )
@@ -142,6 +154,15 @@ class PcapComparator(Comparator):
 
         pcap = rdpcap(filename.open('rb'))
         packets = self._filter_pcap(pcap)
+
+        if not self.config.exists:
+            # We expect that the flow does not exist
+            if packets:
+                # Error: the flow exists
+                return ComparisonResult.error(self, debloated, f'unexpected flow in pcap: {self.config.describe_filter()}')
+            else:
+                return ComparisonResult.success(self, debloated)
+
         debloated_flows = self.extract_flows(packets)
 
         if error := self.compare_flows(original_flows, debloated_flows):
@@ -169,6 +190,10 @@ class PcapComparator(Comparator):
             and original_flow.server != debloated_flow.server
         ):
             return f'flows do not match: {original_flow.describe()} != {debloated_flow.describe()}'
+
+        if not self.config.compare_payload:
+            # do not compare flow payloads
+            return None
 
         diff_count = len(original_flow.payloads) - len(debloated_flow.payloads)
         if diff_count:
