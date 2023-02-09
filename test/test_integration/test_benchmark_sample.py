@@ -33,7 +33,7 @@ def pytest_generate_tests(metafunc: Metafunc):
         #     template.pcap for template in project.templates
         # )
         # if not exclude:
-        if project.name != 'wget':
+        if project.name != 'nmap':
             continue
 
         app.setup_project(project)
