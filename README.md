@@ -13,7 +13,7 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    $ sudo add-apt-repository ppa:deadsnakes/ppa
    $ sudo apt update
    $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp lighttpd memcached \
-       tcpdump binutils unzip poppler-utils imagemagick
+       tcpdump binutils unzip poppler-utils imagemagick nmap
    $ sudo systemctl stop memcached
    $ sudo systemctl disable memcached
    ```
