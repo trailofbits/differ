@@ -19,6 +19,7 @@ getone
 SIGINT
 pcap
 tcpdump
+nmap
 
 
 # sphinx / restructuredText directives
