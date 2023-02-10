@@ -117,7 +117,65 @@ class PcapComparatorConfig:
 @register('pcap')
 class PcapComparator(Comparator):
     """
-    The pcap file comparator.
+    Pcap file comparator. This comparator accepts a pcap file from both the original and debloated
+    trace and then compares them, filtering to specific flows within the packet capture. A
+    comparison error is returned if the required flow is missing or the captured payloads are
+    different. The pcap comparator should be used in conjunction with the ``pcap`` template option
+    which controls how packets are captured during trace execution.
+
+    A flow is a unique pair of source address and destination address, including ports. A flow has
+    a client, the side that sends the first packet, and a server, the side that receives the first
+    packet. Each flow has multiple payloads which are the actual bytes sent in each TCP/UDP packet.
+    When comparing two pcap files, this comparators performs the following:
+
+    1. Loads both pcap files, filters to packets that match the protocol/port, and extract the
+       flows.
+    2. Verifies that the flows exist based on the configuration (``exists`` setting)
+    3. Compares the flows, checking that the payloads and their direction match exactly.
+
+    This comparator accepts the following configuration:
+
+    .. code-block:: yaml
+
+        - id: pcap
+          # The pcap filename to compare. This will typically be the same file used in the
+          # template's `pcap.filename` option, which controls the where the packets are stored.
+          # This option is required.
+          filename: capture.pcap
+
+          # The protocol to filter packets to, either `tcp` or `udp`. Packets are loaded from the
+          # pcap file and first filtered to only packets matching this protocol. This option is
+          # required.
+          protocol: tcp
+
+          # The port to filter packets to. After packets are filtered to the configured protocol,
+          # they are further filtered based on the port, either source port or destination port.
+          # Typically this will be the port that the server is listening on so that both the client
+          # and server packets are included in the comparison. This option is required.
+          port: 8080
+
+          # The address to filter to. Similar to the port option, packets will be filtered to only
+          # those that have the address in either the source or destination. This option is not
+          # required and can be any IPv4 address.
+          #
+          # address: 127.0.0.1
+
+          # Controls whether the flow payloads are compared. When set to `false`, only the flow
+          # endpoints are compared and not the actual payloads sent between them. This is not
+          # required and the default value is `true` (enabled, compare flow payloads)
+          #
+          # compare_payload: true
+
+          # Controls whether the specified flow should exist in the pcap. When set to `false` the
+          # comparator's behavior changes in a couple ways:
+          #
+          # - a comparison error is returned if the flow exists within the pcap.
+          # - if the flow does not exist within the pcap, the comparison is successful.
+          #
+          # This is not required and the default value is `true` (the flow is expected to exist
+          # within the pcap).
+          #
+          # exists: true
     """
 
     def __init__(self, config: dict):
