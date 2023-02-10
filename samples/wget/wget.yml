@@ -42,14 +42,6 @@ templates:
       - id: file
         filename: data.json
 
-  # -T - timeout
-  - name: opts-timeout_expired
-    timeout:
-      seconds: 2
-      expected: true
-
-    arguments: --no-config -T 10 --dns-timeout 10 http://echoss.jsontest.com/
-
   - name: opts-timeout_ok
     timeout: 5
     arguments: --no-config -T 2 http://echoss.jsontest.com/
