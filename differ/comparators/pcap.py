@@ -27,6 +27,7 @@ class Payload:
 
     #: The origin of the payload, either ``client`` or ``server``.
     origin: str
+    #: The payload bytes
     data: bytes
 
     @classmethod
