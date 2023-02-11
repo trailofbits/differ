@@ -18,7 +18,7 @@ templates:
       EOF
       echo $! > server.pid
 
-      sleep 2
+      sleep 5
 
     teardown: |
       PID=$(cat server.pid)
@@ -70,7 +70,7 @@ templates:
       EOF
       echo $! > server3.pid
 
-      sleep 2
+      sleep 5
 
     teardown: |
       PID=$(cat server.pid)
@@ -118,7 +118,7 @@ templates:
       python -m http.server --directory serve 8080 &>/dev/null &
       echo $! > server.pid
 
-      sleep 2
+      sleep 5
 
     teardown: |
       PID=$(cat server.pid)
@@ -149,7 +149,7 @@ templates:
       python -m http.server --directory serve 8080 &>/dev/null &
       echo $! > server.pid
 
-      sleep 2
+      sleep 5
 
     teardown: |
       PID=$(cat server.pid)
