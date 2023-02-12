@@ -35,63 +35,71 @@ templates:
     # summary: |
     #   Load the configuration from stdin and execute a command.
 
-    # Timeout constraints
-    timeout:
-      # Maximum number of seconds a binary is allowed to execute before being terminated
-      # (default: 60)
-      seconds: 60
+    # Timeout constraints which control the maximum amount of time that a sample is allowed to
+    # execute before it is terminated.
+    #
+    # timeout:
+    #   # Maximum number of seconds a binary is allowed to execute before being terminated
+    #   # (default: 60)
+    #   seconds: 60
+    #
+    #   # The timeout is expected or not. An unexpected timeout (false value) triggers a crash
+    #   # report (default: false).
+    #   expected: false
 
-      # The timeout is expected or not. An unexpected timeout (false value) triggers a crash
-      # report (default: false).
-      expected: false
-
-    # Input files
-    input_files:
-      # Path to the file. This can be absolute or relative to the trace directory. This can be a
-      # directory if 'static: true' is set, in which case the entire directory is recursively
-      # copied to the destination.
-      - source: /path/to/input_file
-
-        # The destination path or filename for each trace. This can be absolute or relative to the
-        # trace directory. By default, if not specified, the file is copied to the trace directory
-        # with the same basename (e.g.- "/path/to/file" -> "/trace_dir/file"). This is optional.
-        #
-        # destination: generated_input_file
-
-        # Set specified mode on the file after it is copied or generated for each trace. By
-        # default, if not specified, the source file's mode is copied. The value must be
-        # the octal mode value that is compatible with "chmod" (e.g.- "755"). This is
-        # optional.
-        #
-        # mode: "755"
-
-        # The file is either static or not. Static files are copied to the destination as-is
-        # without modification. Non-static files are generated using Jinja2 and the trace's
-        # variable values (default: false).
-        #
-        # static: false
+    # Input files that are copied into each trace directory prior to execution. Input files already
+    # on the host filesystem and are either copied as-is to the trace directory (static) or are
+    # Jinja2 templates that generate the file.
+    #
+    # input_files:
+    #   # Path to the file. This can be absolute or relative to the trace directory. This can be a
+    #   # directory if 'static: true' is set, in which case the entire directory is recursively
+    #   # copied to the destination.
+    #   - source: /path/to/input_file
+    #
+    #     # The destination path or filename for each trace. This can be absolute or relative to the
+    #     # trace directory. By default, if not specified, the file is copied to the trace directory
+    #     # with the same basename (e.g.- "/path/to/file" -> "/trace_dir/file"). This is optional.
+    #     #
+    #     destination: generated_input_file
+    #
+    #     # Set specified mode on the file after it is copied or generated for each trace. By
+    #     # default, if not specified, the source file's mode is copied. The value must be
+    #     # the octal mode value that is compatible with "chmod" (e.g.- "755"). This is
+    #     # optional.
+    #     #
+    #     mode: "755"
+    #
+    #     # The file is either static or not. Static files are copied to the destination as-is
+    #     # without modification. Non-static files are generated using Jinja2 and the trace's
+    #     # variable values (default: false).
+    #     #
+    #     static: false
 
     # Standard input content. This block is optional.
-    stdin:
-      # Standard input can either be a string or the path to a file. Paths can be absolute or
-      # relative to the trace directory and can reference an input_file.
-      #
-      # You can only use one: value or path.
-      #
-      # Standard input value (supports variable expansion)
-      # value: "some stdin content: {{address}}"
-      #
-      # Standard input file path
-      # path: /path/to/stdin
+    #
+    # stdin:
+    #  # Standard input can either be a string or the path to a file. Paths can be absolute or
+    #  # relative to the trace directory and can reference an input_file.
+    #  #
+    #  # You can only specify one: value or path.
+    #  #
+    #  # Standard input value (supports variable expansion)
+    #  value: "some stdin content: {{address}}"
+    #
+    #  # Standard input file path
+    #  path: /path/to/stdin
 
     # Expect that the trace will succeed (true) or fail (false). When a trace is expected to fail,
     # then any crashes or comparison failures are treated as successful (default: true).
+    #
     # expect_success: true
 
     # Expect that the trace will exit because of a specific signal. When this configuration is not
     # specified, then all signals are treated as crashes. A use case for this configuration is when
     # testing a server that is terminated via a signal. This accepts either the signal number or
     # the signal name (SIGINT, SIGTERM, etc.).
+    #
     # expect_signal: SIGINT
 
     # Bash script to execute prior to launching each trace. The body is a Jinja2 template
@@ -130,6 +138,7 @@ templates:
     #   echo goodbye >> ./some_file
 
     # Configuration for running a Bash script while the trace is executing. This block is optional.
+    #
     # concurrent:
     #   # The Bash script to execute while the trace is running. These are run asynchronously within
     #   # a background process. Differ will terminate the bash process if it is still running after
@@ -154,14 +163,14 @@ templates:
     #   #  - DIFFER_CONTEXT_ID: the trace context id
     #   #  - DIFFER_TRACE_PID: the trace pid that is currently executing
     #   #
-    #   # run: |
-    #   #   wget http://localhost:{{port}}/some_file.txt
-    #   #   exit $?
+    #   run: |
+    #     wget http://localhost:{{port}}/some_file.txt
+    #     exit $?
     #
     #   # The amount of time to wait in seconds after starting the trace before launching bash
     #   # commands in the "run" body. This is optional (default: 1.0)
     #   #
-    #   # delay: 1.0
+    #   delay: 1.0
     #
     #   # The concurrent script execution mode. This controls how DIFFER runs the concurrent script
     #   # and when the trace is considered completed. By default, no mode is set and the trace
@@ -172,7 +181,7 @@ templates:
     #   # the client mode when testing a network server that will run forever but should be stopped
     #   # after one or more requests that are issued by the concurrent script.
     #   #
-    #   # mode: client
+    #   mode: client
     #
     #   # The number of times to run the concurrent script until it is successful. This option is
     #   # useful when testing a network server that requires some time to start and accept incoming
@@ -180,7 +189,7 @@ templates:
     #   # disabled by default and the concurrent is only run once. When enabled, the `delay` option
     #   # is used to sleep between attempts.
     #   #
-    #   # retries: 5
+    #   retries: 5
 
     # Controls whether each hook script will exit immediately if a command exits with a non-zero
     # status (the Bash "set -e" option). This configuration affects the setup, concurrent, and
@@ -196,35 +205,34 @@ templates:
     # pcap:
     #   # The filename to store the pcap file, relative to the trace working directory. This
     #   # argument is passed to `tcpdump` in the `-w` argument.
-    #   #
-    #   # filename: capture.pcap
-    #   #
-    #   #
+    #   filename: capture.pcap
+    #
     #   # The network interface to capture packets on. This option is passed to `tcpdump` in the
     #   # `-i/--interface` argument.
     #   #
-    #   # interface: lo
+    #   interface: lo
 
     # A set of variables that will be generated for each trace.
-    variables:
-      # The key is the variable name
-      full_name:
-        # The type of the variable.
-        type: str
-
-        # After 'type', additional configuration is passed to the variable implementation. In
-        # general, most variables accept both a list of values to explicitly use and configuration
-        # for how to generate additional values.
-        values:
-          - Rob Smith
-          - Glenn Doe
-
-      address:
-        type: int
-        range:
-          minimum: 0
-          maximum: 100
-          count: 5
+    #
+    # variables:
+    #  # The key is the variable name
+    #  full_name:
+    #    # The type of the variable.
+    #    type: str
+    #
+    #    # After 'type', additional configuration is passed to the variable implementation. In
+    #    # general, most variables accept both a list of values to explicitly use and configuration
+    #    # for how to generate additional values.
+    #    values:
+    #      - Rob Smith
+    #      - Glenn Doe
+    #
+    #  address:
+    #    type: int
+    #    range:
+    #      minimum: 0
+    #      maximum: 100
+    #      count: 5
 
     # The list of comparators that will verify that the debloated binary's behavior matches the
     # originals. In most situations, several comparators will be used:
@@ -232,6 +240,7 @@ templates:
     #  - exit_code - validate that the process exit code matches
     #  - stdout - validate that the process standard output content matches
     #  - stderr - validate that the process standard error content matches
+    #
     comparators:
       # Comparators without any configuration can be specified by their id
       - exit_code
