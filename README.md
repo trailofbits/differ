@@ -25,7 +25,11 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    ```bash
    $ pipenv sync --dev
    ```
-4. Install [Node.js](https://nodejs.org/en/), which is required by the type checker (pyright). On Linux, use the [node version manager](https://github.com/nvm-sh/nvm) and on Windows install Node.js 18+ and add `node.exe` to the `PATH`.
+4. Clone and build Radamsa.
+   ```bash
+   $ ./setup-radamsa.sh
+   ```
+5. Install [Node.js](https://nodejs.org/en/), which is required by the type checker (pyright). On Linux, use the [node version manager](https://github.com/nvm-sh/nvm) and on Windows install Node.js 18+ and add `node.exe` to the `PATH`.
 
 ### Allow current user to execute tcpdump
 
