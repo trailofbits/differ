@@ -932,7 +932,7 @@ class FuzzVariable(TraceHook):
         """
         Generate concrete values for the template.
 
-        :param template: trace template:
+        :param template: trace template
         :returns: a generator that yields generated values
         """
         raise NotImplementedError()
