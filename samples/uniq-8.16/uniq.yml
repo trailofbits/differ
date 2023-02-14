@@ -1,5 +1,6 @@
-name: coreutils_uniq
+name: uniq
 link_filename: uniq
+version: '8.16'
 original: bin/uniq.original
 debloaters:
   chisel: bin/uniq.chisel
@@ -8,19 +9,7 @@ templates:
   ####################
   # Desired Features #
   ####################
-  - input_files:
-      - source: input.txt
-        static: true
-
-    stdin:
-      file: input.txt
-
-    comparators:
-      - stdout
-      - stderr
-      - exit_code
-
-  - arguments: -c
+  - name: stdin
     input_files:
       - source: input.txt
         static: true
@@ -33,7 +22,8 @@ templates:
       - stderr
       - exit_code
 
-  - arguments: -d
+  - name: stdin-count
+    arguments: -c
     input_files:
       - source: input.txt
         static: true
@@ -46,7 +36,8 @@ templates:
       - stderr
       - exit_code
 
-  - arguments: -u
+  - name: stdin-repeated
+    arguments: -d
     input_files:
       - source: input.txt
         static: true
@@ -59,7 +50,8 @@ templates:
       - stderr
       - exit_code
 
-  - arguments: -i
+  - name: stdin-only_unique
+    arguments: -u
     input_files:
       - source: input.txt
         static: true
@@ -72,7 +64,8 @@ templates:
       - stderr
       - exit_code
 
-  - arguments: -f 5
+  - name: stdin-ignore_case
+    arguments: -i
     input_files:
       - source: input.txt
         static: true
@@ -85,7 +78,8 @@ templates:
       - stderr
       - exit_code
 
-  - arguments: -s 10
+  - name: stdin-skip_fields
+    arguments: -f 5
     input_files:
       - source: input.txt
         static: true
@@ -98,7 +92,22 @@ templates:
       - stderr
       - exit_code
 
-  - arguments: -w 10
+  - name: stdin-skip_chars
+    arguments: -s 10
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: stdin-first_chars
+    arguments: -w 10
     input_files:
       - source: input.txt
         static: true

@@ -1,11 +1,13 @@
 name: memcached
 original: /usr/bin/memcached
+version: '1.5.22'
 debloaters:
   original: /usr/bin/memcached
 
 templates:
   # set and get command (store and retrieve value)
-  - id: set_get
+  - name: set_get
+    summary: Set and then get a value using the 'set' and 'get' commands.
     concurrent:
       delay: 0.5
       mode: client
@@ -37,7 +39,10 @@ templates:
         protocol: tcp
 
   # set with expiration
-  - id: set-expiration_get-expired
+  - name: set-expiration_get-expired
+    summary: >
+      Set a value that expires and then attempt to get the value after it expired using the 'set'
+      and 'get' commands
     concurrent:
       delay: 0.5
       mode: client
@@ -73,7 +78,8 @@ templates:
         protocol: tcp
 
   # add
-  - id: add
+  - name: add
+    summary: Add a value that does not exist with the 'add' command
     concurrent:
       delay: 0.5
       mode: client
@@ -104,7 +110,10 @@ templates:
         port: 11211
         protocol: tcp
 
-  - id: add_exists
+  - name: add_exists
+    summary: >
+      Attempt to add a value that already exists and verify that the original value is not
+      overwritten using the 'add' command
     concurrent:
       delay: 0.5
       mode: client
@@ -137,7 +146,8 @@ templates:
         protocol: tcp
 
   # replace
-  - id: replace
+  - name: replace
+    summary: Replace a value that exists using the 'replace' command
     concurrent:
       delay: 0.5
       mode: client
@@ -169,7 +179,10 @@ templates:
         port: 11211
         protocol: tcp
 
-  - id: replace_exists
+  - name: replace_exists
+    summary: >
+      Attempt to replace a value that does not exist and then verify that the value was not created
+      using the 'replace' command
     concurrent:
       delay: 0.5
       mode: client
@@ -201,7 +214,8 @@ templates:
         protocol: tcp
 
   # append
-  - id: append
+  - name: append
+    summary: Append to a string using the 'append' command
     concurrent:
       delay: 0.5
       mode: client
@@ -233,7 +247,8 @@ templates:
         port: 11211
         protocol: tcp
 
-  - id: append-error
+  - name: append-error
+    summary: Attempt to append to a value that does not exist using the 'append' command
     concurrent:
       delay: 0.5
       mode: client
@@ -265,7 +280,8 @@ templates:
         protocol: tcp
 
   # prepend
-  - id: prepend
+  - name: prepend
+    summary: Prepend to a value using the 'prepend' command
     concurrent:
       delay: 0.5
       mode: client
@@ -297,7 +313,8 @@ templates:
         port: 11211
         protocol: tcp
 
-  - id: prepend-error
+  - name: prepend-error
+    summary: Attempt to prepend to a value that does not exist using the 'prepend' command
     concurrent:
       delay: 0.5
       mode: client
@@ -329,7 +346,8 @@ templates:
         protocol: tcp
 
   # delete
-  - id: delete
+  - name: delete
+    summary: Delete a value using the 'delete' command
     concurrent:
       delay: 0.5
       mode: client
@@ -361,7 +379,8 @@ templates:
         port: 11211
         protocol: tcp
 
-  - id: delete-error
+  - name: delete-error
+    summary: Attempt to delete a value that does not exist using the 'delete' command
     concurrent:
       delay: 0.5
       mode: client
@@ -392,7 +411,8 @@ templates:
         protocol: tcp
 
   # incr/decr
-  - id: incr
+  - name: incr
+    summary: Increment an integer value using the 'incr' command
     concurrent:
       delay: 0.5
       mode: client
@@ -424,7 +444,8 @@ templates:
         port: 11211
         protocol: tcp
 
-  - id: incr-error
+  - name: incr-error
+    summary: Attempt to increment a value that does not exist using the 'incr' command
     concurrent:
       delay: 0.5
       mode: client
@@ -456,7 +477,8 @@ templates:
         protocol: tcp
 
   # decr
-  - id: decr
+  - name: decr
+    summary: Decrement an integer value using the 'decr' command
     concurrent:
       delay: 0.5
       mode: client
@@ -488,7 +510,8 @@ templates:
         port: 11211
         protocol: tcp
 
-  - id: decr-error
+  - name: decr-error
+    summary: Attempt to decrement a value that does not exist using the 'decr' command
     concurrent:
       delay: 0.5
       mode: client
@@ -519,3 +542,5 @@ templates:
         port: 11211
         protocol: tcp
 
+
+# spell-checker:ignore memcache memcached decr

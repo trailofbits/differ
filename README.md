@@ -13,7 +13,7 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    $ sudo add-apt-repository ppa:deadsnakes/ppa
    $ sudo apt update
    $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp lighttpd memcached \
-       tcpdump binutils unzip poppler-utils imagemagick
+       tcpdump binutils unzip poppler-utils imagemagick nmap
    $ sudo systemctl stop memcached
    $ sudo systemctl disable memcached
    ```
@@ -103,13 +103,13 @@ templates:
 To run this project:
 
 ```bash
-$ pipenv run python -m differ --verbose project.yml
+$ pipenv run differ --verbose project.yml
 ```
 
 The output is stored in the `./reports` directory by default and only errors are recorded. To change the output directory and output all reports, including successful runs:
 
 ```bash
-$ pipenv run python -m differ --verbose --report-successes --report-dir ./output project.yml
+$ pipenv run differ --verbose --report-successes --report-dir ./output project.yml
 ```
 
 Reports are stored in `{report_dir}/{project.name}/report-{engine}-[success|error]-{trace.id}.yml`. For example, a trace of the `binrec` debloater for the `coreutils_echo` project that failed would have a report located at:
@@ -139,6 +139,14 @@ values:
 ```
 
 In this example, the stdout content did not match the original's.
+
+## Getting Benchmark Sample Specs
+
+The `differ.spec` module loads all benchmark sample projects and outputs a CSV report containing all the command line argument invocations that will be executed. This is useful when determining what features are expected to be present in debloated samples.
+
+```bash
+$ pipenv run python differ-spec -o specs.csv
+```
 
 ## Development
 

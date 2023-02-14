@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 from differ import core
 
@@ -19,3 +20,15 @@ class TestInputFile:
     def test_get_destination_directory(self):
         ifile = core.InputFile(Path('/path/to/input_file'), Path('/etc'))
         assert ifile.get_destination(Path('/root')) == Path('/etc/input_file')
+
+    @patch.object(core, 'JINJA_ENVIRONMENT')
+    def test_template(self, mock_env):
+        src = MagicMock()
+        ifile = core.InputFile(src, Path('/etc'))
+        assert ifile.template is mock_env.from_string.return_value
+        mock_env.from_string.assert_called_once_with(src.read_text.return_value)
+        src.read_text.assert_called_once_with()
+
+    def test_load_dict(self):
+        ifile = core.InputFile.load_dict({'source': '/path/to/file', 'mode': 777})
+        assert ifile == core.InputFile(Path('/path/to/file'), mode='777')

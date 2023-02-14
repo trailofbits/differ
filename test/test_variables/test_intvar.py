@@ -1,56 +1,23 @@
-from differ.core import TraceTemplate
+from unittest.mock import MagicMock, patch
+
 from differ.variables.primitives import IntVariable
 
-"""
-You could also add unit tests that exercise the generate_values
-function to make sure we honor both self.values and the rexex generation.
-"""
 
+class TestIntVariable:
+    def test_generate_values_list(self):
+        var = IntVariable('int', {'values': [1, 2, 3]})
+        assert list(var.generate_values(MagicMock())) == [1, 2, 3]
 
-def getConfig() -> dict:
-    configs = [
-        {'values': [1, 2], 'range': {'minimum': 3, 'maximum': 99, 'count': 5}},
-        {'values': [4, 7, 8, 9], 'range': {'minimum': 10, 'maximum': 1000, 'count': 90}},
-        {'values': [], 'range': {'minimum': 11, 'maximum': 12, 'count': 1}},
-        {'values': [], 'range': {'minimum': 2, 'maximum': 4, 'count': 2}},
-    ]
-    for config in configs:
-        yield config
+    @patch('random.sample', return_value=[4, 5, 6, 7, 8])
+    def test_generate_values_range(self, mock_sample):
+        var = IntVariable('int', {'range': {'minimum': 1, 'maximum': 10, 'count': 5}})
+        assert list(var.generate_values(MagicMock())) == [4, 5, 6, 7, 8]
+        mock_sample.assert_called_once_with(range(1, 11), k=5)
 
-
-def getName() -> str:
-    for x in range(100):
-        yield str(x)
-
-
-CONFIG_GENERATOR = getConfig()
-
-
-def test_intvar1():
-    intVar = IntVariable(name=getName(), config=next(CONFIG_GENERATOR))
-    generatedExps = intVar.generate_values(TraceTemplate())
-    for x in generatedExps:
-        assert x == 1 or x == 2 or (x <= intVar.maximum and x >= intVar.minimum)
-
-
-def test_intvar2():
-    intVar = IntVariable(name=getName(), config=next(CONFIG_GENERATOR))
-    generatedExps = intVar.generate_values(TraceTemplate())
-    for x in generatedExps:
-        assert (
-            x == 4 or x == 7 or x == 8 or x == 9 or (x <= intVar.maximum and x >= intVar.minimum)
+    @patch('random.sample', return_value=[4, 5, 6, 7, 8])
+    def test_generate_values_both(self, mock_sample):
+        var = IntVariable(
+            'int', {'values': [1, 2, 3], 'range': {'minimum': 1, 'maximum': 10, 'count': 5}}
         )
-
-
-def test_intvar3():
-    intVar = IntVariable(name=getName(), config=next(CONFIG_GENERATOR))
-    generatedExps = intVar.generate_values(TraceTemplate())
-    for x in generatedExps:
-        assert x <= intVar.maximum and x >= intVar.minimum
-
-
-def test_intvar4():
-    intVar = IntVariable(name=getName(), config=next(CONFIG_GENERATOR))
-    generatedExps = intVar.generate_values(TraceTemplate())
-    for x in generatedExps:
-        assert x <= intVar.maximum and x >= intVar.minimum
+        assert list(var.generate_values(MagicMock())) == [1, 2, 3, 4, 5, 6, 7, 8]
+        mock_sample.assert_called_once_with(range(1, 11), k=5)

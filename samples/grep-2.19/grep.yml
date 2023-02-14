@@ -1,5 +1,6 @@
-name: coreutils_grep
+name: grep
 link_filename: grep
+version: '2.19'
 original: bin/grep.original
 debloaters:
   chisel: bin/grep.chisel
@@ -286,3 +287,6 @@ templates:
       - stdout
       - stderr
       - exit_code
+
+
+# spell-checker:ignore randomtext aeiou

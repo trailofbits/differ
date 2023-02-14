@@ -5,12 +5,14 @@ templates.
 """
 import os
 import shlex
+import socket
 
 from jinja2 import Environment
 
 #: The Jinja2 Environment will custom filters.
 #:
 #: - :func:`quote_filter` - the ``quote`` filter
+#: - :func:`socket.gethostbyname` - the ``gethostbyname`` filter
 #:
 #: And global variables.
 #:
@@ -48,4 +50,5 @@ def quote_filter(s: str) -> str:
 
 
 JINJA_ENVIRONMENT.filters['quote'] = quote_filter
+JINJA_ENVIRONMENT.filters['gethostbyname'] = socket.gethostbyname
 JINJA_ENVIRONMENT.globals = {'env': dict(os.environ)}

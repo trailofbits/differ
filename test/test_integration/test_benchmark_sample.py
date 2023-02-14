@@ -1,50 +1,40 @@
-import os
+import warnings
 from pathlib import Path
 
 from _pytest.python import Metafunc
 
 from differ.core import Project, TraceTemplate
 from differ.executor import Executor
+from differ.util import discover_projects
 
 REPORT_DIR = Path(__file__).parents[2] / 'integration_test_reports'
-PROJECTS_DIR = Path(__file__).parents[2] / 'samples'
 
 
 def pytest_generate_tests(metafunc: Metafunc):
-    from differ.comparators import load_comparators
-    from differ.variables import load_variables
-
     if 'project' not in metafunc.fixturenames:
         return
+
+    # cffi/vengine_cpy.py will import the 'imp' module which triggers the following warning. We
+    # don't want pytest to ignore this warning so that we don't confuse the user or CI.
+    # warnings.filterwarnings(
+    #     'ignore', category=DeprecationWarning, message='the imp module is deprecated'
+    # )
 
     app = Executor(REPORT_DIR, overwrite_existing_report=True)
     app.setup()
 
     params: list[tuple[Executor, Project, TraceTemplate]] = []
-    for project_dir in PROJECTS_DIR.iterdir():
-        if not project_dir.is_dir():
-            continue
-
-        name = project_dir.name.split('-')[0]
-        project_filename = project_dir / (name + '.yml')
-        if not project_filename.is_file():
-            continue
-
-        try:
-            project = Project.load(REPORT_DIR, project_filename)
-        except:  # noqa: E722
-            pass
-        else:
-            # The following check is disabled which makes it so pcap templates are not run in CI.
-            # This appears to be working but, if these samples become flaky or begin breaking, we
-            # should disable them again.
-            #
-            # exclude = os.getenv('CI') == 'true' and any(
-            #     template.pcap for template in project.templates
-            # )
-            # if not exclude:
-            app.setup_project(project)
-            params.extend((app, project, template) for template in project.templates)
+    for project in discover_projects(report_dir=REPORT_DIR):
+        # The following check is disabled which makes it so pcap templates are not run in CI.
+        # This appears to be working but, if these samples become flaky or begin breaking, we
+        # should disable them again.
+        #
+        # exclude = os.getenv('CI') == 'true' and any(
+        #     template.pcap for template in project.templates
+        # )
+        # if not exclude:
+        app.setup_project(project)
+        params.extend((app, project, template) for template in project.templates)
 
     metafunc.parametrize(
         'app,project,template',
@@ -61,6 +51,10 @@ def test_benchmark_sample(app: Executor, project: Project, template: TraceTempla
         for filename in project.directory.iterdir():
             if filename.name.startswith('report-') and filename.is_file():
                 print('# Error report:', filename.name)
+                print(filename.read_text())
+                print('----------')
+            elif filename.name.startswith('crash-') and filename.is_file():
+                print('# Crash report:', filename.name)
                 print(filename.read_text())
                 print('----------')
 

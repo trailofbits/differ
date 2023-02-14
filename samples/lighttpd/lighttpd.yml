@@ -1,11 +1,12 @@
 name: lighttpd
 original: /usr/sbin/lighttpd
+version: '1.4.55'
 debloaters:
   original: /usr/sbin/lighttpd
 
 templates:
   # get index
-  - id: get-root_file
+  - name: get-root_file
     arguments: -D -f static-all.conf
     input_files:
       - source: serve
@@ -33,7 +34,7 @@ templates:
         target: serve/index.html
 
   # get nested
-  - id: get-nested_file
+  - name: get-nested_file
     arguments: -D -f static-all.conf
     input_files:
       - source: serve
@@ -61,7 +62,7 @@ templates:
         target: serve/dir1/file1.html
 
   # get index
-  - id: get-index
+  - name: get-index
     arguments: -D -f static-index.conf
     input_files:
       - source: serve
@@ -89,7 +90,7 @@ templates:
         target: serve/about.html
 
   # get exclude PHP file
-  - id: get-include_ext
+  - name: get-include_ext
     arguments: -D -f static-exclude-php.conf
     input_files:
       - source: serve
@@ -116,7 +117,7 @@ templates:
         filename: index.html
         target: serve/index.html
 
-  - id: get-exclude_ext
+  - name: get-exclude_ext
     arguments: -D -f static-exclude-php.conf
     input_files:
       - source: serve
@@ -125,7 +126,7 @@ templates:
 
     concurrent:
       run: |
-        wget http://localhost:3000/runme.php
+        wget http://localhost:3000/run.php
 
       retries: 5
       mode: client
@@ -138,10 +139,10 @@ templates:
         exit_code:
           expect: 8
       - id: file
-        filename: runme.php
+        filename: run.php
         exists: false
 
-  - id: get-vhost_1
+  - name: get-vhost_1
     arguments: -D -f static-vhost.conf
     input_files:
       - source: serve
@@ -172,7 +173,7 @@ templates:
         filename: index.html
         target: serve/index.html
 
-  - id: get-vhost_2
+  - name: get-vhost_2
     arguments: -D -f static-vhost.conf
     input_files:
       - source: serve
@@ -201,7 +202,7 @@ templates:
         filename: hello.txt
         exists: false
 
-  - id: get-vhost_3
+  - name: get-vhost_3
     arguments: -D -f static-vhost.conf
     input_files:
       - source: serve
@@ -236,7 +237,7 @@ templates:
   # Error Handling #
   ##################
   # 404
-  - id: get-404
+  - name: get-404
     arguments: -D -f static-all.conf
     input_files:
       - source: serve
@@ -260,3 +261,6 @@ templates:
       - id: file
         filename: foo.html
         exists: false
+
+
+# spell-checker:ignore lighttpd vhost

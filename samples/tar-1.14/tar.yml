@@ -1,5 +1,6 @@
-name: coreutils_tar
+name: tar
 link_filename: tar
+version: '1.14'
 original: bin/tar.original
 debloaters:
   # The CHISEL binary does not work properly so we compare the original against itself
@@ -7,7 +8,8 @@ debloaters:
 
 templates:
   # tar-archives-multiple-files
-  - arguments: cf foo.tar foo bar
+  - name: create-multiple_files
+    arguments: cf foo.tar foo bar
     setup: |
       echo "foo foo" > foo.orig
       cp foo.orig foo
@@ -32,8 +34,9 @@ templates:
         filename: foo.tar
         similarity: 0
 
-  # tar-extracts-all-subdirs
-  - arguments: xf foo.tar -C foo ./1/10
+  # tar-extracts-all
+  - name: extract-directory_subset
+    arguments: xf foo.tar -C foo ./1/10
     setup: |
       mkdir -p foo/{1,2,3}
       mkdir -p foo/1/{10,11}
@@ -42,7 +45,7 @@ templates:
       rm -r foo/*
 
     teardown: |
-      find foo | sort >logfile
+      find foo | sort >log
 
     comparators:
       - stdout
@@ -56,10 +59,11 @@ templates:
         exit_code:
           expect: 0
       - id: file
-        filename: logfile
+        filename: log
 
   # tar-extracts-file
-  - arguments: xf foo.tar
+  - name: extract-file
+    arguments: xf foo.tar
     setup: |
       touch foo
       ./tar cf foo.tar foo
@@ -77,7 +81,8 @@ templates:
         filename: foo
 
   # tar-extracts-from-standard-input
-  - arguments: x
+  - name: extract-stdin_file
+    arguments: x
     setup: |
       touch foo
       ./tar cf foo.tar foo
@@ -98,7 +103,8 @@ templates:
         filename: foo
 
   # tar-extracts-multiple-files
-  - arguments: -xf foo.tar
+  - name: extract-all
+    arguments: -xf foo.tar
     setup: |
       touch foo bar
       ./tar cf foo.tar foo bar
@@ -118,7 +124,8 @@ templates:
         filename: bar
 
   # tar-handles-cz-options
-  - arguments: czf foo.tar.gz foo
+  - name: create-gzip
+    arguments: czf foo.tar.gz foo
     setup: |
       echo "foo foo bar" > foo
 
@@ -141,7 +148,8 @@ templates:
         filename: foo
 
   # tar-handles-empty-include-and-non-empty-exclude-list
-  - arguments: xf foo.tar -X foo.exclude
+  - name: extract-exclude_file
+    arguments: xf foo.tar -X foo.exclude
     setup: |
       touch foo
       tar cf foo.tar foo
@@ -161,10 +169,11 @@ templates:
         exists: false
 
   # tar-handles-exclude-and-extract-lists
-  - arguments: xf foo.tar foo bar -X foo.exclude
+  - name: extract-exclude_and_include
+    arguments: xf foo.tar foo bar -X foo.exclude
     setup: |
       echo "abcd abcd" > foo
-      echo "qwerqwerqwer" > bar
+      echo "bar bar bar" > bar
       echo "" > baz
       tar cf foo.tar foo bar baz
       echo foo >foo.exclude
@@ -188,7 +197,8 @@ templates:
         exists: false
 
   # tar-handles-multiple-X-options
-  - arguments: xf foo.tar -X foo.exclude -X bar.exclude
+  - name: extract-multiple_exclude_files
+    arguments: xf foo.tar -X foo.exclude -X bar.exclude
     setup: |
       touch foo
       touch bar
@@ -213,7 +223,8 @@ templates:
         exists: false
 
   # tar-handles-nested-exclude
-  - arguments: xf foo.tar foo -X foobar.exclude
+  - name: extract-exclude_file-path
+    arguments: xf foo.tar foo -X foobar.exclude
     setup: |
       mkdir foo
       touch foo/bar
@@ -242,7 +253,8 @@ templates:
   ##################
 
   # tar-complains-about-missing-file
-  - arguments: cf foo.tar foo
+  - name: error-extract-file_not_in_archive
+    arguments: cf foo.tar foo
     setup: |
       touch foo
 
@@ -259,7 +271,8 @@ templates:
           expect: false
 
   # tar-demands-at-least-one-ctx
-  - arguments: v
+  - name: error-missing-command
+    arguments: v
     comparators:
       - stdout
       - stderr
@@ -267,7 +280,8 @@ templates:
         expect: false
 
   # tar-demands-at-most-one-ctx
-  - arguments: tx
+  - name: error-multiple-commands
+    arguments: tx
     comparators:
       - stdout
       - stderr
@@ -275,7 +289,8 @@ templates:
         expect: false
 
   # tar-extracts-to-standard-output
-  - arguments: 0x
+  - name: error-extract-stdout
+    arguments: 0x
     setup: |
       echo foo > foo
       ./tar cf foo.tar foo
