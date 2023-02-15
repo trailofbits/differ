@@ -92,8 +92,9 @@ class RadamsaVariable(FuzzVariable):
         stdout, _ = proc.communicate(seed.encode())
 
         # Radamsa is a tiny bit buggy and may return more than `count` values. We unique the
-        # returned values and filter out any empty values. For more information, see this comment:
+        # returned values, filter out any empty values, and only return the first `count`
+        # generated. For more information, see this comment:
         # https://github.com/trailofbits/differ/issues/15#issuecomment-1428471480
         unique = set(stdout.decode(errors='replace').splitlines(keepends=False))
         items = [item for item in unique if item]
-        return items
+        return items[:count]
