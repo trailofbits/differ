@@ -20,6 +20,10 @@ SIGINT
 pcap
 tcpdump
 nmap
+radamsa
+ENOENT
+keepends
+fuzzer
 
 
 # sphinx / restructuredText directives

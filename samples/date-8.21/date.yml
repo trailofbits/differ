@@ -400,6 +400,19 @@ templates:
       - id: exit_code
         expect: false
 
+  - name: fuzz-date
+    arguments: -d {{date|quote}} "+%Y-%m-%d %T"
+    variables:
+      date:
+        type: radamsa
+        seed: '2008-12-06 05:45:21'
+        count: 5
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
   ##########################################
   # Expected Failures (Debloated Features) #
   ##########################################
