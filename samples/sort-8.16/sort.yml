@@ -1,0 +1,217 @@
+name: sort
+link_filename: sort
+version: '8.16'
+original: bin/sort.original
+debloaters:
+  chisel: bin/sort.chisel
+
+templates:
+  # No args other than file and output to stdout
+  - name: default-file_stdout
+    arguments: "{{input}}"
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  # Reverse sort and output to stdout
+  - name: reverse-file_stdout
+    arguments: -r {{input}}
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  # Stabilize sort and output to stdout
+  - name: stabilize-file_stdout
+    arguments: -s {{input}}
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  # Unique sort and output to stdout
+  - name: unique-file_stdout
+    arguments: -u {{input}}
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  # Zero terminate lines and output to stdout
+  - name: zero_terminate-file_stdout
+    arguments: -z {{input}}
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
