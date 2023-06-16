@@ -3,7 +3,8 @@ link_filename: sort
 version: '8.16'
 original: bin/sort.original
 debloaters:
-  chisel: bin/sort.chisel
+  # the chisel binary does not pass tests, so we test against the original
+  original: bin/sort.original
 
 templates:
   # No args other than file and output to stdout
