@@ -12,14 +12,14 @@ DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirem
    ```bash
    $ sudo add-apt-repository ppa:deadsnakes/ppa
    $ sudo apt update
-   $ sudo apt-get install python3.9 python3.9-venv libfuzzy-dev lftp lighttpd memcached \
+   $ sudo apt-get install python3.9 python3.9-dev python3-pip python3.9-venv libfuzzy-dev lftp lighttpd memcached \
        tcpdump binutils unzip poppler-utils imagemagick nmap
    $ sudo systemctl stop memcached
    $ sudo systemctl disable memcached
    ```
 2. Install `pipenv`, which manages the virtual environment.
    ```bash
-   $ python3.9 -m pip install pipenv
+   $ python3.9 -m pip install --user pipenv
    ```
 3. Create the virtual environment and install development dependencies:
    ```bash
