@@ -420,4 +420,86 @@ templates:
         filename: serve/file
         exists: false
 
+  # Unsupported Debug
+  - name: unsupported_debug
+    summary: Test unsupported 'debug' command in debloated version
+    arguments: '-D -c default-anon.conf'
+    expect_success: false
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        debug
+        pwd
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+  # Unsupported help
+  - name: unsupported_help
+    summary: Test unsupported 'help' command in debloated version
+    arguments: '-D -c default-anon.conf'
+    expect_success: false
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        help
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+  # Unsupported jobs
+  - name: unsupported_history
+    summary: Test unsupported 'jobs' command in debloated version
+    arguments: '-D -c default-anon.conf'
+    expect_success: false
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        jobs
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
 # spell-checker:ignore bftpd lftp retr rcfile cdup rnfr rnto allowcommand cmds

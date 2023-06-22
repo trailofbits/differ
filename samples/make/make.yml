@@ -303,5 +303,80 @@ templates:
       - id: exit_code
         expect: false
 
+  #######################
+  # Debloated functions #
+  #######################
+  - name: unsupported_help
+    expect_success: false
+    arguments: --help
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_always-make
+    expect_success: false
+    arguments: --always-make file3
+    input_files:
+      - source: input_files/low-deps.mak
+        destination: Makefile
+
+    setup: |
+      make file3
+      echo asdf >> file3
+      cp file3 file3-expect
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file3
+        target: file3-expect
+      - id: file
+        filename: file3
+      - id: file
+        filename: deps
+
+  - name: unsupported_arguments
+    expect_success: false
+    arguments: file1 file2 {{opt}}
+    input_files:
+      - source: input_files/low-multi_targets.mak
+        destination: Makefile
+    variables:
+      opt:
+        type: str
+        values:
+          - "-d"
+          - "--debug"
+          - "-e"
+          - "--environment-overrides"
+          - "-i"
+          - "--ignore-errors"
+          - "-k"
+          - "--keep-going"
+          - "--recon"
+          - "--just-print"
+          - "--dry-run"
+          - "-n"
+          - "-q"
+          - "--question"
+          - "--trace"
+          - "-w"
+          - "--print-directory"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+      - id: file
+        filename: file2
 
 # spell-checker:ignore CURDIR

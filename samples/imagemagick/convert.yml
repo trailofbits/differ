@@ -257,5 +257,95 @@ templates:
       - id: file
         filename: eggs-cropped.jpg
 
+  - name: unsupported_help
+    expect_success: false
+    arguments: -h
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  - name: unsupported_fuzz
+    expect_success: false
+    arguments: eggs.jpg -fuzz 40% eggs-fuzz.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-fuzz.jpg
+
+  - name: unsupported_single
+    expect_success: false
+    arguments: eggs.jpg {{mode}} eggs-single.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+    variables:
+      mode:
+        type: str
+        values:
+          - '-enhance'
+          - '-render'
+          - '-strip'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-single.jpg
+
+  - name: unsupported_mode_vals
+    expect_success: false
+    arguments: eggs.jpg {{mode}} 20 eggs-mode-val.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+    variables:
+      mode:
+        type: str
+        values:
+          - '-swirl'
+          - '-paint'
+          - '-polaroid'
+          - '-posterize'
+          - '-radial-blur'
+          - '-raise'
+          - '-threshold'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-mode-val.jpg
+
+  - name: unsupported_alpha
+    expect_success: false
+    arguments: eggs.jpg -alpha {{mode}} eggs-alpha.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+    variables:
+      mode:
+        type: str
+        values:
+          - 'activate'
+          - 'deactivate'
+          - 'reset'
+          - 'set'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-alpha.jpg
 
 # spell-checker:ignore EXIF

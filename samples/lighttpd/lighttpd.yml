@@ -262,5 +262,63 @@ templates:
         filename: foo.html
         exists: false
 
+  ##################
+  # Test Debloated #
+  ##################
+  - name: unsupported-compile-features
+    expect_success: false
+    arguments: -V
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
 
+  - name: unsupported-print-config
+    expect_success: false
+    arguments: -p -f static-all.conf
+    input_files:
+      - config/static-all.conf
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported-test-config
+    expect_success: false
+    arguments: -tt -f static-all.conf
+    input_files:
+      - config/static-all.conf
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  # keepalive off get index
+  - name: unsupported_keepalive-get-root_file
+    expect_success: false
+    arguments: -D -f static-keepalive.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-keepalive.conf
+
+    concurrent:
+      run: |
+        wget http://localhost:3000/index.html
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: index.html
+      - id: file
+        filename: index.html
+        target: serve/index.html
 # spell-checker:ignore lighttpd vhost
