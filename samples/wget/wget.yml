@@ -59,4 +59,60 @@ templates:
       - id: file
         filename: data.json
 
+  - arguments: --help
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - exit_code
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - exit_code
+
+  - arguments: --debug -O data.json http://md5.jsontest.com/?text=hello_world
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: data.json
+
+  - arguments: --delete-after http://echo.jsontest.com/key/value
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: value.tmp
+        exists: false
+
+  - arguments: -S -O data.json http://md5.jsontest.com/?text=hello_world
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: data.json
+
+  - arguments: --spider http://echo.jsontest.com/key/value
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: value
+        exists: false
+
 # spell-checker:ignore jsontest

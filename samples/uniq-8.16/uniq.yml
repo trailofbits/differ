@@ -119,3 +119,38 @@ templates:
       - stdout
       - stderr
       - exit_code
+
+  - arguments: -D
+    expect_success: false
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -z
+    expect_success: false
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code

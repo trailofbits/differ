@@ -69,6 +69,24 @@ templates:
         type: directory
         filename: d1/d2
 
+  - arguments: -m {{mode}} d1
+    variables:
+      mode:
+        type: int
+        values:
+          - 400
+          - 644
+          - 610
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+        mode:
+          variable: mode
+
   ###################
   # Expected Errors #
   ###################
@@ -113,28 +131,60 @@ templates:
         type: directory
         filename: d1
 
+  - name: mode
+    arguments: --verbose -m {{mode}} d1
+    expect_success: false
+    variables:
+      mode:
+        type: int
+        values:
+          - 400
+          - 644
+          - 610
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+        mode:
+          variable: mode
+
+  - name: help
+    arguments: --help
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
   ######################
   # Debloated Features #
   ######################
-  #
-  # The following is disabled because mkdir.chisel behaves differently based on the installed OS
-  # and library versions.
-  #
-  # - arguments: -m {{mode}} d1
-  #   expect_success: false
-  #   variables:
-  #     mode:
-  #       type: int
-  #       values:
-  #         - 400
-  #         - 644
-  #         - 610
-  #   comparators:
-  #     - stdout
-  #     - stderr
-  #     - exit_code
-  #     - id: file
-  #       type: directory
-  #       filename: d1
-  #       mode:
-  #         variable: mode
+
+  - arguments: --verbose d1
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - arguments: --verbose -p d1/d2
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code

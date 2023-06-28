@@ -178,4 +178,107 @@ templates:
         filename: file1.html
         target: serve-ip/dir1/file1.html
 
+  - name: unsupported_config-test
+    expect_success: false
+    arguments: -p "{{trace.cwd}}" -c file_server.conf {{test_conf}}
+    variables:
+      test_conf:
+        type: str
+        values:
+          - "-T"
+          - "-t"
+    input_files:
+      - configs/file_server.conf
+      - source: serve-ip
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_config-sendfile
+    expect_success: false
+    arguments: -p "{{trace.cwd}}" -c file_server_unsupported.conf
+    input_files:
+      - configs/file_server_unsupported.conf
+      - source: serve-ip
+        static: true
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget http://127.0.0.1:8080/dir1/file1.html
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file1.html
+        target: serve-ip/dir1/file1.html
+
+  - name: unsupported_help
+    expect_success: false
+    arguments: -h
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_help2
+    expect_success: false
+    arguments: -?
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_version
+    expect_success: false
+    arguments: -v
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_version2
+    expect_success: false
+    arguments: -V
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_quiet
+    expect_success: false
+    arguments: -q -p "{{trace.cwd}}" -c file_server.conf
+    input_files:
+      - configs/file_server.conf
+      - source: serve-ip
+        static: true
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget http://127.0.0.1:8080/dir1/file1.html
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file1.html
+        target: serve-ip/dir1/file1.html
+
 # spell-checker:ignore vhost

@@ -306,3 +306,118 @@ templates:
       - id: setup_script
         exit_code:
           expect: 0
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: --verbose -xf foo.tar
+    expect_success: false
+    setup: |
+      touch foo bar
+      ./tar cf foo.tar foo bar
+      rm foo bar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+
+  - arguments: --checkpoint -xf foo.tar
+    expect_success: false
+    setup: |
+      touch foo bar
+      ./tar cf foo.tar foo bar
+      rm foo bar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+
+  - arguments: -tf foo.tar
+    expect_success: false
+    setup: |
+      touch foo bar
+      ./tar cf foo.tar foo bar
+      rm foo bar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+
+  - arguments: --totals -cf foo.tar foo bar
+    expect_success: false
+    setup: |
+      echo "foo foo" > foo.orig
+      cp foo.orig foo
+      echo "bar " > bar.orig
+      cp bar.orig bar
+
+    teardown: |
+      rm foo bar
+      ./tar xf foo.tar
+
+    comparators:
+      - stdout
+      - stderr
+      - teardown_script
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+      - id: file
+        filename: foo.tar
+        similarity: 0
+
+  - arguments: --verify -cf foo.tar foo bar
+    expect_success: false
+    setup: |
+      echo "foo foo" > foo.orig
+      cp foo.orig foo
+      echo "bar " > bar.orig
+      cp bar.orig bar
+
+    teardown: |
+      rm foo bar
+      ./tar xf foo.tar
+
+    comparators:
+      - stdout
+      - stderr
+      - teardown_script
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+      - id: file
+        filename: foo.tar
+        similarity: 0
