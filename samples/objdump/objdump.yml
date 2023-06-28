@@ -172,4 +172,4 @@ templates:
       - id: exit_code
         expect: 0
 
-# spell-checker:ignore objdump
+# spell-checker:ignore objdump reloc syms

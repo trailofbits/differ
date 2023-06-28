@@ -281,4 +281,4 @@ templates:
         filename: file1.html
         target: serve-ip/dir1/file1.html
 
-# spell-checker:ignore vhost
+# spell-checker:ignore vhost sendfile

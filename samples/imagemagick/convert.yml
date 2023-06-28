@@ -348,4 +348,4 @@ templates:
       - id: file
         filename: eggs-alpha.jpg
 
-# spell-checker:ignore EXIF
+# spell-checker:ignore EXIF vals posterize

@@ -321,4 +321,5 @@ templates:
       - id: file
         filename: index.html
         target: serve/index.html
-# spell-checker:ignore lighttpd vhost
+
+# spell-checker:ignore lighttpd vhost keepalive
