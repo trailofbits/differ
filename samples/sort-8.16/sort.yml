@@ -216,3 +216,213 @@ templates:
       - stderr
       - id: exit_code
         expect: 0
+
+  - arguments: "--parallel=4 {{input}}"
+    expect_success: false
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+  - arguments: "--field-separator=a {{input}}"
+    expect_success: false
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+  - arguments: "-c {{input}}"
+    expect_success: false
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+  - arguments: "-b {{input}}"
+    expect_success: false
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+  - arguments: "-d {{input}}"
+    expect_success: false
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true
+
+  - arguments: "-n {{input}}"
+    expect_success: false
+    variables:
+      input:
+        type: str
+        values:
+          - empty.txt
+          - single.txt
+          - all_same.txt
+          - sorted.txt
+          - multi_sorted.txt
+          - reversed.txt
+          - multi_reversed.txt
+          - random.txt
+          - weird.txt
+    input_files:
+      - source: inputs/empty.txt
+        static: true
+      - source: inputs/single.txt
+        static: true
+      - source: inputs/all_same.txt
+        static: true
+      - source: inputs/sorted.txt
+        static: true
+      - source: inputs/multi_sorted.txt
+        static: true
+      - source: inputs/reversed.txt
+        static: true
+      - source: inputs/multi_reversed.txt
+        static: true
+      - source: inputs/random.txt
+        static: true
+      - source: inputs/weird.txt
+        static: true

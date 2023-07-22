@@ -118,5 +118,58 @@ templates:
       - id: exit_code
         expect: 1
 
+  - name: help
+    expect_success: false
+    arguments: "--help"
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
 
-# spell-checker:ignore objdump
+  - name: version
+    expect_success: false
+    arguments: "--version"
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: version
+    expect_success: false
+    arguments: "--info"
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_flag
+    arguments: "{{flag}} {{binary}}"
+    variables:
+      flag:
+        type: str
+        values:
+          - "-D --disassembler-color=on"
+          - "-D --visualize-jumps=color"
+          - "-D --disassembler-color=extended"
+          - "-D --show-all-symbols"
+          - "--dynamic-reloc"
+          - "--syms"
+          - "--dynamic-syms"
+
+      binary:
+        type: str
+        values:
+          # amd64 binary
+          - '/bin/bash'
+          # amd64 shared library
+          - '/lib64/ld-linux-x86-64.so.2'
+          # amd64 static library
+          - '/lib/x86_64-linux-gnu/libffi.a'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+# spell-checker:ignore objdump reloc syms

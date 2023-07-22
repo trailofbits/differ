@@ -542,5 +542,129 @@ templates:
         port: 11211
         protocol: tcp
 
+  - name: unsupported_help
+    expect_success: false
+    arguments: --help
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
 
+  - name: unsupported_license
+    expect_success: false
+    arguments: --license
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_version
+    expect_success: false
+    arguments: --version
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_verbose
+    expect_success: false
+    arguments: -vvv
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.add('x', '10')
+        assert client.delete('x')
+        assert client.get('x') is None, 'value was not deleted'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: unsupported_port
+    expect_success: false
+    arguments: -p 12345
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1:12345')
+        assert client.add('x', '10')
+        assert client.delete('x')
+        assert client.get('x') is None, 'value was not deleted'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 12345
+        protocol: tcp
+
+  - name: unsupported_threads
+    expect_success: false
+    arguments: -t 1
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1:12345')
+        assert client.add('x', '10')
+        assert client.delete('x')
+        assert client.get('x') is None, 'value was not deleted'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 12345
+        protocol: tcp
 # spell-checker:ignore memcache memcached decr

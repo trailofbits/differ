@@ -212,3 +212,86 @@ templates:
       - stderr
       - id: exit_code
         expect: false
+
+  # Unsupported preserve-root
+  - name: preserve-root
+    expect_success: false
+    arguments: "--preserve-root {{env.USER}}:adm file1"
+    setup: |
+      touch file1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner:
+          group: adm
+
+  # Unsupported verbose -R (recursive)
+  - name: recursive
+    expect_success: false
+    arguments: "-v -R {{env.USER}}:adm d1"
+    setup: |
+      mkdir -p d1/d1/d1
+      touch d1/d1/d1/file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: d1/d1/d1/file
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1
+        type: directory
+        owner:
+          group: adm
+
+  # Unsupported -H -R (recursive)
+  - name: recursive
+    expect_success: false
+    arguments: "-H -R {{env.USER}}:adm d1"
+    setup: |
+      mkdir -p d1/d1/d1
+      touch d1/d1/d1/file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: d1/d1/d1/file
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1
+        type: directory
+        owner:
+          group: adm

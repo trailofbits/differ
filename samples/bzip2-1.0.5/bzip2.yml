@@ -117,6 +117,64 @@ templates:
       - id: file
         filename: foo.bz2
 
+  # Unsupported 'version'
+  - name: unsupported-version
+    expect_success: false
+    arguments: -V
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  # Unsupported 'license'
+  - name: unsupported-license
+    expect_success: false
+    arguments: -L
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  # Unsupported 'best' compress
+  - name: unsupported-best
+    expect_success: false
+    arguments: --best foo
+    setup: |
+      echo 1234 > foo
+
+    teardown: |
+      bzcat foo.bz2 > foo.extracted
+      cmp foo foo.extracted
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: foo.bz2
+
+  # Unsupported '8' compress
+  - name: unsupported-number-compress
+    expect_success: false
+    arguments: -8 foo
+    setup: |
+      echo 1234 > foo
+
+    teardown: |
+      bzcat foo.bz2 > foo.extracted
+      cmp foo foo.extracted
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: foo.bz2
+
   # Test invalid arguments
   #
   # TODO: This template is currently disabled because we don't have a way to emulate a TTY within

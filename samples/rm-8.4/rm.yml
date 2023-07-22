@@ -124,3 +124,49 @@ templates:
       - stderr
       - id: exit_code
         expect: false
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -r -v dir
+    expect_success: false
+    setup: |
+      mkdir dir
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  - arguments: --recursive dir
+    expect_success: false
+    setup: |
+      mkdir dir
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  - arguments: -R dir
+    expect_success: false
+    setup: |
+      mkdir dir
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false

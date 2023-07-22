@@ -162,4 +162,48 @@ templates:
       - id: file
         filename: output.html
 
+  - arguments: -h
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -v
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -xml markdown.pdf
+    expect_success: false
+    input_files:
+      - source: input_files/markdown.pdf
+        static: true
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: markdown.xml
+
+  - arguments: -i BinRec.pdf
+    expect_success: false
+    input_files:
+      - source: input_files/BinRec.pdf
+        static: true
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: BinRec.html
+      - id: file
+        filename: BinRec_ind.html
+      - id: file
+        filename: BinRecs.html
+
 # spell-checker:ignore openpdf pdftohtml DARPA
