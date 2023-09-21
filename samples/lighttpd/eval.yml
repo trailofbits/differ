@@ -3,7 +3,6 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/
 version: '1.4.55'
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/chisel-2-binaries/lighttpd
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/occam/lighttpd_occam
 
 templates:
   # get index

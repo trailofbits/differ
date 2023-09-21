@@ -4,8 +4,6 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/gzi
 version: '1.2.4'
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/chisel-2-binaries/gzip
-  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/lmcas/gzip_lmcas
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/occam/gzip_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/gtirb-dynamic/gzip.reduced
 
 templates:

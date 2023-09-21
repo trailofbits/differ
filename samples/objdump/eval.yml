@@ -2,9 +2,7 @@ name: objdump
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/binutils-2.40/binaries/64/objdump
 version: '2.34'
 debloaters:
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/occam/objdump_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/binutils/gtirb-dynamic/objdump.reduced
-  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/trimmer/objdump_trimmer
 
 templates:
   - name: flag

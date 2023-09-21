@@ -2,7 +2,6 @@ name: make
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/make-4.2/binaries/64/make
 version: '4.2.1'
 debloaters:
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/occam/make_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/gtirb-dynamic/make.reduced
 
 templates:

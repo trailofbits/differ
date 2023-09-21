@@ -2,9 +2,7 @@ name: nmap
 version: '7.80'
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/nmap-7.93/binaries/64/nmap
 debloaters:
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nmap/occam/nmap_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nmap/gtirb-dynamic/nmap.reduced
-  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nmap/trimmer/nmap_trimmer
 
 
 templates:

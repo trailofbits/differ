@@ -2,9 +2,7 @@ name: memcached
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/memcached-1.6.18/binaries/64/memcached
 version: '1.5.22'
 debloaters:
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/occam/memcached_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/gtirb-dynamic/memcached.reduced
-  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/trimmer/memcached_trimmer
 
 templates:
   # set and get command (store and retrieve value)

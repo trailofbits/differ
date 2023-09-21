@@ -4,10 +4,7 @@ version: '8.2'
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/chown-8.2/binaries/64/chown
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/chisel-2-binaries/chown
-  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/lmcas/chown_lmcas
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/occam/chown_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/gtirb-dynamic/chown.reduced
-  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/trimmer/chown_trimmer
 
 templates:
   - name: file

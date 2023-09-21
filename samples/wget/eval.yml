@@ -3,10 +3,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/
 version: '1.20.3'
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/chisel-2-binaries/wget
-  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/lmcas/wget_lmcas
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/occam/wget_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/gtirb-dynamic/wget.reduced
-  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/trimmer/wget_trimmer
 
 templates:
   - name: protocol-https

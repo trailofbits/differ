@@ -4,9 +4,6 @@ link_filename: bftpd.symlink
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/bftpd-6.1/binaries/64/bftpd
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/chisel-2-binaries/bftpd
-  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/lmcas/bftpd_lmcas
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/occam/bftpd_occam
-  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/trimmer/bftpd_trimmer
 
 templates:
   # Get a file

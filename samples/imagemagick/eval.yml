@@ -2,9 +2,7 @@ name: imagemagick_convert
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/imagemagick-7.0.1-0/binaries/64/magick
 version: '6.9.10-23'
 debloaters:
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/imagemagick/occam/magick_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/imagemagick/gtirb-dynamic/magick.reduced
-  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/imagemagick/trimmer/magick_trimmer
 
 templates:
   - name: convert-format

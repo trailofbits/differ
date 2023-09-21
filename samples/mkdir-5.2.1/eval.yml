@@ -3,8 +3,6 @@ link_filename: mkdir.symlink
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/mkdir-5.2.1/binaries/64/mkdir
 version: '5.2.1'
 debloaters:
-  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/lmcas/mkdir_lmcas
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/occam/mkdir_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/gtirb-dynamic/mkdir.reduced
 
 templates:

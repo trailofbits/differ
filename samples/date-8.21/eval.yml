@@ -4,7 +4,6 @@ version: '8.21'
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/date-8.21/binaries/64/date
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/date/chisel-2-binaries/date
-  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/date/occam/date_occam
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/date/gtirb-dynamic/date.reduced
 
 templates:
