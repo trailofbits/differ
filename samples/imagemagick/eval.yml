@@ -1,0 +1,353 @@
+name: imagemagick_convert
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/imagemagick-7.0.1-0/binaries/64/magick
+version: '6.9.10-23'
+debloaters:
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/imagemagick/occam/magick_occam
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/imagemagick/gtirb-dynamic/magick.reduced
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/imagemagick/trimmer/magick_trimmer
+
+templates:
+  - name: convert-format
+    summary: >
+      Convert between formats: jpg, png, bmp, gif
+    arguments: input_files/eggs.{{from}} eggs.{{to}}
+    input_files:
+      - source: input_files
+        static: true
+
+    teardown: |
+      # Some image files will not be identical because they will each have different EXIF data. We
+      # strip this using the system's imagemagick binary.
+      convert eggs.{{to}} -strip stripped-image
+
+    variables:
+      from:
+        type: str
+        values:
+          - jpg
+          - png
+          - bmp
+          - gif
+
+      to:
+        type: str
+        values:
+          - jpg
+          - png
+          - bmp
+          - gif
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: stripped-image
+
+  - name: resize
+    arguments: eggs.jpg -resize {{scale}} eggs-resized.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      scale:
+        type: str
+        values:
+          - 50%
+          - 150%
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-resized.jpg
+
+  - name: flip
+    arguments: eggs.jpg -flip eggs-flipped.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-flipped.jpg
+
+  - name: flop
+    arguments: eggs.jpg -flop eggs-flopped.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-flopped.jpg
+
+  - name: negate
+    arguments: eggs.jpg {{flag}} eggs-negate.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      flag:
+        type: str
+        values:
+          - '-negate'
+          - '+negate'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-negate.jpg
+
+  - name: scale
+    arguments: eggs.jpg -scale {{scale}} eggs-scaled.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      scale:
+        type: str
+        values:
+          - 50%
+          - 150%
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-scaled.jpg
+
+  - name: roll
+    arguments: eggs.jpg -roll {{x}}{{y}} eggs-rolled.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      x:
+        type: str
+        values:
+          - '+0'
+          - '-270'
+          - '+270'
+
+      y:
+        type: str
+        values:
+          - '+0'
+          - '-270'
+          - '+270'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-rolled.jpg
+
+  - name: transverse
+    arguments: eggs.jpg -transverse eggs-transverse.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-transverse.jpg
+
+  - name: transpose
+    arguments: eggs.jpg -transpose eggs-transposed.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-transposed.jpg
+
+  - name: rotate
+    arguments: eggs.jpg -rotate {{deg}} eggs-transverse.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      deg:
+        type: int
+        values:
+          - 0
+          - -270
+          - -90
+          - 90
+          - 270
+          - 360
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-transverse.jpg
+
+  - name: crop
+    arguments: eggs.jpg -crop {{width}}x{{height}}{{x}}{{y}} eggs-cropped.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+
+    variables:
+      width:
+        type: int
+        range:
+          minimum: 6
+          maximum: 399
+          count: 3
+
+      height:
+        type: int
+        range:
+          minimum: 6
+          maximum: 399
+          count: 3
+
+      x:
+        type: str
+        values:
+          - '+0'
+          - '+90'
+
+      y:
+        type: str
+        values:
+          - '+0'
+          - '+90'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-cropped.jpg
+
+  - name: unsupported_help
+    expect_success: false
+    arguments: -h
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  - name: unsupported_fuzz
+    expect_success: false
+    arguments: eggs.jpg -fuzz 40% eggs-fuzz.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-fuzz.jpg
+
+  - name: unsupported_single
+    expect_success: false
+    arguments: eggs.jpg {{mode}} eggs-single.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+    variables:
+      mode:
+        type: str
+        values:
+          - '-enhance'
+          - '-render'
+          - '-strip'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-single.jpg
+
+  - name: unsupported_mode_vals
+    expect_success: false
+    arguments: eggs.jpg {{mode}} 20 eggs-mode-val.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+    variables:
+      mode:
+        type: str
+        values:
+          - '-swirl'
+          - '-paint'
+          - '-polaroid'
+          - '-posterize'
+          - '-radial-blur'
+          - '-raise'
+          - '-threshold'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-mode-val.jpg
+
+  - name: unsupported_alpha
+    expect_success: false
+    arguments: eggs.jpg -alpha {{mode}} eggs-alpha.jpg
+    input_files:
+      - source: input_files/eggs.jpg
+        static: true
+    variables:
+      mode:
+        type: str
+        values:
+          - 'activate'
+          - 'deactivate'
+          - 'reset'
+          - 'set'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: eggs-alpha.jpg
+
+# spell-checker:ignore EXIF vals posterize

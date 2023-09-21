@@ -1,0 +1,288 @@
+name: nginx
+version: '1.18.0'
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/nginx-1.23.3/binaries/64/nginx
+debloaters:
+  chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/chisel-2-binaries/nginx
+  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/lmcas/nginx_lmcas
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/occam/nginx_occam
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/gtirb-dynamic/nginx.reduced
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/trimmer/nginx_trimmer
+
+templates:
+  - name: file_server-download
+    summary: Configure nginx as a file server and download a file
+    arguments: -p "{{trace.cwd}}" -c file_server.conf
+    input_files:
+      - configs/file_server.conf
+      - source: serve-ip
+        static: true
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget http://127.0.0.1:8080/dir1/file1.html
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file1.html
+        target: serve-ip/dir1/file1.html
+
+  - name: file_server-download-relative
+    summary: Configure nginx as a file server and download a file using a dot and dot-dot segment
+    arguments: -p "{{trace.cwd}}" -c file_server.conf
+    input_files:
+      - configs/file_server.conf
+      - source: serve-ip
+        static: true
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget http://127.0.0.1:8080/dir1/./../about.html
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: about.html
+        target: serve-ip/about.html
+
+  - name: file_server-download-index
+    summary: Configure nginx as a file server and download a the index.html file
+    arguments: -p "{{trace.cwd}}" -c file_server.conf
+    input_files:
+      - configs/file_server.conf
+      - source: serve-ip
+        static: true
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget -O index.html http://127.0.0.1:8080
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: index.html
+        target: serve-ip/index.html
+
+  - name: file_server-404
+    summary: Trigger a 404 by trying to download a file that does not exist
+    arguments: -p "{{trace.cwd}}" -c file_server.conf
+    input_files:
+      - configs/file_server.conf
+      - source: serve-ip
+        static: true
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget http://127.0.0.1:8080/dir2/about.html
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        output: false
+      - id: file
+        filename: about.html
+        exists: false
+
+
+  - name: file_server-vhost
+    summary: >
+      Configure nginx with two virtual hosts and download a file from each.
+    arguments: -p "{{trace.cwd}}" -c file_server_vhost.conf
+    input_files:
+      - configs/file_server_vhost.conf
+      - source: serve-ip
+        static: true
+      - source: serve-hostname
+        static: true
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget -O file1_ip.html http://127.0.0.1:8080/dir1/file1.html
+        wget -O file1_hostname.html --header "Host: vhost" http://127.0.0.1:8080/dir1/file1.html
+
+    comparators:
+      - stdout
+      - stderr
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file1_ip.html
+        target: serve-ip/dir1/file1.html
+      - id: file
+        filename: file1_hostname.html
+        target: serve-hostname/dir1/file1.html
+
+
+  # rewrite rule
+  # htaccess
+  # proxy to python web server
+  - name: reverse_proxy
+    summary: Configure nginx to proxy to another web server.
+    arguments: -p "{{trace.cwd}}" -c proxy.conf
+    input_files:
+      - configs/proxy.conf
+      - source: serve-ip
+        static: true
+
+    setup: |
+      python -m http.server -d serve-ip 8081 &>/dev/null &
+      echo $! > server.pid
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget http://127.0.0.1:8080/app/dir1/file1.html
+
+    teardown: |
+      PID=$(cat server.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+    comparators:
+      - stdout
+      - stderr
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file1.html
+        target: serve-ip/dir1/file1.html
+
+  - name: unsupported_config-test
+    expect_success: false
+    arguments: -p "{{trace.cwd}}" -c file_server.conf {{test_conf}}
+    variables:
+      test_conf:
+        type: str
+        values:
+          - "-T"
+          - "-t"
+    input_files:
+      - configs/file_server.conf
+      - source: serve-ip
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_config-sendfile
+    expect_success: false
+    arguments: -p "{{trace.cwd}}" -c file_server_unsupported.conf
+    input_files:
+      - configs/file_server_unsupported.conf
+      - source: serve-ip
+        static: true
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget http://127.0.0.1:8080/dir1/file1.html
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file1.html
+        target: serve-ip/dir1/file1.html
+
+  - name: unsupported_help
+    expect_success: false
+    arguments: -h
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_help2
+    expect_success: false
+    arguments: -?
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_version
+    expect_success: false
+    arguments: -v
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_version2
+    expect_success: false
+    arguments: -V
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_quiet
+    expect_success: false
+    arguments: -q -p "{{trace.cwd}}" -c file_server.conf
+    input_files:
+      - configs/file_server.conf
+      - source: serve-ip
+        static: true
+
+    concurrent:
+      mode: client
+      retries: 5
+      run: |
+        wget http://127.0.0.1:8080/dir1/file1.html
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file1.html
+        target: serve-ip/dir1/file1.html
+
+# spell-checker:ignore vhost sendfile

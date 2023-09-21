@@ -1,0 +1,508 @@
+name: bftpd
+version: '6.1'
+link_filename: bftpd.symlink
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/bftpd-6.1/binaries/64/bftpd
+debloaters:
+  chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/chisel-2-binaries/bftpd
+  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/lmcas/bftpd_lmcas
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/occam/bftpd_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/trimmer/bftpd_trimmer
+
+templates:
+  # Get a file
+  - name: get
+    summary: Download a file using the 'RETR' command.
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        get file.txt
+        EOF
+
+        cmp file.txt ./serve/file.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file.txt
+        target: serve/file.txt
+      - id: file
+        filename: file.txt
+
+  # Navigate (cd, ls)
+  - name: navigation
+    summary: Navigate an FTP share using the 'CWD', 'CDUP',  and 'LIST' commands.
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        ls
+        cd child
+        ls
+        cd ..
+        ls
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+  # chmod
+  - name: chmod
+    summary: Modify an existing file's mode using the 'SITE' command.
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        chmod 440 file.txt
+        EOF
+
+    comparators:
+      - stdout
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/file.txt
+        mode: 440
+
+  # put
+  - name: put
+    summary: Upload a file using the 'STOR' command.
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      echo hello world > file
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        put file
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/file
+        target: file
+      - id: file
+        filename: file
+
+  # mkdir
+  - name: mkdir
+    summary: Make a new directory using the 'MKD' command.
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        mkdir second
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/second
+        type: directory
+
+  # mv
+  - name: mv
+    summary: Rename a file using the 'RNFR' and 'RNTO' commands.
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      cp serve/file.txt file_original.txt
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        mv file.txt file2.txt
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/file2.txt
+        target: file_original.txt
+      - id: file
+        filename: serve/file2.txt
+      - id: file
+        filename: serve/file.txt
+        exists: false
+
+  # pwd
+  - name: pwd
+    summary: Get the working directory using the 'PWD' command.
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        cd ..
+        cd ..
+        pwd
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+  # rm
+  - name: rm
+    summary: Remove a file using the 'DELE' command.
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        rm file.txt
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/file.txt
+        exists: false
+
+  # rmdir
+  - name: rmdir
+    summary: Delete a directory tree using the 'RMD' command.
+    arguments: '-D -c default-anon.conf'
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      mkdir serve/delete_me
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        rmdir delete_me
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: serve/delete_me
+        exists: false
+
+  #####################
+  # Disabled Commands #
+  #####################
+  # rm
+  - name: rm_disabled
+    summary: >
+      Attempt to delete a file using the 'DELE' command but fail because the command is forbidden
+      in the bftpd configuration (ALLOWCOMMAND_DELE='no').
+    arguments: '-D -c disabled-cmds-anon.conf'
+    input_files:
+      - disabled-cmds-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        rm file.txt
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 1
+      - id: file
+        filename: serve/file.txt
+
+  # rmdir
+  - name: rmdir_disabled
+    summary: >
+      Attempt to delete a directory using the 'RMD' command but fail because the command is
+      forbidden in the bftpd configuration (ALLOWCOMMAND_RMD="no").
+    arguments: '-D -c disabled-cmds-anon.conf'
+    input_files:
+      - disabled-cmds-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      mkdir serve/delete_me
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        rmdir delete_me
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 1
+      - id: file
+        filename: serve/delete_me
+        type: directory
+
+  # chmod
+  - name: chmod_disabled
+    summary: >
+      Attempt to modify a file's mode using the 'SITE' command but fail because the command is
+      forbidden in the bftpd configuration (ALLOWCOMMAND_SITE='no').
+    arguments: '-D -c disabled-cmds-anon.conf'
+    input_files:
+      - disabled-cmds-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      chmod 664 serve/file.txt
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        chmod 440 file.txt
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 1
+      - id: file
+        filename: serve/file.txt
+        mode: 664
+
+  # put
+  - name: put_disabled
+    summary: >
+      Attempt to upload a file using the 'STOR' command but fail because the command is
+      forbidden in the bftpd configuration (ALLOWCOMMAND_STOR='no').
+    arguments: '-D -c disabled-cmds-anon.conf'
+    input_files:
+      - disabled-cmds-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    setup: |
+      echo hello world > file
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        put file
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 1
+      - id: file
+        filename: serve/file
+        exists: false
+
+  # Unsupported Debug
+  - name: unsupported_debug
+    summary: Test unsupported 'debug' command in debloated version
+    arguments: '-D -c default-anon.conf'
+    expect_success: false
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        debug
+        pwd
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+  # Unsupported help
+  - name: unsupported_help
+    summary: Test unsupported 'help' command in debloated version
+    arguments: '-D -c default-anon.conf'
+    expect_success: false
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        help
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+  # Unsupported jobs
+  - name: unsupported_history
+    summary: Test unsupported 'jobs' command in debloated version
+    arguments: '-D -c default-anon.conf'
+    expect_success: false
+    input_files:
+      - default-anon.conf
+      - source: lftp.rc
+        static: true
+      - source: serve
+        static: true
+
+    concurrent:
+      mode: client
+      run: |
+        lftp --rcfile lftp.rc <<EOF
+        jobs
+        EOF
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+
+# spell-checker:ignore bftpd lftp retr rcfile cdup rnfr rnto allowcommand cmds

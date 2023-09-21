@@ -1,0 +1,383 @@
+name: make
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/make-4.2/binaries/64/make
+version: '4.2.1'
+debloaters:
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/occam/make_occam
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/gtirb-dynamic/make.reduced
+
+templates:
+  # make single target
+  - name: low-single_target
+    summary: Make a single target without any dependencies
+    arguments: file1
+    input_files:
+      - source: input_files/low-single_target.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+
+  - name: low-multiple_targets
+    summary: Make multiple targets without any dependencies
+    arguments: file1 file2
+    input_files:
+      - source: input_files/low-multi_targets.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+      - id: file
+        filename: file2
+
+  # dependencies
+  - name: low-deps
+    summary: Make a target that has a dependency
+    arguments: file3
+    input_files:
+      - source: input_files/low-deps.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file3
+      - id: file
+        filename: deps
+
+  # make update
+  - name: low-deps-update
+    summary: Perform a partial make by only running targets that are out of date
+    arguments: file3
+    input_files:
+      - source: input_files/low-deps.mak
+        destination: Makefile
+
+    setup: |
+      # Goal: rebuild file3 but do not rebuild deps
+      make file3
+      cp file3 file3-original
+      echo more >> file3-original
+      # deps should not be rebuild
+      # modify deps
+      echo more >> deps
+      cp deps deps-original
+      # modify file3
+      echo asdf >> file3
+      # move file3 modification time to the past so it will be rebuilt
+      touch -t 2301010000 file3
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file3
+        target: file3-original
+      - id: file
+        filename: file3
+      - id: file
+        filename: deps
+        target: deps-original
+      - id: file
+        filename: deps
+
+  # make up to date (no-op)
+  - name: low-deps-up_to_date
+    summary: Do not run any targets because they are all up to date
+    arguments: file3
+    input_files:
+      - source: input_files/low-deps.mak
+        destination: Makefile
+
+    setup: |
+      make file3
+      echo asdf >> file3
+      cp file3 file3-expect
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file3
+        target: file3-expect
+      - id: file
+        filename: file3
+      - id: file
+        filename: deps
+
+  # make default target
+  - name: low-default_target
+    summary: Run the default target
+    input_files:
+      - source: input_files/low-single_target.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+      - id: file
+        filename: file2
+        exists: false
+
+  - name: low-custom_default_target
+    summary: Run the custom default target
+    input_files:
+      - source: input_files/low-custom_default_target.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        exists: false
+      - id: file
+        filename: file2
+
+  # make stdin
+  - name: low-args_file-stdin
+    summary: Load Makefile from stdin
+    arguments: -f - file1
+    input_files:
+      - input_files/low-single_target.mak
+
+    stdin:
+      file: low-single_target.mak
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+
+  # make -f
+  - name: low-args_file
+    arguments: -f low-single_target.mak file1
+    input_files:
+      - input_files/low-single_target.mak
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+
+  # make phony
+  - name: med_phony
+    summary: Make a phony target
+    arguments: all
+    input_files:
+      - source: input_files/med-phony.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+      - id: file
+        filename: file2
+      - id: file
+        filename: file3
+      - id: file
+        filename: deps
+
+  # includes
+  - name: high-includes
+    summary: Process include directives and make a target that depends on a separate Makefile
+    arguments: file4
+    input_files:
+      - source: input_files/high-includes.mak
+        destination: Makefile
+      - input_files/med-phony.mak
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        exists: false
+      - id: file
+        filename: file2
+        exists: false
+      - id: file
+        filename: file3
+      - id: file
+        filename: file4
+      - id: file
+        filename: deps
+
+  # vars
+  - name: high-vars
+    summary: Make a target that uses multiple variables
+    arguments: install
+    input_files:
+      - source: input_files/high-vars.mak
+        destination: Makefile
+
+    comparators:
+      # - stdout  # stdout content will not match because the ${CURDIR} is not the same
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: build
+        type: directory
+      - id: file
+        filename: build/1
+        type: directory
+      - id: file
+        filename: build/1/file1
+        target: file1
+      - id: file
+        filename: build/1/file1
+
+  ##################
+  # Error Handling #
+  ##################
+  # make invalid target
+  - name: error-invalid_target
+    summary: Trigger an error when trying to make a target that does not exist
+    arguments: does_not_exist
+    input_files:
+      - source: input_files/low-single_target.mak
+        destination: Makefile
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+      - id: file
+        filename: file1
+        exists: false
+
+  # no makefile
+  - name: error-no_makefile
+    summary: Trigger an error when no Makefile exists
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # -f file does not exist
+  - name: error-file_does_not_exist
+    summary: Trigger an error when the specified Makefile does not exist
+    arguments: -f does_not_exist
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  #######################
+  # Debloated functions #
+  #######################
+  - name: unsupported_help
+    expect_success: false
+    arguments: --help
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_always-make
+    expect_success: false
+    arguments: --always-make file3
+    input_files:
+      - source: input_files/low-deps.mak
+        destination: Makefile
+
+    setup: |
+      make file3
+      echo asdf >> file3
+      cp file3 file3-expect
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file3
+        target: file3-expect
+      - id: file
+        filename: file3
+      - id: file
+        filename: deps
+
+  - name: unsupported_arguments
+    expect_success: false
+    arguments: file1 file2 {{opt}}
+    input_files:
+      - source: input_files/low-multi_targets.mak
+        destination: Makefile
+    variables:
+      opt:
+        type: str
+        values:
+          - "-d"
+          - "--debug"
+          - "-e"
+          - "--environment-overrides"
+          - "-i"
+          - "--ignore-errors"
+          - "-k"
+          - "--keep-going"
+          - "--recon"
+          - "--just-print"
+          - "--dry-run"
+          - "-n"
+          - "-q"
+          - "--question"
+          - "--trace"
+          - "-w"
+          - "--print-directory"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+      - id: file
+        filename: file2
+
+# spell-checker:ignore CURDIR

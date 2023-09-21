@@ -1,0 +1,261 @@
+name: nmap
+version: '7.80'
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/nmap-7.93/binaries/buster/nmap
+debloaters:
+  razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nmap/razor-results/nmap.orig.debloated
+
+
+templates:
+  - name: tcp-port_scan
+    arguments: '{{tcp_scan_flag}} 127.0.0.1'
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    setup: |
+      nc -l 8080 & <<EOF
+      hello world
+      EOF
+      echo $! > server.pid
+
+      sleep 5
+
+    teardown: |
+      PID=$(cat server.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+    variables:
+      tcp_scan_flag:
+        type: str
+        values:
+          - '-sT'
+          # The following TCP scan flags require root privileges, so they are disables for now
+          # - '-sS'
+          # - '-sA'
+          # - '-sW'
+          # - '-sM'
+          # - '-sN'
+          # - '-sF'
+          # - '-sX'
+
+    comparators:
+      - id: exit_code
+        expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 8080
+        protocol: tcp
+
+  - name: tcp-port_scan-range
+    arguments: '-sT -p1-7080,8080 127.0.0.1'
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    setup: |
+      nc -l 8080 & <<EOF
+      hello world
+      EOF
+      echo $! > server.pid
+
+      nc -l 8081 & <<EOF
+      you should not see this
+      EOF
+      echo $! > server2.pid
+
+      nc -l 7080 & <<EOF
+      you should see this
+      EOF
+      echo $! > server3.pid
+
+      sleep 5
+
+    teardown: |
+      PID=$(cat server.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+      PID=$(cat server2.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+      PID=$(cat server3.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+    comparators:
+      - id: exit_code
+        expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 8080
+        protocol: tcp
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 7080
+        protocol: tcp
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 8081
+        protocol: tcp
+        exists: false
+
+  - name: service-scan
+    arguments: '-sT -sV 127.0.0.1'
+    input_files:
+      - source: serve
+        static: true
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    setup: |
+      python -m http.server --directory serve 8080 &>/dev/null &
+      echo $! > server.pid
+
+      sleep 5
+
+    teardown: |
+      PID=$(cat server.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+    comparators:
+      - id: exit_code
+        expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 8080
+        protocol: tcp
+        compare_payload: false
+
+  - name: service-scan-output
+    arguments: '-sT -sV {{output_flag}} report 127.0.0.1'
+    input_files:
+      - source: serve
+        static: true
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    setup: |
+      python -m http.server --directory serve 8080 &>/dev/null &
+      echo $! > server.pid
+
+      sleep 5
+
+    teardown: |
+      PID=$(cat server.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+      discovered=$(cat report | grep 8080.*SimpleHTTPServer)
+      if [ "x$discovered" = "x" ];
+      then
+        echo service discovered for Python web server failed
+        exit 1
+      fi
+
+    variables:
+      output_flag:
+        type: str
+        values:
+          - '-oG'
+          - '-oN'
+          - '-oX'
+
+    comparators:
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 8080
+        protocol: tcp
+        compare_payload: false
+
+  - name: tcp-version
+    expect_success: false
+    arguments: -V
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - name: tcp-help
+    expect_success: false
+    arguments: -h
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - name: tcp-port_scan-range-exclude
+    expect_success: false
+    arguments: '-sT -p1-9001 --exclude-ports 8081 127.0.0.1'
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    setup: |
+      nc -l 8080 & <<EOF
+      hello world
+      EOF
+      echo $! > server.pid
+
+      nc -l 8081 & <<EOF
+      you should not see this
+      EOF
+      echo $! > server2.pid
+
+      nc -l 7080 & <<EOF
+      you should see this
+      EOF
+      echo $! > server3.pid
+
+      sleep 5
+
+    teardown: |
+      PID=$(cat server.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+      PID=$(cat server2.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+      PID=$(cat server3.pid)
+      kill $PID
+      while ps -p $PID > /dev/null; do sleep 0.2; done
+
+    comparators:
+      - id: exit_code
+        expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 8080
+        protocol: tcp
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 7080
+        protocol: tcp
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 8081
+        protocol: tcp
+        exists: false

@@ -1,0 +1,424 @@
+name: tar
+link_filename: tar.symlink
+version: '1.14'
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/tar-1.14/binaries/64/tar
+debloaters:
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/occam/tar_occam
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/gtirb-dynamic/tar.reduced
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/trimmer/tar_trimmer
+
+templates:
+  # tar-archives-multiple-files
+  - name: create-multiple_files
+    arguments: cf foo.tar foo bar
+    setup: |
+      echo "foo foo" > foo.orig
+      cp foo.orig foo
+      echo "bar " > bar.orig
+      cp bar.orig bar
+
+    teardown: |
+      rm foo bar
+      ./tar xf foo.tar
+
+    comparators:
+      - stdout
+      - stderr
+      - teardown_script
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+      - id: file
+        filename: foo.tar
+        similarity: 0
+
+  # tar-extracts-all
+  - name: extract-directory_subset
+    arguments: xf foo.tar -C foo ./1/10
+    setup: |
+      mkdir -p foo/{1,2,3}
+      mkdir -p foo/1/{10,11}
+      mkdir -p foo/1/10/{100,101,102}
+      ./tar cf foo.tar -C foo .
+      rm -r foo/*
+
+    teardown: |
+      find foo | sort >log
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: log
+
+  # tar-extracts-file
+  - name: extract-file
+    arguments: xf foo.tar
+    setup: |
+      touch foo
+      ./tar cf foo.tar foo
+      rm foo
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+
+  # tar-extracts-from-standard-input
+  - name: extract-stdin_file
+    arguments: x
+    setup: |
+      touch foo
+      ./tar cf foo.tar foo
+      rm foo
+
+    stdin:
+      file: foo.tar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+
+  # tar-extracts-multiple-files
+  - name: extract-all
+    arguments: -xf foo.tar
+    setup: |
+      touch foo bar
+      ./tar cf foo.tar foo bar
+      rm foo bar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+
+  # tar-handles-cz-options
+  - name: create-gzip
+    arguments: czf foo.tar.gz foo
+    setup: |
+      echo "foo foo bar" > foo
+
+    teardown: |
+      rm foo
+      ./tar xzf foo.tar.gz
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+
+  # tar-handles-empty-include-and-non-empty-exclude-list
+  - name: extract-exclude_file
+    arguments: xf foo.tar -X foo.exclude
+    setup: |
+      touch foo
+      tar cf foo.tar foo
+      echo foo > foo.exclude
+      rm foo
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+        exists: false
+
+  # tar-handles-exclude-and-extract-lists
+  - name: extract-exclude_and_include
+    arguments: xf foo.tar foo bar -X foo.exclude
+    setup: |
+      echo "abcd abcd" > foo
+      echo "bar bar bar" > bar
+      echo "" > baz
+      tar cf foo.tar foo bar baz
+      echo foo >foo.exclude
+      rm foo bar baz
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+        exists: false
+      - id: file
+        filename: bar
+      - id: file
+        filename: baz
+        exists: false
+
+  # tar-handles-multiple-X-options
+  - name: extract-multiple_exclude_files
+    arguments: xf foo.tar -X foo.exclude -X bar.exclude
+    setup: |
+      touch foo
+      touch bar
+      ./tar cf foo.tar foo bar
+      echo foo > foo.exclude
+      echo bar > bar.exclude
+      rm foo bar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+        exists: false
+      - id: file
+        filename: bar
+        exists: false
+
+  # tar-handles-nested-exclude
+  - name: extract-exclude_file-path
+    arguments: xf foo.tar foo -X foobar.exclude
+    setup: |
+      mkdir foo
+      touch foo/bar
+      tar cf foo.tar foo
+      rm -rf foo
+      echo foo/bar > foobar.exclude
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+        type: directory
+      - id: file
+        filename: foo/bar
+        exists: false
+
+
+  ##################
+  # Error Handling #
+  ##################
+
+  # tar-complains-about-missing-file
+  - name: error-extract-file_not_in_archive
+    arguments: cf foo.tar foo
+    setup: |
+      touch foo
+
+    teardown:
+      ./tar foo.tar bar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: false
+
+  # tar-demands-at-least-one-ctx
+  - name: error-missing-command
+    arguments: v
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # tar-demands-at-most-one-ctx
+  - name: error-multiple-commands
+    arguments: tx
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # tar-extracts-to-standard-output
+  - name: error-extract-stdout
+    arguments: 0x
+    setup: |
+      echo foo > foo
+      ./tar cf foo.tar foo
+
+    stdin:
+      file: foo.tar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+      - id: setup_script
+        exit_code:
+          expect: 0
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: --verbose -xf foo.tar
+    expect_success: false
+    setup: |
+      touch foo bar
+      ./tar cf foo.tar foo bar
+      rm foo bar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+
+  - arguments: --checkpoint -xf foo.tar
+    expect_success: false
+    setup: |
+      touch foo bar
+      ./tar cf foo.tar foo bar
+      rm foo bar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+
+  - arguments: -tf foo.tar
+    expect_success: false
+    setup: |
+      touch foo bar
+      ./tar cf foo.tar foo bar
+      rm foo bar
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: setup_script
+        exit_code:
+          expect: 0
+
+  - arguments: --totals -cf foo.tar foo bar
+    expect_success: false
+    setup: |
+      echo "foo foo" > foo.orig
+      cp foo.orig foo
+      echo "bar " > bar.orig
+      cp bar.orig bar
+
+    teardown: |
+      rm foo bar
+      ./tar xf foo.tar
+
+    comparators:
+      - stdout
+      - stderr
+      - teardown_script
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+      - id: file
+        filename: foo.tar
+        similarity: 0
+
+  - arguments: --verify -cf foo.tar foo bar
+    expect_success: false
+    setup: |
+      echo "foo foo" > foo.orig
+      cp foo.orig foo
+      echo "bar " > bar.orig
+      cp bar.orig bar
+
+    teardown: |
+      rm foo bar
+      ./tar xf foo.tar
+
+    comparators:
+      - stdout
+      - stderr
+      - teardown_script
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: foo
+      - id: file
+        filename: bar
+      - id: file
+        filename: foo.tar
+        similarity: 0
