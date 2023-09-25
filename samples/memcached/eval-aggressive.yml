@@ -1,0 +1,671 @@
+name: memcached
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/memcached-1.6.18/binaries/64/memcached
+version: '1.5.22'
+debloaters:
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/occam/memcached_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/trimmer/memcached_trimmer
+
+templates:
+  # set and get command (store and retrieve value)
+  - name: set_get
+    summary: Set and then get a value using the 'set' and 'get' commands.
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.set('x', '10')
+        assert client.get('x') == '10'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  # set with expiration
+  - name: set-expiration_get-expired
+    summary: >
+      Set a value that expires and then attempt to get the value after it expired using the 'set'
+      and 'get' commands
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        import time
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.set('x', '10', time=2)
+        assert client.get('x') == '10', 'value was not set'
+
+        time.sleep(3.0)
+        assert client.get('x') is None, 'value did not expire'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  # add
+  - name: add
+    summary: Add a value that does not exist with the 'add' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.add('x', '10')
+        assert client.get('x') == '10', 'value was not set'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: add_exists
+    summary: >
+      Attempt to add a value that already exists and verify that the original value is not
+      overwritten using the 'add' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        client.set('x', '10')
+        assert client.add('x', '20') == 0
+        assert client.get('x') == '10', 'value was updated'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  # replace
+  - name: replace
+    summary: Replace a value that exists using the 'replace' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.add('x', '10')
+        assert client.replace('x', '20')
+        assert client.get('x') == '20', 'value was not replaced'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: replace_exists
+    summary: >
+      Attempt to replace a value that does not exist and then verify that the value was not created
+      using the 'replace' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.replace('x', '10') == 0
+        assert client.get('x') is None, 'value was added'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  # append
+  - name: append
+    summary: Append to a string using the 'append' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.add('x', '10')
+        assert client.append('x', '00')
+        assert client.get('x') == '1000', 'value was not updated'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: append-error
+    summary: Attempt to append to a value that does not exist using the 'append' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.append('x', '00') == 0
+        assert client.get('x') is None, 'value was set'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  # prepend
+  - name: prepend
+    summary: Prepend to a value using the 'prepend' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.add('x', '10')
+        assert client.prepend('x', '00')
+        assert client.get('x') == '0010', 'value was not updated'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: prepend-error
+    summary: Attempt to prepend to a value that does not exist using the 'prepend' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.prepend('x', '00') == 0
+        assert client.get('x') is None, 'value was set'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  # delete
+  - name: delete
+    summary: Delete a value using the 'delete' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.add('x', '10')
+        assert client.delete('x')
+        assert client.get('x') is None, 'value was not deleted'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: delete-error
+    summary: Attempt to delete a value that does not exist using the 'delete' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.delete('x')
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  # incr/decr
+  - name: incr
+    summary: Increment an integer value using the 'incr' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.set('x', '10')
+        assert client.incr('x')
+        assert client.get('x') == '11'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: incr-error
+    summary: Attempt to increment a value that does not exist using the 'incr' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.incr('x') is None
+        assert client.get('x') is None
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  # decr
+  - name: decr
+    summary: Decrement an integer value using the 'decr' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.set('x', '10')
+        assert client.decr('x')
+        assert client.get('x') == '9 '
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: decr-error
+    summary: Attempt to decrement a value that does not exist using the 'decr' command
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.decr('x') is None
+        assert client.get('x') is None
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: unsupported_help
+    expect_success: false
+    arguments: --help
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_license
+    expect_success: false
+    arguments: --license
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_version
+    expect_success: false
+    arguments: --version
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_verbose
+    expect_success: false
+    arguments: -vvv
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1')
+        assert client.add('x', '10')
+        assert client.delete('x')
+        assert client.get('x') is None, 'value was not deleted'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 11211
+        protocol: tcp
+
+  - name: unsupported_port
+    expect_success: false
+    arguments: -p 12345
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1:12345')
+        assert client.add('x', '10')
+        assert client.delete('x')
+        assert client.get('x') is None, 'value was not deleted'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 12345
+        protocol: tcp
+
+  - name: unsupported_threads
+    expect_success: false
+    arguments: -t 1
+    concurrent:
+      delay: 0.5
+      mode: client
+      retries: 3
+      run: |
+        python <<EOF
+        from memcache import Client
+
+        client = Client('127.0.0.1:12345')
+        assert client.add('x', '10')
+        assert client.delete('x')
+        assert client.get('x') is None, 'value was not deleted'
+        EOF
+
+    pcap:
+      filename: capture.pcap
+      interface: lo
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: concurrent_script
+        exit_code:
+          expect: 0
+      - id: pcap
+        filename: capture.pcap
+        address: 127.0.0.1
+        port: 12345
+        protocol: tcp
+# spell-checker:ignore memcache memcached decr

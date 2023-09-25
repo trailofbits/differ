@@ -1,0 +1,298 @@
+name: chown
+link_filename: chown.symlink
+version: '8.2'
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/chown-8.2/binaries/64/chown
+debloaters:
+  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/lmcas/chown_lmcas
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/occam/chown_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/trimmer/chown_trimmer
+
+templates:
+  - name: file
+    arguments: "{{env.USER}}:adm file1"
+    setup: |
+      touch file1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner:
+          group: adm
+
+  # nested path
+  - name: path-relative
+    arguments: "{{env.USER}}:adm d1/d1/d1/file"
+    setup: |
+      mkdir -p d1/d1/d1
+      touch d1/d1/d1/file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: d1/d1/d1/file
+        owner:
+          group: adm
+
+  - name: path-absolute
+    arguments: "{{env.USER}}:adm {{trace.cwd}}/d1/d1/d1/file"
+    setup: |
+      mkdir -p d1/d1/d1
+      touch d1/d1/d1/file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: d1/d1/d1/file
+        owner:
+          group: adm
+
+  # -R (recursive)
+  - name: recursive
+    arguments: "-R {{env.USER}}:adm d1"
+    setup: |
+      mkdir -p d1/d1/d1
+      touch d1/d1/d1/file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: d1/d1/d1/file
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1
+        type: directory
+        owner:
+          group: adm
+
+  # -h normal_file (do not dereference symlink)
+  - name: no_deref-file
+    arguments: "-h {{env.USER}}:adm file1"
+    setup: |
+      touch file1
+      ln -s file1 symlink1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner:
+          group: adm
+      - id: file
+        filename: symlink1
+        owner: true
+
+  # -h symlink (do not dereference symlink)
+  - name: no_deref-symlink
+    arguments: "-h {{env.USER}}:adm symlink1"
+    setup: |
+      touch file1
+      ln -s file1 symlink1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner: true
+      - id: file
+        filename: symlink1
+        owner:
+          group: adm
+
+  # symlink
+  - name: deref-symlink
+    arguments: "{{env.USER}}:adm symlink1"
+    setup: |
+      touch file1
+      ln -s file1 symlink1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner:
+          group: adm
+      - id: file
+        filename: symlink1
+        owner: true
+
+  # no arguments (missing operand)
+  - name: error-no_args
+    arguments: ''
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # invalid user
+  - name: error-invalid_user
+    arguments: input1 input2 not_exist
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # missing operand
+  - name: error-no_file
+    arguments: not_exist
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+    # missing operand
+  - name: error-file_does_not_exist
+    arguments: "{{env.USER}}:adm not_exist"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # --help
+  - name: help
+    arguments: '--help'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  # flag with missing operand
+  - name: error-no_operand
+    summary: Trigger a usage error by not providing an operand for a flag that requires one.
+    argument: '{{arg}} file'
+    variables:
+      arg:
+        type: str
+        values:
+          - "-c"
+          - "-f"
+          - "-v"
+          - "-H"
+          - "-L"
+          - "-P"
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # Unsupported preserve-root
+  - name: preserve-root
+    expect_success: false
+    arguments: "--preserve-root {{env.USER}}:adm file1"
+    setup: |
+      touch file1
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file1
+        owner:
+          group: adm
+
+  # Unsupported verbose -R (recursive)
+  - name: recursive
+    expect_success: false
+    arguments: "-v -R {{env.USER}}:adm d1"
+    setup: |
+      mkdir -p d1/d1/d1
+      touch d1/d1/d1/file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: d1/d1/d1/file
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1
+        type: directory
+        owner:
+          group: adm
+
+  # Unsupported -H -R (recursive)
+  - name: recursive
+    expect_success: false
+    arguments: "-H -R {{env.USER}}:adm d1"
+    setup: |
+      mkdir -p d1/d1/d1
+      touch d1/d1/d1/file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: d1/d1/d1/file
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1/d1
+        type: directory
+        owner:
+          group: adm
+      - id: file
+        filename: d1
+        type: directory
+        owner:
+          group: adm

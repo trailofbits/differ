@@ -1,0 +1,521 @@
+name: date
+link_filename: date.symlink
+version: '8.21'
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/date-8.21/binaries/64/date
+debloaters:
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/date/occam/date_occam
+
+templates:
+  # U, W, V formatting
+  - arguments: "--date '1996-1-{{day}}' +{{fmt}}"
+    summary: Format with '%U', '%W', and '%V' options.
+    variables:
+      day:
+        type: int
+        range:
+          minimum: 1
+          maximum: 10
+          count: 10
+
+      fmt:
+        type: str
+        values:
+          - '%U'
+          - '%W'
+          - '%V'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: --date '1998-1-1 3 years' +%Y
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d 'TZ="America/Los_Angeles" 09:00 next Fri'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 now" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 yesterday" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 tomorrow" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 6 years ago" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 7 months ago" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 8 weeks ago" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: --rfc-3339=ns -d'1970-01-01 00:00:00.2234567 UTC +961062237.987654321 sec'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d '2005-03-27 +1 day' '+%Y'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d @-22 +%05s
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d @-22 +%_5s
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "72057594037927935"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: -d 1999-12-08 +%_3d
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d 1999-12-08 +%03d
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1999-12-08 7:30" "+%^c"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: --rfc-3339=ns -d "2038-01-19 03:14:07.999999999"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: --rfc-3339=sec -d @31536000
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: --rfc-3339=date -d May-23-2003
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d '1999-06-01' '+%3004Y'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: --utc -d '1970-01-01 UTC +961062237 sec' "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: --utc -d '1970-01-01 00:00:00 UTC +961062237 sec' "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -R -d "1997-01-19 08:17:48 +0"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d 000909 "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -u -d '1996-11-10 0:00:00 +0' "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 4 seconds ago" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d '20050101  1 day' +%F
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d '20050101 +1 day' +%F
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 next second" '+%Y-%m-%d %T'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 next minute" '+%Y-%m-%d %T'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 next hour" '+%Y-%m-%d %T'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 next day" '+%Y-%m-%d %T'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 next week" '+%Y-%m-%d %T'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 next month" '+%Y-%m-%d %T'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 next year" '+%Y-%m-%d %T'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -u -d '08/01/97 6:00' '+%D,%H:%M'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -u -d '08/01/97 6:00 UTC +4 hours' '+%D,%H:%M'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -u --file=f '+%Y-%m-%d %T'
+    setup: |
+      touch f
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d '1970-01-01 00:00:01' +%s
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d '1970-01-01 00:00:01 UTC +2 hours' +%s
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d 2000-01-01 +%s
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d '1970-01-01 UTC 946684800 sec' +'%Y-%m-%d %T %z'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 this minute" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 this hour" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 this week" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 this month" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 this year" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 1 day ago" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 2 hours ago" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - arguments: -d "1997-01-19 08:17:48 +0 3 minutes ago" "+%Y-%m-%d %T"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - name: error-date-file_does_not_exist
+    arguments: -f not_exist
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - name: error-file_does_not_exist
+    arguments: -r not_exist
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - name: fuzz-date
+    arguments: -d {{date|quote}} "+%Y-%m-%d %T"
+    variables:
+      date:
+        type: radamsa
+        seed: '2008-12-06 05:45:21'
+        count: 5
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  ##########################################
+  # Expected Failures (Debloated Features) #
+  ##########################################
+
+  - arguments: -I -d '2006-04-23 21 days ago'
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: --iso -d May-23-2003
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: --iso=sec -d @31536000
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: --iso=ns -d "1969-12-31 13:00:00.000000.2-1100"
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: --iso=ns -d "2038-01-19 03:14:07.999999999"
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: +%:::z
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: +%:::z
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: +%::z
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: +%:::z
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: +%:z
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: +%8:z
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: +%:8z
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: --iso=ns -d'1970-01-01 00:00:00.2234567 UTC +961062237.987654321 sec'
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false

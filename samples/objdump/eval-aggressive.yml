@@ -1,0 +1,176 @@
+name: objdump
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/binutils-2.40/binaries/64/objdump
+version: '2.34'
+debloaters:
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/occam/objdump_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/trimmer/objdump_trimmer
+
+templates:
+  - name: flag
+    summary: >
+      Test output flags against an executable, dynamic library, and static library: -a, -f, -p, -h,
+      -x, -d, -D, -S, -s, -g, -e, -G, -t, -r
+    arguments: "{{flag}} {{binary}}"
+    variables:
+      flag:
+        type: str
+        values:
+          - '-a'
+          - '-f'
+          - '-p'
+          - '-h'
+          - '-x'
+          - '-d'
+          - '-D'
+          - '-S'
+          - '-s'
+          - '-g'
+          - '-e'
+          - '-G'
+          - '-t'
+          - '-r'
+
+      binary:
+        type: str
+        values:
+          # amd64 binary
+          - '/bin/bash'
+          # amd64 shared library
+          - '/lib64/ld-linux-x86-64.so.2'
+          # amd64 static library
+          - '/lib/x86_64-linux-gnu/libffi.a'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - name: flag-dyn
+    summary: >
+      Test output flags for parsing dynamic tables on an executable and dynamic library: -T, -R
+    arguments: "{{flag}} {{binary}}"
+    variables:
+      flag:
+        type: str
+        values:
+          - '-T'
+          - '-R'
+
+      binary:
+        type: str
+        values:
+          # amd64 binary
+          - '/bin/bash'
+          # amd64 shared library
+          - '/lib64/ld-linux-x86-64.so.2'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  - name: flag-dyn_static_error
+    summary: Trigger an error when trying to parse dynamic tables from a static library
+    arguments: "{{flag}} {{binary}}"
+    variables:
+      flag:
+        type: str
+        values:
+          - '-T'
+          - '-R'
+
+      binary:
+        type: str
+        values:
+          # amd64 static library
+          - '/lib/x86_64-linux-gnu/libffi.a'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  - name: error-file_not_exist
+    arguments: '-x file_does_not_exist'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  # invalid object file
+  - name: error-not_obj_file
+    arguments: '-x /etc/passwd'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  # directory
+  - name: error-directory
+    arguments: '-x /home'
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  - name: help
+    expect_success: false
+    arguments: "--help"
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: version
+    expect_success: false
+    arguments: "--version"
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: version
+    expect_success: false
+    arguments: "--info"
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported_flag
+    arguments: "{{flag}} {{binary}}"
+    variables:
+      flag:
+        type: str
+        values:
+          - "-D --disassembler-color=on"
+          - "-D --visualize-jumps=color"
+          - "-D --disassembler-color=extended"
+          - "-D --show-all-symbols"
+          - "--dynamic-reloc"
+          - "--syms"
+          - "--dynamic-syms"
+
+      binary:
+        type: str
+        values:
+          # amd64 binary
+          - '/bin/bash'
+          # amd64 shared library
+          - '/lib64/ld-linux-x86-64.so.2'
+          # amd64 static library
+          - '/lib/x86_64-linux-gnu/libffi.a'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+# spell-checker:ignore objdump reloc syms
