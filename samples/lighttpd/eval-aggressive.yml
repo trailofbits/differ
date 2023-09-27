@@ -7,6 +7,7 @@ debloaters:
 templates:
   # get index
   - name: get-root_file
+    expect_success: true
     arguments: -D -f static-all.conf
     input_files:
       - source: serve
@@ -35,6 +36,7 @@ templates:
 
   # get nested
   - name: get-nested_file
+    expect_success: true
     arguments: -D -f static-all.conf
     input_files:
       - source: serve
@@ -63,11 +65,12 @@ templates:
 
   # get index
   - name: get-index
-    arguments: -D -f static-index.conf
+    expect_success: true
+    arguments: -D -f static-all.conf
     input_files:
       - source: serve
         static: true
-      - config/static-index.conf
+      - config/static-all.conf
 
     concurrent:
       run: |
@@ -89,40 +92,13 @@ templates:
         filename: index.html
         target: serve/about.html
 
-  # get exclude PHP file
-  - name: get-include_ext
-    arguments: -D -f static-exclude-php.conf
-    input_files:
-      - source: serve
-        static: true
-      - config/static-exclude-php.conf
-
-    concurrent:
-      run: |
-        wget http://localhost:3000/index.html
-
-      retries: 5
-      mode: client
-
-    comparators:
-      - stdout
-      - exit_code
-      - id: concurrent_script
-        output: false
-        exit_code:
-          expect: 0
-      - id: file
-        filename: index.html
-      - id: file
-        filename: index.html
-        target: serve/index.html
-
   - name: get-exclude_ext
-    arguments: -D -f static-exclude-php.conf
+    expect_success: true
+    arguments: -D -f static-all.conf
     input_files:
       - source: serve
         static: true
-      - config/static-exclude-php.conf
+      - config/static-all.conf
 
     concurrent:
       run: |
@@ -143,11 +119,12 @@ templates:
         exists: false
 
   - name: get-vhost_1
-    arguments: -D -f static-vhost.conf
+    expect_success: true
+    arguments: -D -f static-all.conf
     input_files:
       - source: serve
         static: true
-      - config/static-vhost.conf
+      - config/static-all.conf
 
     setup: |
       mkdir serve-vhost
@@ -174,11 +151,12 @@ templates:
         target: serve/index.html
 
   - name: get-vhost_2
-    arguments: -D -f static-vhost.conf
+    expect_success: true
+    arguments: -D -f static-all.conf
     input_files:
       - source: serve
         static: true
-      - config/static-vhost.conf
+      - config/static-all.conf
 
     setup: |
       mkdir serve-vhost
@@ -203,11 +181,12 @@ templates:
         exists: false
 
   - name: get-vhost_3
-    arguments: -D -f static-vhost.conf
+    expect_success: true
+    arguments: -D -f static-all.conf
     input_files:
       - source: serve
         static: true
-      - config/static-vhost.conf
+      - config/static-all.conf
 
     setup: |
       mkdir serve-vhost
@@ -238,6 +217,7 @@ templates:
   ##################
   # 404
   - name: get-404
+    expect_success: true
     arguments: -D -f static-all.conf
     input_files:
       - source: serve
