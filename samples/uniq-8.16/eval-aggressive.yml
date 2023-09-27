@@ -12,6 +12,7 @@ templates:
   # Desired Features #
   ####################
   - name: stdin
+    expect_success: false
     input_files:
       - source: input.txt
         static: true
@@ -25,6 +26,7 @@ templates:
       - exit_code
 
   - name: stdin-count
+    expect_success: false
     arguments: -c
     input_files:
       - source: input.txt
@@ -39,6 +41,7 @@ templates:
       - exit_code
 
   - name: stdin-repeated
+    expect_success: false
     arguments: -d
     input_files:
       - source: input.txt
@@ -53,6 +56,7 @@ templates:
       - exit_code
 
   - name: stdin-only_unique
+    expect_success: false
     arguments: -u
     input_files:
       - source: input.txt
@@ -67,6 +71,7 @@ templates:
       - exit_code
 
   - name: stdin-ignore_case
+    expect_success: true
     arguments: -i
     input_files:
       - source: input.txt
@@ -81,6 +86,7 @@ templates:
       - exit_code
 
   - name: stdin-skip_fields
+    expect_success: false
     arguments: -f 5
     input_files:
       - source: input.txt
@@ -95,6 +101,7 @@ templates:
       - exit_code
 
   - name: stdin-skip_chars
+    expect_success: false
     arguments: -s 10
     input_files:
       - source: input.txt
@@ -109,6 +116,7 @@ templates:
       - exit_code
 
   - name: stdin-first_chars
+    expect_success: false
     arguments: -w 10
     input_files:
       - source: input.txt

@@ -10,6 +10,7 @@ debloaters:
 templates:
   - name: file
     arguments: "{{env.USER}}:adm file1"
+    expect_success: true
     setup: |
       touch file1
 
@@ -26,6 +27,7 @@ templates:
   # nested path
   - name: path-relative
     arguments: "{{env.USER}}:adm d1/d1/d1/file"
+    expect_success: true
     setup: |
       mkdir -p d1/d1/d1
       touch d1/d1/d1/file
@@ -41,6 +43,7 @@ templates:
           group: adm
 
   - name: path-absolute
+    expect_success: true
     arguments: "{{env.USER}}:adm {{trace.cwd}}/d1/d1/d1/file"
     setup: |
       mkdir -p d1/d1/d1
@@ -58,6 +61,7 @@ templates:
 
   # -R (recursive)
   - name: recursive
+    expect_success: false
     arguments: "-R {{env.USER}}:adm d1"
     setup: |
       mkdir -p d1/d1/d1
@@ -90,6 +94,7 @@ templates:
 
   # -h normal_file (do not dereference symlink)
   - name: no_deref-file
+    expect_success: false
     arguments: "-h {{env.USER}}:adm file1"
     setup: |
       touch file1
@@ -110,6 +115,7 @@ templates:
 
   # -h symlink (do not dereference symlink)
   - name: no_deref-symlink
+    expect_success: false
     arguments: "-h {{env.USER}}:adm symlink1"
     setup: |
       touch file1
@@ -130,6 +136,7 @@ templates:
 
   # symlink
   - name: deref-symlink
+    expect_success: false
     arguments: "{{env.USER}}:adm symlink1"
     setup: |
       touch file1
@@ -150,6 +157,7 @@ templates:
 
   # no arguments (missing operand)
   - name: error-no_args
+    expect_success: false
     arguments: ''
     comparators:
       - stdout
@@ -159,6 +167,7 @@ templates:
 
   # invalid user
   - name: error-invalid_user
+    expect_success: false
     arguments: input1 input2 not_exist
     comparators:
       - stdout
@@ -168,6 +177,7 @@ templates:
 
   # missing operand
   - name: error-no_file
+    expect_success: false
     arguments: not_exist
     comparators:
       - stdout
@@ -177,6 +187,7 @@ templates:
 
     # missing operand
   - name: error-file_does_not_exist
+    expect_success: false
     arguments: "{{env.USER}}:adm not_exist"
     comparators:
       - stdout
@@ -186,6 +197,7 @@ templates:
 
   # --help
   - name: help
+    expect_success: false
     arguments: '--help'
     comparators:
       - stdout
@@ -195,6 +207,7 @@ templates:
 
   # flag with missing operand
   - name: error-no_operand
+    expect_success: false
     summary: Trigger a usage error by not providing an operand for a flag that requires one.
     argument: '{{arg}} file'
     variables:

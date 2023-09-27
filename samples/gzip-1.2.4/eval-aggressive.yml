@@ -7,8 +7,35 @@ debloaters:
   occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/occam/gzip_occam
 
 templates:
+  # -c -f compress, overwrite output
+  - name: compress-overwrite-stdin_stdout
+    expect_success: true
+    arguments: -c -f
+    input_files:
+      - source: inputs
+        static: true
+
+    stdin:
+      file: inputs/sample1.ref
+
+    teardown: |
+      zcat $DIFFER_TRACE_STDOUT > sample1.extracted
+      cmp sample1.extracted inputs/sample1.ref
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: sample1.extracted
+
   # -c (compress to stdout)
   - name: compress-stdin_stdout
+    expect_success: false
     arguments: -c
     input_files:
       - source: inputs
@@ -34,6 +61,7 @@ templates:
 
   # -d (decompress)
   - name: decompress-stdin_stdout
+    expect_success: false
     arguments: -d
     input_files:
       - source: inputs
@@ -56,6 +84,7 @@ templates:
 
   # -f (overwrite)
   - name: compress-overwrite
+    expect_success: false
     arguments: -f foo
     setup: |
       echo 1234 > foo
@@ -81,6 +110,7 @@ templates:
 
   # -t (test) invalid
   - name: test-invalid
+    expect_success: false
     arguments: -t inputs/sample1.ref
     input_files:
       - source: inputs
@@ -94,6 +124,7 @@ templates:
 
   # -t (test) valid
   - name: test-valid
+    expect_success: false
     arguments: -t inputs/sample1.gz.ref
     input_files:
       - source: inputs
@@ -111,6 +142,7 @@ templates:
 
   # File does not exist
   - name: error-file_does_not_exist
+    expect_success: false
     arguments: foo
     comparators:
       - stdout
@@ -120,6 +152,7 @@ templates:
 
   # Invalid arguments (help or missing operand)
   - name: error-missing_operand
+    expect_success: false
     summary: Trigger a usage error by not providing a required argument for a flag
     arguments: '{{arg}}'
     variables:

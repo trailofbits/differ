@@ -8,6 +8,7 @@ debloaters:
 
 templates:
   - name: absolute
+    expect_success: false
     arguments: "{{trace.cwd}}/d1"
     comparators:
       - stdout
@@ -18,6 +19,7 @@ templates:
         filename: d1
 
   - name: relative
+    expect_success: false
     arguments: d1
     comparators:
       - stdout
@@ -28,6 +30,7 @@ templates:
         filename: d1
 
   - name: relative-parent
+    expect_success: true
     arguments: -p d1/d2
     comparators:
       - stdout
@@ -38,6 +41,7 @@ templates:
         filename: d1/d2
 
   - name: relative-parents
+    expect_success: true
     arguments: -p d1/d2/d3/d4
     comparators:
       - stdout
@@ -48,6 +52,7 @@ templates:
         filename: d1/d2/d3/d4
 
   - name: exists_ok
+    expect_success: true
     setup: mkdir d1
     arguments: -p d1
     comparators:
@@ -59,6 +64,7 @@ templates:
         filename: d1
 
   - name: exists_ok-parent
+    expect_success: true
     setup: mkdir d1
     arguments: -p d1/d2
     comparators:
@@ -70,6 +76,7 @@ templates:
         filename: d1/d2
 
   - arguments: -m {{mode}} d1
+    expect_success: false
     variables:
       mode:
         type: int
@@ -91,6 +98,7 @@ templates:
   # Expected Errors #
   ###################
   - name: error-parent_does_not_exist
+    expect_success: false
     arguments: d1/d2
     comparators:
       - stdout
@@ -101,6 +109,7 @@ templates:
         filename: d1
 
   - name: error-invalid_mode
+    expect_success: false
     arguments: -m 12341234 d1
     comparators:
       - stdout
@@ -111,6 +120,7 @@ templates:
         filename: d1
 
   - name: error-missing_dirname
+    expect_success: false
     arguments: -m d1
     comparators:
       - stdout
@@ -121,6 +131,7 @@ templates:
         filename: d1
 
   - name: error-exists
+    expect_success: false
     setup: mkdir d1
     arguments: d1
     comparators:
@@ -132,6 +143,7 @@ templates:
         filename: d1
 
   - name: mode
+    expect_success: false
     arguments: --verbose -m {{mode}} d1
     expect_success: false
     variables:
@@ -152,6 +164,7 @@ templates:
           variable: mode
 
   - name: help
+    expect_success: false
     arguments: --help
     comparators:
       - stdout

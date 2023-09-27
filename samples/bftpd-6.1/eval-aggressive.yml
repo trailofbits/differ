@@ -12,6 +12,7 @@ templates:
   - name: get
     summary: Download a file using the 'RETR' command.
     arguments: '-D -c default-anon.conf'
+    expect_success: false
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -45,6 +46,7 @@ templates:
   - name: navigation
     summary: Navigate an FTP share using the 'CWD', 'CDUP',  and 'LIST' commands.
     arguments: '-D -c default-anon.conf'
+    expect_success: false
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -75,6 +77,7 @@ templates:
   - name: chmod
     summary: Modify an existing file's mode using the 'SITE' command.
     arguments: '-D -c default-anon.conf'
+    expect_success: false
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -102,6 +105,7 @@ templates:
   - name: put
     summary: Upload a file using the 'STOR' command.
     arguments: '-D -c default-anon.conf'
+    expect_success: false
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -136,6 +140,7 @@ templates:
   - name: mkdir
     summary: Make a new directory using the 'MKD' command.
     arguments: '-D -c default-anon.conf'
+    expect_success: false
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -165,6 +170,7 @@ templates:
   - name: mv
     summary: Rename a file using the 'RNFR' and 'RNTO' commands.
     arguments: '-D -c default-anon.conf'
+    expect_success: false
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -202,6 +208,7 @@ templates:
   - name: pwd
     summary: Get the working directory using the 'PWD' command.
     arguments: '-D -c default-anon.conf'
+    expect_success: false
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -230,6 +237,7 @@ templates:
   - name: rm
     summary: Remove a file using the 'DELE' command.
     arguments: '-D -c default-anon.conf'
+    expect_success: false
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -259,6 +267,7 @@ templates:
   - name: rmdir
     summary: Delete a directory tree using the 'RMD' command.
     arguments: '-D -c default-anon.conf'
+    expect_success: false
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -296,6 +305,7 @@ templates:
       Attempt to delete a file using the 'DELE' command but fail because the command is forbidden
       in the bftpd configuration (ALLOWCOMMAND_DELE='no').
     arguments: '-D -c disabled-cmds-anon.conf'
+    expect_success: true
     input_files:
       - disabled-cmds-anon.conf
       - source: lftp.rc
@@ -326,6 +336,7 @@ templates:
       Attempt to delete a directory using the 'RMD' command but fail because the command is
       forbidden in the bftpd configuration (ALLOWCOMMAND_RMD="no").
     arguments: '-D -c disabled-cmds-anon.conf'
+    expect_success: true
     input_files:
       - disabled-cmds-anon.conf
       - source: lftp.rc
@@ -360,6 +371,7 @@ templates:
       Attempt to modify a file's mode using the 'SITE' command but fail because the command is
       forbidden in the bftpd configuration (ALLOWCOMMAND_SITE='no').
     arguments: '-D -c disabled-cmds-anon.conf'
+    expect_success: true
     input_files:
       - disabled-cmds-anon.conf
       - source: lftp.rc
@@ -394,6 +406,7 @@ templates:
       Attempt to upload a file using the 'STOR' command but fail because the command is
       forbidden in the bftpd configuration (ALLOWCOMMAND_STOR='no').
     arguments: '-D -c disabled-cmds-anon.conf'
+    expect_success: true
     input_files:
       - disabled-cmds-anon.conf
       - source: lftp.rc

@@ -10,6 +10,7 @@ debloaters:
 
 templates:
   - arguments: a input_dir/input
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -20,6 +21,7 @@ templates:
       - exit_code
 
   - arguments: a -v -H -r input_dir
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -31,6 +33,7 @@ templates:
 
   # "1" -h -r input_dir
   - arguments: 1 -h -r input_dir
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -41,6 +44,7 @@ templates:
       - exit_code
 
   - arguments: -n si input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -51,6 +55,7 @@ templates:
       - exit_code
 
   - arguments: 1 -r input_dir -l
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -61,6 +66,7 @@ templates:
       - exit_code
 
   - arguments: 1 -r input_dir -L
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -71,6 +77,7 @@ templates:
       - exit_code
 
   - arguments: randomtext -r input_dir -c
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -81,6 +88,7 @@ templates:
       - exit_code
 
   - arguments: -o [r][a][n][d]* input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -91,6 +99,7 @@ templates:
       - exit_code
 
   - arguments: 1 -r input_dir -q
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -101,6 +110,7 @@ templates:
       - exit_code
 
   - arguments: 1 -r input_dir -s
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -111,6 +121,7 @@ templates:
       - exit_code
 
   - arguments: -v a input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -121,6 +132,7 @@ templates:
       - exit_code
 
   - arguments: -i Si input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -131,6 +143,7 @@ templates:
       - exit_code
 
   - arguments: -w Si input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -141,6 +154,7 @@ templates:
       - exit_code
 
   - arguments: "-x Don\\'t input_dir/input2"
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -151,6 +165,7 @@ templates:
       - exit_code
 
   - arguments: -E randomtext* input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -161,6 +176,7 @@ templates:
       - exit_code
 
   - arguments: "'ye ' input_dir/input"
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -171,6 +187,7 @@ templates:
       - exit_code
 
   - arguments: cold input_dir/input
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -181,6 +198,7 @@ templates:
       - exit_code
 
   - arguments: ^D input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -191,6 +209,7 @@ templates:
       - exit_code
 
   - arguments: .$ input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -201,6 +220,7 @@ templates:
       - exit_code
 
   - arguments: '\^  input_dir/input2'
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -211,6 +231,7 @@ templates:
       - exit_code
 
   - arguments: '\^$ input_dir/input2'
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -221,6 +242,7 @@ templates:
       - exit_code
 
   - arguments: ^[AEIOU] input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -231,6 +253,7 @@ templates:
       - exit_code
 
   - arguments: ^[^AEIOU] input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -241,6 +264,7 @@ templates:
       - exit_code
 
   - arguments: -F randomtext* input_dir/input2
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -251,6 +275,7 @@ templates:
       - exit_code
 
   - arguments: "'not exist' input_dir/input"
+    expect_success: false
     input_files:
       - source: input_dir
         static: true
@@ -261,6 +286,7 @@ templates:
       - exit_code
 
   - arguments: -E free[^[:space:]]+ input_dir/input2
+    expect_success: true
     input_files:
       - source: input_dir
         static: true
@@ -271,6 +297,7 @@ templates:
       - exit_code
 
   - arguments: '-E "\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" input_dir/input'
+    expect_success: false
     input_files:
       - source: input_dir
         static: true

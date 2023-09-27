@@ -9,6 +9,7 @@ debloaters:
 templates:
   # tar-archives-multiple-files
   - name: create-multiple_files
+    expect_success: false
     arguments: cf foo.tar foo bar
     setup: |
       echo "foo foo" > foo.orig
@@ -36,6 +37,7 @@ templates:
 
   # tar-extracts-all
   - name: extract-directory_subset
+    expect_success: false
     arguments: xf foo.tar -C foo ./1/10
     setup: |
       mkdir -p foo/{1,2,3}
@@ -63,6 +65,7 @@ templates:
 
   # tar-extracts-file
   - name: extract-file
+    expect_success: false
     arguments: xf foo.tar
     setup: |
       touch foo
@@ -82,6 +85,7 @@ templates:
 
   # tar-extracts-from-standard-input
   - name: extract-stdin_file
+    expect_success: false
     arguments: x
     setup: |
       touch foo
@@ -104,6 +108,7 @@ templates:
 
   # tar-extracts-multiple-files
   - name: extract-all
+    expect_success: true
     arguments: -xf foo.tar
     setup: |
       touch foo bar
@@ -125,6 +130,7 @@ templates:
 
   # tar-handles-cz-options
   - name: create-gzip
+    expect_success: false
     arguments: czf foo.tar.gz foo
     setup: |
       echo "foo foo bar" > foo
@@ -149,6 +155,7 @@ templates:
 
   # tar-handles-empty-include-and-non-empty-exclude-list
   - name: extract-exclude_file
+    expect_success: false
     arguments: xf foo.tar -X foo.exclude
     setup: |
       touch foo
@@ -170,6 +177,7 @@ templates:
 
   # tar-handles-exclude-and-extract-lists
   - name: extract-exclude_and_include
+    expect_success: false
     arguments: xf foo.tar foo bar -X foo.exclude
     setup: |
       echo "abcd abcd" > foo
@@ -198,6 +206,7 @@ templates:
 
   # tar-handles-multiple-X-options
   - name: extract-multiple_exclude_files
+    expect_success: false
     arguments: xf foo.tar -X foo.exclude -X bar.exclude
     setup: |
       touch foo
@@ -224,6 +233,7 @@ templates:
 
   # tar-handles-nested-exclude
   - name: extract-exclude_file-path
+    expect_success: false
     arguments: xf foo.tar foo -X foobar.exclude
     setup: |
       mkdir foo
@@ -254,6 +264,7 @@ templates:
 
   # tar-complains-about-missing-file
   - name: error-extract-file_not_in_archive
+    expect_success: false
     arguments: cf foo.tar foo
     setup: |
       touch foo
@@ -272,6 +283,7 @@ templates:
 
   # tar-demands-at-least-one-ctx
   - name: error-missing-command
+    expect_success: false
     arguments: v
     comparators:
       - stdout
@@ -281,6 +293,7 @@ templates:
 
   # tar-demands-at-most-one-ctx
   - name: error-multiple-commands
+    expect_success: false
     arguments: tx
     comparators:
       - stdout
@@ -290,6 +303,7 @@ templates:
 
   # tar-extracts-to-standard-output
   - name: error-extract-stdout
+    expect_success: false
     arguments: 0x
     setup: |
       echo foo > foo

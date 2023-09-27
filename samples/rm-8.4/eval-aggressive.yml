@@ -9,6 +9,7 @@ debloaters:
 templates:
   # remove file
   - name: file
+    expect_success: false
     arguments: file
     setup: |
       touch file
@@ -24,6 +25,7 @@ templates:
 
   # -r (recursive remove directory)
   - name: directory-recursive
+    expect_success: false
     arguments: -r dir
     setup: |
       mkdir dir
@@ -39,6 +41,7 @@ templates:
 
   # -r -f (recursive remove directory force)
   - name: directory-recursive-force
+    expect_success: true
     arguments: -r -f dir
     setup: |
       mkdir dir
@@ -54,6 +57,7 @@ templates:
 
   # -y YES (prompt before removing)
   - name: confirmation-yes
+    expect_success: false
     arguments: -i file
     setup: |
       touch file
@@ -72,6 +76,7 @@ templates:
 
   # -y NO (prompt before removing)
   - name: confirmation-no
+    expect_success: false
     arguments: -i file
     setup: |
       touch file
@@ -94,6 +99,7 @@ templates:
 
   # file does not exist
   - name: error-file_not_exist
+    expect_success: false
     arguments: file
     comparators:
       - stdout
@@ -103,6 +109,7 @@ templates:
 
   # -f (force directory)
   - name: error-directory
+    expect_success: false
     arguments: -f dir
     setup: |
       mkdir dir
@@ -118,6 +125,7 @@ templates:
 
   # missing operand
   - name: error-no_file
+    expect_success: false
     arguments: ''
     comparators:
       - stdout

@@ -8,6 +8,7 @@ debloaters:
 
 templates:
   - name: protocol-https
+    expect_success: true
     arguments: --no-config https://digg.com/robots.txt
     comparators:
       - stdout
@@ -17,6 +18,7 @@ templates:
         filename: robots.txt
 
   - name: protocol-http
+    expect_success: false
     arguments: http://echo.jsontest.com/key/value
     comparators:
       - stdout
@@ -26,6 +28,7 @@ templates:
         filename: value
 
   - name: protocol-ip
+    expect_success: false
     arguments: "--no-config  --header 'Host: echo.jsontest.com' http://{{'echo.jsontest.com'|gethostbyname}}/key/value"
     comparators:
       - stdout
@@ -35,6 +38,7 @@ templates:
         filename: value
 
   - name: opts-output
+    expect_success: false
     arguments: --no-config  -O data.json http://echo.jsontest.com/key/value/key2/value2
     comparators:
       - stdout
@@ -44,6 +48,7 @@ templates:
         filename: data.json
 
   - name: opts-timeout_ok
+    expect_success: false
     timeout: 5
     arguments: --no-config -T 2 http://echoss.jsontest.com/
     comparators:
@@ -52,6 +57,7 @@ templates:
         expect: 4
 
   - name: get-param
+    expect_success: false
     arguments: --no-config -O data.json http://md5.jsontest.com/?text=hello_world
     comparators:
       - stdout
