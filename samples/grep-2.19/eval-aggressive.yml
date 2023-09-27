@@ -240,15 +240,10 @@ templates:
       - stderr
       - exit_code
 
-  ######################
-  # Debloated Features #
-  ######################
   - arguments: -F randomtext* input_dir/input2
     input_files:
       - source: input_dir
         static: true
-
-    expect_success: false
 
     comparators:
       - stdout
@@ -260,14 +255,36 @@ templates:
       - source: input_dir
         static: true
 
-    expect_success: false
-
     comparators:
       - stdout
       - stderr
       - exit_code
 
   - arguments: -E free[^[:space:]]+ input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: '-E "\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" input_dir/input'
+    input_files:
+      - source: input_dir
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  ######################
+  # Debloated Features #
+  ######################
+
+  - arguments: -P randomtext* input_dir/input2
     input_files:
       - source: input_dir
         static: true
@@ -279,7 +296,19 @@ templates:
       - stderr
       - exit_code
 
-  - arguments: '-E "\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" input_dir/input'
+  - arguments: -m 2 si input_dir/input2
+    input_files:
+      - source: input_dir
+        static: true
+
+    expect_success: false
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+- arguments: --line-buffered si input_dir/input2
     input_files:
       - source: input_dir
         static: true
