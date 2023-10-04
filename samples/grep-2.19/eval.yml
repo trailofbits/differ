@@ -307,7 +307,7 @@ templates:
       - stderr
       - exit_code
 
-- arguments: --line-buffered si input_dir/input2
+  - arguments: --line-buffered si input_dir/input2
     input_files:
       - source: input_dir
         static: true
