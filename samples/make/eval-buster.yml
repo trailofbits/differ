@@ -323,8 +323,8 @@ templates:
 
     setup: |
       make file3
-      echo asdf >> file3
       cp file3 file3-expect
+      echo asdf >> file3
 
     comparators:
       - stdout
@@ -360,12 +360,6 @@ templates:
           - "--ignore-errors"
           - "-k"
           - "--keep-going"
-          - "--recon"
-          - "--just-print"
-          - "--dry-run"
-          - "-n"
-          - "-q"
-          - "--question"
           - "--trace"
           - "-w"
           - "--print-directory"
