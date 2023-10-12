@@ -18,7 +18,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.set('x', '10')
         assert client.get('x') == '10'
         EOF
@@ -55,7 +55,7 @@ templates:
         import time
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.set('x', '10', time=2)
         assert client.get('x') == '10', 'value was not set'
 
@@ -92,7 +92,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.add('x', '10')
         assert client.get('x') == '10', 'value was not set'
         EOF
@@ -127,7 +127,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         client.set('x', '10')
         assert client.add('x', '20') == 0
         assert client.get('x') == '10', 'value was updated'
@@ -162,7 +162,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.add('x', '10')
         assert client.replace('x', '20')
         assert client.get('x') == '20', 'value was not replaced'
@@ -198,7 +198,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.replace('x', '10') == 0
         assert client.get('x') is None, 'value was added'
         EOF
@@ -232,7 +232,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.add('x', '10')
         assert client.append('x', '00')
         assert client.get('x') == '1000', 'value was not updated'
@@ -266,7 +266,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.append('x', '00') == 0
         assert client.get('x') is None, 'value was set'
         EOF
@@ -300,7 +300,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.add('x', '10')
         assert client.prepend('x', '00')
         assert client.get('x') == '0010', 'value was not updated'
@@ -334,7 +334,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.prepend('x', '00') == 0
         assert client.get('x') is None, 'value was set'
         EOF
@@ -368,7 +368,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.add('x', '10')
         assert client.delete('x')
         assert client.get('x') is None, 'value was not deleted'
@@ -402,7 +402,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.delete('x')
         EOF
 
@@ -435,7 +435,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.set('x', '10')
         assert client.incr('x')
         assert client.get('x') == '11'
@@ -469,7 +469,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.incr('x') is None
         assert client.get('x') is None
         EOF
@@ -503,7 +503,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.set('x', '10')
         assert client.decr('x')
         assert client.get('x') == '9 '
@@ -537,7 +537,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.decr('x') is None
         assert client.get('x') is None
         EOF
@@ -594,7 +594,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1')
+        client = Client(['127.0.0.1'])
         assert client.add('x', '10')
         assert client.delete('x')
         assert client.get('x') is None, 'value was not deleted'
@@ -628,7 +628,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1:12345')
+        client = Client(['127.0.0.1:12345'])
         assert client.add('x', '10')
         assert client.delete('x')
         assert client.get('x') is None, 'value was not deleted'
@@ -662,7 +662,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client('127.0.0.1:12345')
+        client = Client(['127.0.0.1:12345'])
         assert client.add('x', '10')
         assert client.delete('x')
         assert client.get('x') is None, 'value was not deleted'
