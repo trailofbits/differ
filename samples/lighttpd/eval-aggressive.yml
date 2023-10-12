@@ -88,9 +88,7 @@ templates:
           expect: 8
       - id: file
         filename: index.html
-      - id: file
-        filename: index.html
-        target: serve/about.html
+        exists: false
 
   - name: get-exclude_ext
     expect_success: true
@@ -116,7 +114,9 @@ templates:
           expect: 0
       - id: file
         filename: run.php
-        exists: false
+      - id: file
+        filename: run.php
+        target: serve/run.php
 
   - name: get-vhost_1
     expect_success: true
@@ -208,9 +208,7 @@ templates:
           expect: 8
       - id: file
         filename: hello.txt
-      - id: file
-        filename: hello.txt
-        target: serve-vhost/hello.txt
+        exists: false
 
   ##################
   # Error Handling #
