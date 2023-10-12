@@ -144,6 +144,7 @@ templates:
       - exit_code
 
   - name: unsupported_flag
+    expect_success: false
     arguments: "{{flag}} {{binary}}"
     variables:
       flag:
@@ -164,6 +165,31 @@ templates:
           - '/lib64/ld-linux-x86-64.so.2'
           # amd64 static library
           - '/lib/x86_64-linux-gnu/libffi.a'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  # these flags fail against an archive
+  - name: unsupported_flag_no_archive
+    expect_success: false
+    arguments: "{{flag}} {{binary}}"
+    variables:
+      flag:
+        type: str
+        values:
+          - "--dynamic-reloc"
+          - "--dynamic-syms"
+
+      binary:
+        type: str
+        values:
+          # amd64 binary
+          - '/bin/bash'
+          # amd64 shared library
+          - '/lib64/ld-linux-x86-64.so.2'
 
     comparators:
       - stdout
