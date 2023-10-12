@@ -181,9 +181,7 @@ templates:
           - "-D --visualize-jumps=color"
           - "-D --disassembler-color=extended"
           - "-D --show-all-symbols"
-          - "--dynamic-reloc"
           - "--syms"
-          - "--dynamic-syms"
 
       binary:
         type: str
