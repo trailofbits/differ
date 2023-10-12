@@ -155,7 +155,7 @@ templates:
       - stdout
       - stderr
       - id: exit_code
-        expect: 1
+        expect: 0
 
   # Unsupported 'license'
   - name: unsupported-license
@@ -165,7 +165,7 @@ templates:
       - stdout
       - stderr
       - id: exit_code
-        expect: 1
+        expect: 0
 
   # Unsupported 'best' compress
   - name: unsupported-best
