@@ -388,4 +388,27 @@ templates:
       - id: file
         filename: file2
 
+  # these options do not create files to compare
+  - name: unsupported_arguments_no_file
+    expect_success: false
+    arguments: file1 file2 {{opt}}
+    input_files:
+      - source: input_files/low-multi_targets.mak
+        destination: Makefile
+    variables:
+      opt:
+        type: str
+        values:
+          - "--recon"
+          - "--just-print"
+          - "--dry-run"
+          - "-n"
+          - "-q"
+          - "--question"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
 # spell-checker:ignore CURDIR
