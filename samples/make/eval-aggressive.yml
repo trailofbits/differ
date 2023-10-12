@@ -403,12 +403,29 @@ templates:
           - "--just-print"
           - "--dry-run"
           - "-n"
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  # question/q returns nonzero if files not updated
+  - name: unsupported_arguments_question
+    expect_success: false
+    arguments: file1 file2 {{opt}}
+    input_files:
+      - source: input_files/low-multi_targets.mak
+        destination: Makefile
+    variables:
+      opt:
+        type: str
+        values:
           - "-q"
           - "--question"
     comparators:
       - stdout
       - stderr
       - id: exit_code
-        expect: 0
+        expect: false
 
 # spell-checker:ignore CURDIR
