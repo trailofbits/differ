@@ -646,7 +646,7 @@ templates:
         python <<EOF
         from memcache import Client
 
-        client = Client(['127.0.0.1:12345'])
+        client = Client(['127.0.0.1'])
         assert client.add('x', '10')
         assert client.delete('x')
         assert client.get('x') is None, 'value was not deleted'
@@ -666,6 +666,6 @@ templates:
       - id: pcap
         filename: capture.pcap
         address: 127.0.0.1
-        port: 12345
+        port: 11211
         protocol: tcp
 # spell-checker:ignore memcache memcached decr
