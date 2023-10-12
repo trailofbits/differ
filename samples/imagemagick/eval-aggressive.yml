@@ -276,7 +276,7 @@ templates:
       - stdout
       - stderr
       - id: exit_code
-        expect: 1
+        expect: 0
 
   - name: unsupported_fuzz
     expect_success: false
@@ -327,7 +327,7 @@ templates:
           - '-paint'
           - '-polaroid'
           - '-posterize'
-          - '-radial-blur'
+          - '-rotational-blur'
           - '-raise'
           - '-threshold'
     comparators:
