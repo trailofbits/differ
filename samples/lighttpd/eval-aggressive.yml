@@ -85,7 +85,7 @@ templates:
       - id: concurrent_script
         output: false
         exit_code:
-          expect: 0
+          expect: 8
       - id: file
         filename: index.html
       - id: file
@@ -113,7 +113,7 @@ templates:
       - id: concurrent_script
         output: false
         exit_code:
-          expect: 8
+          expect: 0
       - id: file
         filename: run.php
         exists: false
@@ -205,7 +205,7 @@ templates:
       - id: concurrent_script
         output: false
         exit_code:
-          expect: 0
+          expect: 8
       - id: file
         filename: hello.txt
       - id: file
