@@ -195,7 +195,7 @@ templates:
   # flag with missing operand
   - name: error-no_operand
     summary: Trigger a usage error by not providing an operand for a flag that requires one.
-    argument: '{{arg}} file'
+    arguments: '{{arg}} file'
     variables:
       arg:
         type: str

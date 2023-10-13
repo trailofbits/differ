@@ -209,7 +209,7 @@ templates:
   - name: error-no_operand
     expect_success: false
     summary: Trigger a usage error by not providing an operand for a flag that requires one.
-    argument: '{{arg}} file'
+    arguments: '{{arg}} file'
     variables:
       arg:
         type: str
