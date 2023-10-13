@@ -3,6 +3,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/
 version: '1.20.3'
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/chisel/chisel-1-binaries/wget
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/wget
 
 templates:
   - name: protocol-https

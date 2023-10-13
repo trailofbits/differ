@@ -5,6 +5,7 @@ version: '1.0.5'
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/chisel/bzip2-1.0.5.reduced
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/razor-results/bzip2.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/bzip2
 
 templates:
   # output to stdout

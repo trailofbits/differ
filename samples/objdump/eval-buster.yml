@@ -4,6 +4,7 @@ version: '2.34'
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/chisel/chisel-1-binaries/objdump
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/razor-results/objdump.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/objdump
 
 templates:
   - name: flag

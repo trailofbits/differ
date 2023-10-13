@@ -5,7 +5,6 @@ version: '8.4'
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/chisel-2-binaries/rm
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/gtirb-dynamic/rm.reduced
-  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/rm
   gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/gtirb-to-static/rm.reduced
 
 templates:

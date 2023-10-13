@@ -5,6 +5,7 @@ version: '1.2.4'
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/chisel/gzip-1.2.4.reduced
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/razor-results/gzip.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/gzip
 
 templates:
   # -c (compress to stdout)

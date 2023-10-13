@@ -5,6 +5,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/gre
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/chisel/grep-2.19.reduced
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/razor-results/grep.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/grep
 
 templates:
   - arguments: a input_dir/input

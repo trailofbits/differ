@@ -3,7 +3,6 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/
 version: '2.34'
 debloaters:
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/binutils/gtirb-dynamic/objdump.reduced
-  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/objdump
   gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/gtirb-to-static/objdump.reduced
 
 templates:

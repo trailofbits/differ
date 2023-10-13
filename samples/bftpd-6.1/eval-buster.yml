@@ -4,6 +4,7 @@ link_filename: bftpd.symlink
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/bftpd-6.1/binaries/buster/bftpd
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/chisel/chisel-1-binaries/bftpd
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/bftpd
 
 templates:
   # Get a file

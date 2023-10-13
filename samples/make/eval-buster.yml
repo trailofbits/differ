@@ -3,6 +3,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/
 version: '4.2.1'
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/chisel/chisel-1-binaries/make
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/make
 
 templates:
   # make single target

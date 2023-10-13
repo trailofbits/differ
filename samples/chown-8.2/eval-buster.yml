@@ -5,6 +5,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/cho
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/chisel/chown-8.2.reduced
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/razor-results/chown.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/chown
 
 templates:
   - name: file

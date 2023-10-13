@@ -5,6 +5,7 @@ version: '5.2.1'
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/chisel/mkdir-5.2.1.reduced
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/razor-results/mkdir.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/mkdir
 
 
 templates:

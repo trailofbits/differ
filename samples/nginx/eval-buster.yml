@@ -4,6 +4,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/ng
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/chisel/chisel-1-binaries/nginx
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/razor-results/nginx.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/nginx
 
 templates:
   - name: file_server-download

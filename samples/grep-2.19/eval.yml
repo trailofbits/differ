@@ -5,7 +5,6 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/gre
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/chisel-2-binaries/grep
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/gtirb-dynamic/grep.reduced
-  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/grep
   gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/gtirb-to-static/grep.reduced
 
 

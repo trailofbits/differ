@@ -5,6 +5,7 @@ version: '8.4'
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/chisel/rm-8.4.reduced
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/razor-results/rm.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/rm
 
 templates:
   # remove file

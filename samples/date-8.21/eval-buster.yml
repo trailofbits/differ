@@ -5,6 +5,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/dat
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/date/chisel/date-8.21.reduced
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/date/razor-results/date.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/date/libfilter/date
 
 templates:
   # U, W, V formatting

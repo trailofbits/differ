@@ -5,6 +5,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/uni
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/chisel/uniq-8.16.reduced
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/razor-results/uniq.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/uniq
 
 templates:
   ####################

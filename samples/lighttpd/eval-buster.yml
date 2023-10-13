@@ -4,6 +4,7 @@ version: '1.4.55'
 debloaters:
   chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/chisel/chisel-1-binaries/lighttpd
   razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/razor-results/lighttpd.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/lighttpd
 
 templates:
   # get index
