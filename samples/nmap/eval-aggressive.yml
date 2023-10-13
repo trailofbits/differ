@@ -76,6 +76,7 @@ templates:
       sleep 5
 
     teardown: |
+      set +e
       PID=$(cat server.pid)
       kill $PID
       while ps -p $PID > /dev/null; do sleep 0.2; done
@@ -233,6 +234,7 @@ templates:
       sleep 5
 
     teardown: |
+      set +e
       PID=$(cat server.pid)
       kill $PID
       while ps -p $PID > /dev/null; do sleep 0.2; done
