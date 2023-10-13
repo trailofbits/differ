@@ -26,6 +26,9 @@ templates:
 
         cmp file.txt ./serve/file.txt
 
+    teardown: |
+      kill $(pgrep lftp)
+
     comparators:
       - stdout
       - stderr
@@ -61,6 +64,9 @@ templates:
         ls
         EOF
 
+    teardown: |
+      kill $(pgrep lftp)
+
     comparators:
       - stdout
       - stderr
@@ -86,6 +92,9 @@ templates:
         lftp --rcfile lftp.rc <<EOF
         chmod 440 file.txt
         EOF
+
+    teardown: |
+      kill $(pgrep lftp)
 
     comparators:
       - stdout
@@ -116,6 +125,9 @@ templates:
         lftp --rcfile lftp.rc <<EOF
         put file
         EOF
+
+    teardown: |
+      kill $(pgrep lftp)
 
     comparators:
       - stdout
@@ -148,6 +160,9 @@ templates:
         mkdir second
         EOF
 
+    teardown: |
+      kill $(pgrep lftp)
+
     comparators:
       - stdout
       - stderr
@@ -179,6 +194,9 @@ templates:
         lftp --rcfile lftp.rc <<EOF
         mv file.txt file2.txt
         EOF
+
+    teardown: |
+      kill $(pgrep lftp)
 
     comparators:
       - stdout
@@ -216,6 +234,9 @@ templates:
         pwd
         EOF
 
+    teardown: |
+      kill $(pgrep lftp)
+
     comparators:
       - stdout
       - stderr
@@ -241,6 +262,9 @@ templates:
         lftp --rcfile lftp.rc <<EOF
         rm file.txt
         EOF
+
+    teardown: |
+      kill $(pgrep lftp)
 
     comparators:
       - stdout
@@ -273,6 +297,9 @@ templates:
         lftp --rcfile lftp.rc <<EOF
         rmdir delete_me
         EOF
+
+    teardown: |
+      kill $(pgrep lftp)
 
     comparators:
       - stdout
@@ -308,6 +335,9 @@ templates:
         rm file.txt
         EOF
 
+    teardown: |
+      kill $(pgrep lftp)
+
     comparators:
       - stdout
       - stderr
@@ -340,6 +370,9 @@ templates:
         lftp --rcfile lftp.rc <<EOF
         rmdir delete_me
         EOF
+
+    teardown: |
+      kill $(pgrep lftp)
 
     comparators:
       - stdout
@@ -375,6 +408,9 @@ templates:
         chmod 440 file.txt
         EOF
 
+    teardown: |
+      kill $(pgrep lftp)
+
     comparators:
       - stdout
       - stderr
@@ -409,6 +445,9 @@ templates:
         put file
         EOF
 
+    teardown: |
+      kill $(pgrep lftp)
+
     comparators:
       - stdout
       - stderr
@@ -440,6 +479,9 @@ templates:
         pwd
         EOF
 
+    teardown: |
+      kill $(pgrep lftp)
+
     comparators:
       - stdout
       - stderr
@@ -467,6 +509,9 @@ templates:
         help
         EOF
 
+    teardown: |
+      kill $(pgrep lftp)
+
     comparators:
       - stdout
       - stderr
@@ -493,6 +538,9 @@ templates:
         lftp --rcfile lftp.rc <<EOF
         jobs
         EOF
+
+    teardown: |
+      kill $(pgrep lftp)
 
     comparators:
       - stdout
