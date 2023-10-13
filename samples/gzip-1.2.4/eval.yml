@@ -5,6 +5,7 @@ version: '1.2.4'
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/chisel-2-binaries/gzip
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/gtirb-dynamic/gzip.reduced
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/gzip
 
 templates:
   # -c (compress to stdout)

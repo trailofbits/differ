@@ -4,6 +4,7 @@ version: '1.20.3'
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/chisel-2-binaries/wget
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/gtirb-dynamic/wget.reduced
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/wget
 
 templates:
   - name: protocol-https

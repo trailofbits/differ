@@ -5,6 +5,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/sor
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/chisel-2-binaries/sort
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/gtirb-dynamic/sort.reduced
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/sort
 
 templates:
   # No args other than file and output to stdout

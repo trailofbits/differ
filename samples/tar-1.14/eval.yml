@@ -4,6 +4,7 @@ version: '1.14'
 original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/tar-1.14/binaries/64/tar
 debloaters:
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/gtirb-dynamic/tar.reduced
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/tar
 
 templates:
   # tar-archives-multiple-files
