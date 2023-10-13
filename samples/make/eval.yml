@@ -4,6 +4,7 @@ version: '4.2.1'
 debloaters:
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/gtirb-dynamic/make.reduced
   libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/make
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/gtirb-to-static/make.reduced
 
 templates:
   # make single target

@@ -5,6 +5,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/tar
 debloaters:
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/gtirb-dynamic/tar.reduced
   libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/tar
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/gtirb-to-static/tar.reduced
 
 templates:
   # tar-archives-multiple-files

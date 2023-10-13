@@ -5,6 +5,7 @@ original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/chisel-2-binaries/bftpd
   libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/bftpd
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/gtirb-to-static/bftpd.reduced
 
 templates:
   # Get a file

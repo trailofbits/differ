@@ -4,6 +4,7 @@ version: '1.4.55'
 debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/chisel-2-binaries/lighttpd
   libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/lighttpd
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/gtirb-to-static/lighttpd.reduced
 
 templates:
   # get index

@@ -5,6 +5,7 @@ debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/chisel-2-binaries/wget
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/gtirb-dynamic/wget.reduced
   libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/wget
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/gtirb-to-static/wget.reduced
 
 templates:
   - name: protocol-https

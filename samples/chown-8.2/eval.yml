@@ -6,6 +6,7 @@ debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/chisel-2-binaries/chown
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/gtirb-dynamic/chown.reduced
   libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/chown
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/gtirb-to-static/chown.reduced
 
 templates:
   - name: file

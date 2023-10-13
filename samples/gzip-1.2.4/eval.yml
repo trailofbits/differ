@@ -6,6 +6,7 @@ debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/chisel-2-binaries/gzip
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/gtirb-dynamic/gzip.reduced
   libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/gzip
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/gtirb-to-static/gzip.reduced
 
 templates:
   # -c (compress to stdout)

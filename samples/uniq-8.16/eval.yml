@@ -6,6 +6,7 @@ debloaters:
   chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/chisel-2-binaries/uniq
   gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/gtirb-dynamic/uniq.reduced
   libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/uniq
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/gtirb-to-static/uniq.reduced
 
 templates:
   ####################
