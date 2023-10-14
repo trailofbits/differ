@@ -8,6 +8,8 @@ debloaters:
 templates:
   - name: protocol-https
     arguments: --no-config https://digg.com/robots.txt
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     comparators:
       - stdout
       - id: exit_code
@@ -17,6 +19,8 @@ templates:
 
   - name: protocol-http
     arguments: http://echo.jsontest.com/key/value
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     comparators:
       - stdout
       - id: exit_code
@@ -26,6 +30,8 @@ templates:
 
   - name: protocol-ip
     arguments: "--no-config  --header 'Host: echo.jsontest.com' http://{{'echo.jsontest.com'|gethostbyname}}/key/value"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     comparators:
       - stdout
       - id: exit_code
@@ -35,6 +41,8 @@ templates:
 
   - name: opts-output
     arguments: --no-config  -O data.json http://echo.jsontest.com/key/value/key2/value2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     comparators:
       - stdout
       - id: exit_code
@@ -45,6 +53,8 @@ templates:
   - name: opts-timeout_ok
     timeout: 5
     arguments: --no-config -T 2 http://echoss.jsontest.com/
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     comparators:
       - stdout
       - id: exit_code
@@ -52,6 +62,8 @@ templates:
 
   - name: get-param
     arguments: --no-config -O data.json http://md5.jsontest.com/?text=hello_world
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     comparators:
       - stdout
       - id: exit_code
@@ -60,6 +72,8 @@ templates:
         filename: data.json
 
   - arguments: --help
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     expect_success: false
     comparators:
       - stderr
@@ -67,6 +81,8 @@ templates:
       - exit_code
 
   - arguments: --version
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     expect_success: false
     comparators:
       - stderr
@@ -74,6 +90,8 @@ templates:
       - exit_code
 
   - arguments: --debug -O data.json http://md5.jsontest.com/?text=hello_world
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     expect_success: false
     comparators:
       - stderr
@@ -84,6 +102,8 @@ templates:
         filename: data.json
 
   - arguments: --delete-after http://echo.jsontest.com/key/value
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     expect_success: false
     comparators:
       - stderr
@@ -95,6 +115,8 @@ templates:
         exists: false
 
   - arguments: -S -O data.json http://md5.jsontest.com/?text=hello_world
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     expect_success: false
     comparators:
       - stderr
@@ -105,6 +127,8 @@ templates:
         filename: data.json
 
   - arguments: --spider http://echo.jsontest.com/key/value
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
     expect_success: false
     comparators:
       - stderr

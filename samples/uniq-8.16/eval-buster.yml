@@ -12,6 +12,8 @@ templates:
   # Desired Features #
   ####################
   - name: stdin
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     input_files:
       - source: input.txt
         static: true
@@ -26,6 +28,8 @@ templates:
 
   - name: stdin-count
     arguments: -c
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     input_files:
       - source: input.txt
         static: true
@@ -40,6 +44,8 @@ templates:
 
   - name: stdin-repeated
     arguments: -d
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     input_files:
       - source: input.txt
         static: true
@@ -54,6 +60,8 @@ templates:
 
   - name: stdin-only_unique
     arguments: -u
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     input_files:
       - source: input.txt
         static: true
@@ -68,6 +76,8 @@ templates:
 
   - name: stdin-ignore_case
     arguments: -i
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     input_files:
       - source: input.txt
         static: true
@@ -82,6 +92,8 @@ templates:
 
   - name: stdin-skip_fields
     arguments: -f 5
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     input_files:
       - source: input.txt
         static: true
@@ -96,6 +108,8 @@ templates:
 
   - name: stdin-skip_chars
     arguments: -s 10
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     input_files:
       - source: input.txt
         static: true
@@ -110,6 +124,8 @@ templates:
 
   - name: stdin-first_chars
     arguments: -w 10
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     input_files:
       - source: input.txt
         static: true
@@ -123,6 +139,8 @@ templates:
       - exit_code
 
   - arguments: -D
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     expect_success: false
     input_files:
       - source: input.txt
@@ -137,6 +155,8 @@ templates:
       - exit_code
 
   - arguments: --version
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     expect_success: false
     comparators:
       - stdout
@@ -144,6 +164,8 @@ templates:
       - exit_code
 
   - arguments: -z
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/libfilter/_libfilter .
     expect_success: false
     input_files:
       - source: input.txt

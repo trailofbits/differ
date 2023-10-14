@@ -11,6 +11,8 @@ templates:
   # No args other than file and output to stdout
   - name: default-file_stdout
     arguments: "{{input}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     variables:
       input:
         type: str
@@ -53,6 +55,8 @@ templates:
   # Reverse sort and output to stdout
   - name: reverse-file_stdout
     arguments: -r {{input}}
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     variables:
       input:
         type: str
@@ -95,6 +99,8 @@ templates:
   # Stabilize sort and output to stdout
   - name: stabilize-file_stdout
     arguments: -s {{input}}
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     variables:
       input:
         type: str
@@ -137,6 +143,8 @@ templates:
   # Unique sort and output to stdout
   - name: unique-file_stdout
     arguments: -u {{input}}
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     variables:
       input:
         type: str
@@ -179,6 +187,8 @@ templates:
   # Zero terminate lines and output to stdout
   - name: zero_terminate-file_stdout
     arguments: -z {{input}}
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     variables:
       input:
         type: str
@@ -219,6 +229,8 @@ templates:
         expect: 0
 
   - arguments: "--parallel=4 {{input}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     expect_success: false
     variables:
       input:
@@ -254,6 +266,8 @@ templates:
         static: true
 
   - arguments: "--field-separator=a {{input}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     expect_success: false
     variables:
       input:
@@ -289,6 +303,8 @@ templates:
         static: true
 
   - arguments: "-c {{input}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     expect_success: false
     variables:
       input:
@@ -324,6 +340,8 @@ templates:
         static: true
 
   - arguments: "-b {{input}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     expect_success: false
     variables:
       input:
@@ -359,6 +377,8 @@ templates:
         static: true
 
   - arguments: "-d {{input}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     expect_success: false
     variables:
       input:
@@ -394,6 +414,8 @@ templates:
         static: true
 
   - arguments: "-n {{input}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/sort/libfilter/_libfilter .
     expect_success: false
     variables:
       input:

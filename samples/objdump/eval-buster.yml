@@ -12,6 +12,8 @@ templates:
       Test output flags against an executable, dynamic library, and static library: -a, -f, -p, -h,
       -x, -d, -D, -S, -s, -g, -e, -G, -t, -r
     arguments: "{{flag}} {{binary}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     variables:
       flag:
         type: str
@@ -51,6 +53,8 @@ templates:
     summary: >
       Test output flags for parsing dynamic tables on an executable and dynamic library: -T, -R
     arguments: "{{flag}} {{binary}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     variables:
       flag:
         type: str
@@ -75,6 +79,8 @@ templates:
   - name: flag-dyn_static_error
     summary: Trigger an error when trying to parse dynamic tables from a static library
     arguments: "{{flag}} {{binary}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     variables:
       flag:
         type: str
@@ -96,6 +102,8 @@ templates:
 
   - name: error-file_not_exist
     arguments: '-x file_does_not_exist'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -105,6 +113,8 @@ templates:
   # invalid object file
   - name: error-not_obj_file
     arguments: '-x /etc/passwd'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -114,6 +124,8 @@ templates:
   # directory
   - name: error-directory
     arguments: '-x /home'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -123,6 +135,8 @@ templates:
   - name: help
     expect_success: false
     arguments: "--help"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -131,6 +145,8 @@ templates:
   - name: version
     expect_success: false
     arguments: "--version"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -139,6 +155,8 @@ templates:
   - name: version
     expect_success: false
     arguments: "--info"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -147,6 +165,8 @@ templates:
   - name: unsupported_flag
     expect_success: false
     arguments: "{{flag}} {{binary}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     variables:
       flag:
         type: str
@@ -177,6 +197,8 @@ templates:
   - name: unsupported_flag_no_archive
     expect_success: false
     arguments: "{{flag}} {{binary}}"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/libfilter/_libfilter .
     variables:
       flag:
         type: str

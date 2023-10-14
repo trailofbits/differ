@@ -10,6 +10,8 @@ templates:
   # get index
   - name: get-root_file
     arguments: -D -f static-all.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     input_files:
       - source: serve
         static: true
@@ -38,6 +40,8 @@ templates:
   # get nested
   - name: get-nested_file
     arguments: -D -f static-all.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     input_files:
       - source: serve
         static: true
@@ -66,6 +70,8 @@ templates:
   # get index
   - name: get-index
     arguments: -D -f static-index.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     input_files:
       - source: serve
         static: true
@@ -94,6 +100,8 @@ templates:
   # get exclude PHP file
   - name: get-include_ext
     arguments: -D -f static-exclude-php.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     input_files:
       - source: serve
         static: true
@@ -121,6 +129,8 @@ templates:
 
   - name: get-exclude_ext
     arguments: -D -f static-exclude-php.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     input_files:
       - source: serve
         static: true
@@ -152,6 +162,7 @@ templates:
       - config/static-vhost.conf
 
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
       mkdir serve-vhost
       echo hello world > serve-vhost/hello.txt
 
@@ -183,6 +194,7 @@ templates:
       - config/static-vhost.conf
 
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
       mkdir serve-vhost
       echo hello world > serve-vhost/hello.txt
 
@@ -212,6 +224,7 @@ templates:
       - config/static-vhost.conf
 
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
       mkdir serve-vhost
       echo hello world > serve-vhost/hello.txt
 
@@ -241,6 +254,8 @@ templates:
   # 404
   - name: get-404
     arguments: -D -f static-all.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     input_files:
       - source: serve
         static: true
@@ -270,6 +285,8 @@ templates:
   - name: unsupported-compile-features
     expect_success: false
     arguments: -V
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -278,6 +295,8 @@ templates:
   - name: unsupported-print-config
     expect_success: false
     arguments: -p -f static-all.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     input_files:
       - config/static-all.conf
     comparators:
@@ -288,6 +307,8 @@ templates:
   - name: unsupported-test-config
     expect_success: false
     arguments: -tt -f static-all.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     input_files:
       - config/static-all.conf
     comparators:
@@ -299,6 +320,8 @@ templates:
   - name: unsupported_keepalive-get-root_file
     expect_success: false
     arguments: -D -f static-keepalive.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/libfilter/_libfilter .
     input_files:
       - source: serve
         static: true

@@ -12,6 +12,7 @@ templates:
   - name: file
     arguments: file
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
       touch file
 
     comparators:
@@ -27,6 +28,7 @@ templates:
   - name: directory-recursive
     arguments: -r dir
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
       mkdir dir
 
     comparators:
@@ -42,6 +44,7 @@ templates:
   - name: directory-recursive-force
     arguments: -r -f dir
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
       mkdir dir
 
     comparators:
@@ -57,6 +60,7 @@ templates:
   - name: confirmation-yes
     arguments: -i file
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
       touch file
 
     stdin:
@@ -75,6 +79,7 @@ templates:
   - name: confirmation-no
     arguments: -i file
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
       touch file
 
     stdin:
@@ -96,6 +101,8 @@ templates:
   # file does not exist
   - name: error-file_not_exist
     arguments: file
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -106,6 +113,7 @@ templates:
   - name: error-directory
     arguments: -f dir
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
       mkdir dir
 
     comparators:
@@ -120,6 +128,8 @@ templates:
   # missing operand
   - name: error-no_file
     arguments: ''
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -127,6 +137,8 @@ templates:
         expect: false
 
   - arguments: --version
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
     expect_success: false
     comparators:
       - stdout
@@ -136,6 +148,7 @@ templates:
   - arguments: -r -v dir
     expect_success: false
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
       mkdir dir
     comparators:
       - stdout
@@ -149,6 +162,7 @@ templates:
   - arguments: --recursive dir
     expect_success: false
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
       mkdir dir
     comparators:
       - stdout
@@ -162,6 +176,7 @@ templates:
   - arguments: -R dir
     expect_success: false
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/libfilter/_libfilter .
       mkdir dir
     comparators:
       - stdout

@@ -11,6 +11,8 @@ templates:
   - name: get
     summary: Download a file using the 'RETR' command.
     arguments: '-D -c default-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -47,6 +49,8 @@ templates:
   - name: navigation
     summary: Navigate an FTP share using the 'CWD', 'CDUP',  and 'LIST' commands.
     arguments: '-D -c default-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -80,6 +84,8 @@ templates:
   - name: chmod
     summary: Modify an existing file's mode using the 'SITE' command.
     arguments: '-D -c default-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -119,6 +125,7 @@ templates:
 
     setup: |
       echo hello world > file
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
 
     concurrent:
       mode: client
@@ -147,6 +154,8 @@ templates:
   - name: mkdir
     summary: Make a new directory using the 'MKD' command.
     arguments: '-D -c default-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -188,6 +197,7 @@ templates:
 
     setup: |
       cp serve/file.txt file_original.txt
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
 
     concurrent:
       mode: client
@@ -219,6 +229,8 @@ templates:
   - name: pwd
     summary: Get the working directory using the 'PWD' command.
     arguments: '-D -c default-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -250,6 +262,8 @@ templates:
   - name: rm
     summary: Remove a file using the 'DELE' command.
     arguments: '-D -c default-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     input_files:
       - default-anon.conf
       - source: lftp.rc
@@ -291,6 +305,7 @@ templates:
 
     setup: |
       mkdir serve/delete_me
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
 
     concurrent:
       mode: client
@@ -322,6 +337,8 @@ templates:
       Attempt to delete a file using the 'DELE' command but fail because the command is forbidden
       in the bftpd configuration (ALLOWCOMMAND_DELE='no').
     arguments: '-D -c disabled-cmds-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     input_files:
       - disabled-cmds-anon.conf
       - source: lftp.rc
@@ -364,6 +381,7 @@ templates:
 
     setup: |
       mkdir serve/delete_me
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
 
     concurrent:
       mode: client
@@ -401,6 +419,7 @@ templates:
 
     setup: |
       chmod 664 serve/file.txt
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
 
     concurrent:
       mode: client
@@ -438,6 +457,7 @@ templates:
 
     setup: |
       echo hello world > file
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
 
     concurrent:
       mode: client
@@ -464,6 +484,8 @@ templates:
   - name: unsupported_debug
     summary: Test unsupported 'debug' command in debloated version
     arguments: '-D -c default-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     expect_success: false
     input_files:
       - default-anon.conf
@@ -495,6 +517,8 @@ templates:
   - name: unsupported_help
     summary: Test unsupported 'help' command in debloated version
     arguments: '-D -c default-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     expect_success: false
     input_files:
       - default-anon.conf
@@ -525,6 +549,8 @@ templates:
   - name: unsupported_history
     summary: Test unsupported 'jobs' command in debloated version
     arguments: '-D -c default-anon.conf'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/libfilter/_libfilter .
     expect_success: false
     input_files:
       - default-anon.conf

@@ -10,6 +10,8 @@ templates:
   - name: file_server-download
     summary: Configure nginx as a file server and download a file
     arguments: -p "{{trace.cwd}}" -c file_server.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     input_files:
       - configs/file_server.conf
       - source: serve-ip
@@ -36,6 +38,8 @@ templates:
   - name: file_server-download-relative
     summary: Configure nginx as a file server and download a file using a dot and dot-dot segment
     arguments: -p "{{trace.cwd}}" -c file_server.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     input_files:
       - configs/file_server.conf
       - source: serve-ip
@@ -62,6 +66,8 @@ templates:
   - name: file_server-download-index
     summary: Configure nginx as a file server and download a the index.html file
     arguments: -p "{{trace.cwd}}" -c file_server.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     input_files:
       - configs/file_server.conf
       - source: serve-ip
@@ -88,6 +94,8 @@ templates:
   - name: file_server-404
     summary: Trigger a 404 by trying to download a file that does not exist
     arguments: -p "{{trace.cwd}}" -c file_server.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     input_files:
       - configs/file_server.conf
       - source: serve-ip
@@ -114,6 +122,8 @@ templates:
     summary: >
       Configure nginx with two virtual hosts and download a file from each.
     arguments: -p "{{trace.cwd}}" -c file_server_vhost.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     input_files:
       - configs/file_server_vhost.conf
       - source: serve-ip
@@ -155,6 +165,7 @@ templates:
         static: true
 
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
       python -m http.server -d serve-ip 8081 &>/dev/null &
       echo $! > server.pid
 
@@ -183,6 +194,8 @@ templates:
   - name: unsupported_config-test
     expect_success: false
     arguments: -p "{{trace.cwd}}" -c file_server.conf {{test_conf}}
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     variables:
       test_conf:
         type: str
@@ -202,6 +215,8 @@ templates:
   - name: unsupported_config-sendfile
     expect_success: false
     arguments: -p "{{trace.cwd}}" -c file_server_unsupported.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     input_files:
       - configs/file_server_unsupported.conf
       - source: serve-ip
@@ -228,6 +243,8 @@ templates:
   - name: unsupported_help
     expect_success: false
     arguments: -h
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -236,6 +253,8 @@ templates:
   - name: unsupported_help2
     expect_success: false
     arguments: -?
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -244,6 +263,8 @@ templates:
   - name: unsupported_version
     expect_success: false
     arguments: -v
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -252,6 +273,8 @@ templates:
   - name: unsupported_version2
     expect_success: false
     arguments: -V
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -260,6 +283,8 @@ templates:
   - name: unsupported_quiet
     expect_success: false
     arguments: -q -p "{{trace.cwd}}" -c file_server.conf
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nginx/libfilter/_libfilter .
     input_files:
       - configs/file_server.conf
       - source: serve-ip

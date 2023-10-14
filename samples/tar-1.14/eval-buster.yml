@@ -11,6 +11,7 @@ templates:
   - name: create-multiple_files
     arguments: cf foo.tar foo bar
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       echo "foo foo" > foo.orig
       cp foo.orig foo
       echo "bar " > bar.orig
@@ -38,6 +39,7 @@ templates:
   - name: extract-directory_subset
     arguments: xf foo.tar -C foo ./1/10
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       mkdir -p foo/{1,2,3}
       mkdir -p foo/1/{10,11}
       mkdir -p foo/1/10/{100,101,102}
@@ -65,6 +67,7 @@ templates:
   - name: extract-file
     arguments: xf foo.tar
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo
       ./tar cf foo.tar foo
       rm foo
@@ -84,6 +87,7 @@ templates:
   - name: extract-stdin_file
     arguments: x
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo
       ./tar cf foo.tar foo
       rm foo
@@ -106,6 +110,7 @@ templates:
   - name: extract-all
     arguments: -xf foo.tar
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo bar
       ./tar cf foo.tar foo bar
       rm foo bar
@@ -127,6 +132,7 @@ templates:
   - name: create-gzip
     arguments: czf foo.tar.gz foo
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       echo "foo foo bar" > foo
 
     teardown: |
@@ -151,6 +157,7 @@ templates:
   - name: extract-exclude_file
     arguments: xf foo.tar -X foo.exclude
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo
       tar cf foo.tar foo
       echo foo > foo.exclude
@@ -172,6 +179,7 @@ templates:
   - name: extract-exclude_and_include
     arguments: xf foo.tar foo bar -X foo.exclude
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       echo "abcd abcd" > foo
       echo "bar bar bar" > bar
       echo "" > baz
@@ -200,6 +208,7 @@ templates:
   - name: extract-multiple_exclude_files
     arguments: xf foo.tar -X foo.exclude -X bar.exclude
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo
       touch bar
       ./tar cf foo.tar foo bar
@@ -226,6 +235,7 @@ templates:
   - name: extract-exclude_file-path
     arguments: xf foo.tar foo -X foobar.exclude
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       mkdir foo
       touch foo/bar
       tar cf foo.tar foo
@@ -256,6 +266,7 @@ templates:
   - name: error-extract-file_not_in_archive
     arguments: cf foo.tar foo
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo
 
     teardown:
@@ -273,6 +284,8 @@ templates:
   # tar-demands-at-least-one-ctx
   - name: error-missing-command
     arguments: v
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -282,6 +295,8 @@ templates:
   # tar-demands-at-most-one-ctx
   - name: error-multiple-commands
     arguments: tx
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -292,6 +307,7 @@ templates:
   - name: error-extract-stdout
     arguments: 0x
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       echo foo > foo
       ./tar cf foo.tar foo
 
@@ -309,6 +325,8 @@ templates:
 
   - arguments: --version
     expect_success: false
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -317,6 +335,7 @@ templates:
   - arguments: --verbose -xf foo.tar
     expect_success: false
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo bar
       ./tar cf foo.tar foo bar
       rm foo bar
@@ -337,6 +356,7 @@ templates:
   - arguments: --checkpoint -xf foo.tar
     expect_success: false
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo bar
       ./tar cf foo.tar foo bar
       rm foo bar
@@ -357,6 +377,7 @@ templates:
   - arguments: -tf foo.tar
     expect_success: false
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo bar
       ./tar cf foo.tar foo bar
       rm foo bar
@@ -373,6 +394,7 @@ templates:
   - arguments: --totals -cf foo.tar foo bar
     expect_success: false
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       echo "foo foo" > foo.orig
       cp foo.orig foo
       echo "bar " > bar.orig
@@ -399,6 +421,7 @@ templates:
   - arguments: --verify -cf foo.tar foo bar
     expect_success: false
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       echo "foo foo" > foo.orig
       cp foo.orig foo
       echo "bar " > bar.orig

@@ -11,6 +11,8 @@ templates:
   # -c (compress to stdout)
   - name: compress-stdin_stdout
     arguments: -c
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/_libfilter .
     input_files:
       - source: inputs
         static: true
@@ -36,6 +38,8 @@ templates:
   # -d (decompress)
   - name: decompress-stdin_stdout
     arguments: -d
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/_libfilter .
     input_files:
       - source: inputs
         static: true
@@ -59,6 +63,7 @@ templates:
   - name: compress-overwrite
     arguments: -f foo
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/_libfilter .
       echo 1234 > foo
       echo 4567 > foo.gz
 
@@ -83,6 +88,8 @@ templates:
   # -t (test) invalid
   - name: test-invalid
     arguments: -t inputs/sample1.ref
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/_libfilter .
     input_files:
       - source: inputs
         static: true
@@ -96,6 +103,8 @@ templates:
   # -t (test) valid
   - name: test-valid
     arguments: -t inputs/sample1.gz.ref
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/_libfilter .
     input_files:
       - source: inputs
         static: true
@@ -113,6 +122,8 @@ templates:
   # File does not exist
   - name: error-file_does_not_exist
     arguments: foo
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -123,6 +134,8 @@ templates:
   - name: error-missing_operand
     summary: Trigger a usage error by not providing a required argument for a flag
     arguments: '{{arg}}'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/_libfilter .
     variables:
       arg:
         type: str
@@ -144,6 +157,8 @@ templates:
 
   # -l/--list -d (list contents of compressed archive)
   - arguments: '-d {{arg}}'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/_libfilter .
     expect_success: false
     input_files:
       - source: inputs
@@ -166,6 +181,8 @@ templates:
 
   # -l/--list -c (list contents of compressed archive)
   - arguments: '-c {{arg}}'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/libfilter/_libfilter .
     expect_success: false
     input_files:
       - source: inputs

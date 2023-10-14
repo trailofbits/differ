@@ -11,6 +11,7 @@ templates:
   - name: file
     arguments: "{{env.USER}}:adm file1"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       touch file1
 
     comparators:
@@ -27,6 +28,7 @@ templates:
   - name: path-relative
     arguments: "{{env.USER}}:adm d1/d1/d1/file"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       mkdir -p d1/d1/d1
       touch d1/d1/d1/file
 
@@ -43,6 +45,7 @@ templates:
   - name: path-absolute
     arguments: "{{env.USER}}:adm {{trace.cwd}}/d1/d1/d1/file"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       mkdir -p d1/d1/d1
       touch d1/d1/d1/file
 
@@ -60,6 +63,7 @@ templates:
   - name: recursive
     arguments: "-R {{env.USER}}:adm d1"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       mkdir -p d1/d1/d1
       touch d1/d1/d1/file
 
@@ -92,6 +96,7 @@ templates:
   - name: no_deref-file
     arguments: "-h {{env.USER}}:adm file1"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       touch file1
       ln -s file1 symlink1
 
@@ -112,6 +117,7 @@ templates:
   - name: no_deref-symlink
     arguments: "-h {{env.USER}}:adm symlink1"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       touch file1
       ln -s file1 symlink1
 
@@ -132,6 +138,7 @@ templates:
   - name: deref-symlink
     arguments: "{{env.USER}}:adm symlink1"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       touch file1
       ln -s file1 symlink1
 
@@ -151,6 +158,8 @@ templates:
   # no arguments (missing operand)
   - name: error-no_args
     arguments: ''
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -160,6 +169,8 @@ templates:
   # invalid user
   - name: error-invalid_user
     arguments: input1 input2 not_exist
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -169,6 +180,8 @@ templates:
   # missing operand
   - name: error-no_file
     arguments: not_exist
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -178,6 +191,8 @@ templates:
     # missing operand
   - name: error-file_does_not_exist
     arguments: "{{env.USER}}:adm not_exist"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -187,6 +202,8 @@ templates:
   # --help
   - name: help
     arguments: '--help'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -197,6 +214,8 @@ templates:
   - name: error-no_operand
     summary: Trigger a usage error by not providing an operand for a flag that requires one.
     arguments: '{{arg}} file'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
     variables:
       arg:
         type: str
@@ -219,6 +238,7 @@ templates:
     expect_success: false
     arguments: "--preserve-root {{env.USER}}:adm file1"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       touch file1
 
     comparators:
@@ -236,6 +256,7 @@ templates:
     expect_success: false
     arguments: "-v -R {{env.USER}}:adm d1"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       mkdir -p d1/d1/d1
       touch d1/d1/d1/file
 
@@ -269,6 +290,7 @@ templates:
     expect_success: false
     arguments: "-H -R {{env.USER}}:adm d1"
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/libfilter/_libfilter .
       mkdir -p d1/d1/d1
       touch d1/d1/d1/file
 
