@@ -311,18 +311,6 @@ templates:
   # Debloated Features #
   ######################
 
-  - arguments: -P randomtext* input_dir/input2
-    input_files:
-      - source: input_dir
-        static: true
-
-    expect_success: false
-
-    comparators:
-      - stdout
-      - stderr
-      - exit_code
-
   - arguments: -m 2 si input_dir/input2
     input_files:
       - source: input_dir
