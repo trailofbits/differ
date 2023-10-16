@@ -19,7 +19,7 @@ templates:
 
     teardown: |
       rm foo bar
-      ./tar xf foo.tar
+      ./tar.symlink xf foo.tar
 
     comparators:
       - stdout
@@ -43,7 +43,7 @@ templates:
       mkdir -p foo/{1,2,3}
       mkdir -p foo/1/{10,11}
       mkdir -p foo/1/10/{100,101,102}
-      ./tar cf foo.tar -C foo .
+      ./tar.symlink cf foo.tar -C foo .
       rm -r foo/*
 
     teardown: |
@@ -69,7 +69,7 @@ templates:
     setup: |
       cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo
-      ./tar cf foo.tar foo
+      ./tar.symlink cf foo.tar foo
       rm foo
 
     comparators:
@@ -89,7 +89,7 @@ templates:
     setup: |
       cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo
-      ./tar cf foo.tar foo
+      ./tar.symlink cf foo.tar foo
       rm foo
 
     stdin:
@@ -112,7 +112,7 @@ templates:
     setup: |
       cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo bar
-      ./tar cf foo.tar foo bar
+      ./tar.symlink cf foo.tar foo bar
       rm foo bar
 
     comparators:
@@ -137,7 +137,7 @@ templates:
 
     teardown: |
       rm foo
-      ./tar xzf foo.tar.gz
+      ./tar.symlink xzf foo.tar.gz
 
     comparators:
       - stdout
@@ -211,7 +211,7 @@ templates:
       cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo
       touch bar
-      ./tar cf foo.tar foo bar
+      ./tar.symlink cf foo.tar foo bar
       echo foo > foo.exclude
       echo bar > bar.exclude
       rm foo bar
@@ -270,7 +270,7 @@ templates:
       touch foo
 
     teardown:
-      ./tar foo.tar bar
+      ./tar.symlink foo.tar bar
 
     comparators:
       - stdout
@@ -309,7 +309,7 @@ templates:
     setup: |
       cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       echo foo > foo
-      ./tar cf foo.tar foo
+      ./tar.symlink cf foo.tar foo
 
     stdin:
       file: foo.tar
@@ -337,7 +337,7 @@ templates:
     setup: |
       cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo bar
-      ./tar cf foo.tar foo bar
+      ./tar.symlink cf foo.tar foo bar
       rm foo bar
 
     comparators:
@@ -358,7 +358,7 @@ templates:
     setup: |
       cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo bar
-      ./tar cf foo.tar foo bar
+      ./tar.symlink cf foo.tar foo bar
       rm foo bar
 
     comparators:
@@ -379,7 +379,7 @@ templates:
     setup: |
       cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/tar/libfilter/_libfilter .
       touch foo bar
-      ./tar cf foo.tar foo bar
+      ./tar.symlink cf foo.tar foo bar
       rm foo bar
 
     comparators:
@@ -402,7 +402,7 @@ templates:
 
     teardown: |
       rm foo bar
-      ./tar xf foo.tar
+      ./tar.symlink xf foo.tar
 
     comparators:
       - stdout
@@ -429,7 +429,7 @@ templates:
 
     teardown: |
       rm foo bar
-      ./tar xf foo.tar
+      ./tar.symlink xf foo.tar
 
     comparators:
       - stdout
