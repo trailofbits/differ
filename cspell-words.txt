@@ -24,6 +24,13 @@ radamsa
 ENOENT
 keepends
 fuzzer
+libfilter
+gtirb
+lmcas
+pgrep
+magick
+binutils
+poppler
 
 
 # sphinx / restructuredText directives
