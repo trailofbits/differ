@@ -4,6 +4,45 @@
 
 DIFFER: Detecting Inconsistencies in Feature or Function Evaluations of Requirements
 
+## Overview
+Program transformation tools (like software debloating tools) often neglect the need for
+post-transfomation validation of the modified programs they create, opting to leave this entirely
+to the user. Existing approaches like regression and fuzz testing do not naturally support testing
+transformed programs against their original versions.
+
+DIFFER is a novel differential testing tool for transformed programs that combines elements from
+differential, regression, and fuzz testing approaches. DIFFER allows users to specify seed inputs
+that correspond to both unmodified and modified program behaviors/features. It runs the original
+program and one or more of its transformed variants with these inputs and compares their outputs.
+
+DIFFER expects that inputs for unmodified features will result in outputs that are the same for the
+original and transformed programs. Conversely, it expects inputs for modified features to cause the
+original and transformed programs to produce differing outputs. If DIFFER detects unexpected
+matches, differences or crashes it reports them to the user to inspect. DIFFER's reports can help
+the user identify mistakes in the transformation tool or its configuration
+
+As is the case with all dynamic analysis tools, it is possible that DIFFER reports may be false
+positives. To reduce false positive rates to a minimum, DIFFER allows users to define custom output
+comparators that can account for expected differences in outputs (e.g., a program timestamps its
+console output). Additionally, DIFFER supports template-based mutational fuzzing of seed inputs to
+ensure maximum coverage of the input space (i.e., avoid false negatives) for both unmodified and
+modified features.
+
+It is important to note that DIFFER does not and cannot provide formal guarantees of soundness
+in transformation tools or the modified programs they produce. Like other dynamic analysis testing
+approaches, DIFFER cannot exhaustively test the input space for complex programs in the general
+case.
+
+## Debloating Use Case
+
+DIFFER was originally designed to help validate debloated programs created by software debloaters.
+This work is currently published for reference at the link below. We welcome contributions to this
+DIFFER and hope you find it useful in your research / security work. If you use this tool in
+your research, please cite the following paper:
+
+**Brown, Michael D., et al. "SoK: A Broad Comparative Evaluation of Software Debloating Tools". arXiv CS.SE. 2023.**[\[pdf\]]()
+
+
 ## Setup
 
 ### Installing Dependencies
@@ -152,50 +191,12 @@ The `differ.spec` module loads all benchmark sample projects and outputs a CSV r
 $ pipenv run python differ-spec -o specs.csv
 ```
 
-## Development
+## Acknowledgements
 
-### Formatting, Linting, and CI
-
-The CI pipeline runs multiple tools that can also be run locally:
-
-- **Formatting**
-  - [blue](https://github.com/grantjenks/blue) - code formatting
-  - [isort](https://github.com/PyCQA/isort) - import sorting
-- **Static Analysis**
-  - [pyright](https://github.com/microsoft/pyright) - type checking
-  - [flake8](https://github.com/PyCQA/flake8) - static code analysis
-- **Unit Tests**
-  - [pytest](https://docs.pytest.org) - unit testing
-  - [coverage](https://coverage.readthedocs.io) - code coverage
-- **Documentation**
-  - [sphinx](https://www.sphinx-doc.org/en/master/) - API documentation
-- **Spell Checking**
-  - [cspell](https://cspell.org/) - Code spell checker.
-    - This is a NodeJS package that must be installed, outside of `pipenv`, in a Node v14 or newer environment if you want to run this locally.
-      ```bash
-      $ npm install -g cspell
-      ```
-
-    - The custom dictionary is located in `./cspell-words.txt` and can be updated as needed.
-
-These tools can be run locally using `pipenv`:
-
-```bash
-# Run linting checks (static analysis)
-$ pipenv run lint
-
-# Format Python code
-$ pipenv run format
-
-# Run unit and integration tests
-$ pipenv run tests
-
-# Run spell checking (requires cspell)
-$ pipenv run spell-check
-
-# Run all CI checks (lint, spell check, test)
-$ pipenv run ci
-```
+This material is based upon work supported by the Office of Naval
+Research (ONR) under Contract No. N00014-21-C-1032. Any opinions, findings
+and conclusions or recommendations expressed in this material are those
+of the author(s) and do not necessarily reflect the views of the ONR.
 
 <!--
 spell-checker:ignore binrec coreutils pipenv deadsnakes pyright venv isort pytest libfuzzy lftp lighttpd chgrp setcap usermod binutils poppler imagemagick
