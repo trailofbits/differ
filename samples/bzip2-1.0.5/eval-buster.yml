@@ -1,15 +1,18 @@
 name: bzip2
-link_filename: bzip2
-original: bin/bzip2.original
+link_filename: bzip2.symlink
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/bzip2-1.0.5/binaries/buster/bzip2
 version: '1.0.5'
 debloaters:
-  # the chisel binary does not run, so we test against the original
-  original: bin/bzip2.original
+  chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/chisel/bzip2-1.0.5.reduced
+  razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/razor-results/bzip2.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/bzip2
 
 templates:
   # output to stdout
   - name: compress-stdin_stdout
     arguments: -c
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
     input_files:
       - source: inputs
         static: true
@@ -32,6 +35,8 @@ templates:
   # decompress
   - name: decompress-stdin_stdout
     arguments: -d
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
     input_files:
       - source: inputs
         static: true
@@ -55,6 +60,7 @@ templates:
   - name: compress-overwrite
     arguments: -f foo
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
       echo 1234 > foo
       echo 4567 > foo.bz2
 
@@ -78,6 +84,7 @@ templates:
   - name: test-invalid
     arguments: -t foo
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
       echo 1234 > foo
 
     comparators:
@@ -89,6 +96,8 @@ templates:
   # test valid
   - name: test-valid
     arguments: -t inputs/sample1.bz2.ref
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
     input_files:
       - source: inputs
         static: true
@@ -103,6 +112,7 @@ templates:
   - name: compress-keep
     arguments: -k foo
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
       echo 1234 > foo
 
     teardown: |
@@ -121,6 +131,8 @@ templates:
   - name: unsupported-version
     expect_success: false
     arguments: -V
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -131,6 +143,8 @@ templates:
   - name: unsupported-license
     expect_success: false
     arguments: -L
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -142,6 +156,7 @@ templates:
     expect_success: false
     arguments: --best foo
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
       echo 1234 > foo
 
     teardown: |
@@ -161,6 +176,7 @@ templates:
     expect_success: false
     arguments: -8 foo
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/libfilter/_libfilter .
       echo 1234 > foo
 
     teardown: |

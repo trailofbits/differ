@@ -1,14 +1,16 @@
 name: objdump
-original: /usr/bin/objdump
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/binutils-2.40/binaries/64/objdump
 version: '2.34'
 debloaters:
-  original: /usr/bin/objdump
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/occam/objdump_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/trimmer/objdump_trimmer
 
 templates:
-  - name: flag
+  - name: flag-excl-x
+    expect_success: false
     summary: >
       Test output flags against an executable, dynamic library, and static library: -a, -f, -p, -h,
-      -x, -d, -D, -S, -s, -g, -e, -G, -t, -r
+      -d, -D, -S, -s, -g, -e, -G, -t, -r
     arguments: "{{flag}} {{binary}}"
     variables:
       flag:
@@ -18,7 +20,6 @@ templates:
           - '-f'
           - '-p'
           - '-h'
-          - '-x'
           - '-d'
           - '-D'
           - '-S'
@@ -45,7 +46,30 @@ templates:
       - id: exit_code
         expect: 0
 
+  - name: flag-x
+    expect_success: true
+    summary: >
+      Test -x flag against an executable, dynamic library, and static library
+    arguments: "-x {{binary}}"
+    variables:
+      binary:
+        type: str
+        values:
+          # amd64 binary
+          - '/bin/bash'
+          # amd64 shared library
+          - '/lib64/ld-linux-x86-64.so.2'
+          # amd64 static library
+          - '/lib/x86_64-linux-gnu/libffi.a'
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
   - name: flag-dyn
+    expect_success: false
     summary: >
       Test output flags for parsing dynamic tables on an executable and dynamic library: -T, -R
     arguments: "{{flag}} {{binary}}"
@@ -71,6 +95,7 @@ templates:
         expect: 0
 
   - name: flag-dyn_static_error
+    expect_success: false
     summary: Trigger an error when trying to parse dynamic tables from a static library
     arguments: "{{flag}} {{binary}}"
     variables:
@@ -93,6 +118,7 @@ templates:
         expect: 1
 
   - name: error-file_not_exist
+    expect_success: false
     arguments: '-x file_does_not_exist'
     comparators:
       - stdout
@@ -102,6 +128,7 @@ templates:
 
   # invalid object file
   - name: error-not_obj_file
+    expect_success: false
     arguments: '-x /etc/passwd'
     comparators:
       - stdout
@@ -111,6 +138,7 @@ templates:
 
   # directory
   - name: error-directory
+    expect_success: false
     arguments: '-x /home'
     comparators:
       - stdout

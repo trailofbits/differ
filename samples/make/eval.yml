@@ -1,8 +1,9 @@
 name: make
-original: /usr/bin/make
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/make-4.2/binaries/64/make
 version: '4.2.1'
 debloaters:
-  original: /usr/bin/make
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/gtirb-dynamic/make.reduced
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/gtirb-to-static/make.reduced
 
 templates:
   # make single target

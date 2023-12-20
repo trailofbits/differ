@@ -1,12 +1,14 @@
 name: memcached
-original: /usr/bin/memcached
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/memcached-1.6.18/binaries/64/memcached
 version: '1.5.22'
 debloaters:
-  original: /usr/bin/memcached
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/occam/memcached_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/trimmer/memcached_trimmer
 
 templates:
   # set and get command (store and retrieve value)
   - name: set_get
+    expect_success: true
     summary: Set and then get a value using the 'set' and 'get' commands.
     concurrent:
       delay: 0.5
@@ -40,6 +42,7 @@ templates:
 
   # set with expiration
   - name: set-expiration_get-expired
+    expect_success: true
     summary: >
       Set a value that expires and then attempt to get the value after it expired using the 'set'
       and 'get' commands
@@ -79,6 +82,7 @@ templates:
 
   # add
   - name: add
+    expect_success: true
     summary: Add a value that does not exist with the 'add' command
     concurrent:
       delay: 0.5
@@ -111,6 +115,7 @@ templates:
         protocol: tcp
 
   - name: add_exists
+    expect_success: true
     summary: >
       Attempt to add a value that already exists and verify that the original value is not
       overwritten using the 'add' command
@@ -147,6 +152,7 @@ templates:
 
   # replace
   - name: replace
+    expect_success: true
     summary: Replace a value that exists using the 'replace' command
     concurrent:
       delay: 0.5
@@ -180,6 +186,7 @@ templates:
         protocol: tcp
 
   - name: replace_exists
+    expect_success: true
     summary: >
       Attempt to replace a value that does not exist and then verify that the value was not created
       using the 'replace' command
@@ -215,6 +222,7 @@ templates:
 
   # append
   - name: append
+    expect_success: true
     summary: Append to a string using the 'append' command
     concurrent:
       delay: 0.5
@@ -248,6 +256,7 @@ templates:
         protocol: tcp
 
   - name: append-error
+    expect_success: true
     summary: Attempt to append to a value that does not exist using the 'append' command
     concurrent:
       delay: 0.5
@@ -281,6 +290,7 @@ templates:
 
   # prepend
   - name: prepend
+    expect_success: true
     summary: Prepend to a value using the 'prepend' command
     concurrent:
       delay: 0.5
@@ -314,6 +324,7 @@ templates:
         protocol: tcp
 
   - name: prepend-error
+    expect_success: true
     summary: Attempt to prepend to a value that does not exist using the 'prepend' command
     concurrent:
       delay: 0.5
@@ -347,6 +358,7 @@ templates:
 
   # delete
   - name: delete
+    expect_success: true
     summary: Delete a value using the 'delete' command
     concurrent:
       delay: 0.5
@@ -380,6 +392,7 @@ templates:
         protocol: tcp
 
   - name: delete-error
+    expect_success: true
     summary: Attempt to delete a value that does not exist using the 'delete' command
     concurrent:
       delay: 0.5
@@ -412,6 +425,7 @@ templates:
 
   # incr/decr
   - name: incr
+    expect_success: true
     summary: Increment an integer value using the 'incr' command
     concurrent:
       delay: 0.5
@@ -445,6 +459,7 @@ templates:
         protocol: tcp
 
   - name: incr-error
+    expect_success: true
     summary: Attempt to increment a value that does not exist using the 'incr' command
     concurrent:
       delay: 0.5
@@ -478,6 +493,7 @@ templates:
 
   # decr
   - name: decr
+    expect_success: true
     summary: Decrement an integer value using the 'decr' command
     concurrent:
       delay: 0.5
@@ -511,6 +527,7 @@ templates:
         protocol: tcp
 
   - name: decr-error
+    expect_success: true
     summary: Attempt to decrement a value that does not exist using the 'decr' command
     concurrent:
       delay: 0.5

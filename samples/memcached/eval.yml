@@ -1,8 +1,9 @@
 name: memcached
-original: /usr/bin/memcached
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/memcached-1.6.18/binaries/64/memcached
 version: '1.5.22'
 debloaters:
-  original: /usr/bin/memcached
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/gtirb-dynamic/memcached.reduced
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/gtirb-to-static/memcached.reduced
 
 templates:
   # set and get command (store and retrieve value)

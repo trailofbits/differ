@@ -1,9 +1,10 @@
 name: bftpd
 version: '6.1'
-link_filename: bftpd
-original: bin/bftpd.original
+link_filename: bftpd.symlink
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/bftpd-6.1/binaries/64/bftpd
 debloaters:
-  original: bin/bftpd.original
+  chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/chisel-2-binaries/bftpd
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/bftpd/gtirb-to-static/bftpd.reduced
 
 templates:
   # Get a file

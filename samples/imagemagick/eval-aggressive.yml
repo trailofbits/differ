@@ -1,11 +1,13 @@
 name: imagemagick_convert
-original: /usr/bin/convert
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/imagemagick-7.0.1-0/binaries/64/magick
 version: '6.9.10-23'
 debloaters:
-  original: /usr/bin/convert
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/imagemagick/occam/magick_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/imagemagick/trimmer/magick_trimmer
 
 templates:
   - name: convert-format
+    expect_success: false
     summary: >
       Convert between formats: jpg, png, bmp, gif
     arguments: input_files/eggs.{{from}} eggs.{{to}}
@@ -44,6 +46,7 @@ templates:
         filename: stripped-image
 
   - name: resize
+    expect_success: false
     arguments: eggs.jpg -resize {{scale}} eggs-resized.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -65,6 +68,7 @@ templates:
         filename: eggs-resized.jpg
 
   - name: flip
+    expect_success: true
     arguments: eggs.jpg -flip eggs-flipped.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -79,6 +83,7 @@ templates:
         filename: eggs-flipped.jpg
 
   - name: flop
+    expect_success: false
     arguments: eggs.jpg -flop eggs-flopped.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -93,6 +98,7 @@ templates:
         filename: eggs-flopped.jpg
 
   - name: negate
+    expect_success: false
     arguments: eggs.jpg {{flag}} eggs-negate.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -114,6 +120,7 @@ templates:
         filename: eggs-negate.jpg
 
   - name: scale
+    expect_success: false
     arguments: eggs.jpg -scale {{scale}} eggs-scaled.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -135,6 +142,7 @@ templates:
         filename: eggs-scaled.jpg
 
   - name: roll
+    expect_success: false
     arguments: eggs.jpg -roll {{x}}{{y}} eggs-rolled.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -164,6 +172,7 @@ templates:
         filename: eggs-rolled.jpg
 
   - name: transverse
+    expect_success: false
     arguments: eggs.jpg -transverse eggs-transverse.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -178,6 +187,7 @@ templates:
         filename: eggs-transverse.jpg
 
   - name: transpose
+    expect_success: false
     arguments: eggs.jpg -transpose eggs-transposed.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -192,6 +202,7 @@ templates:
         filename: eggs-transposed.jpg
 
   - name: rotate
+    expect_success: false
     arguments: eggs.jpg -rotate {{deg}} eggs-transverse.jpg
     input_files:
       - source: input_files/eggs.jpg
@@ -217,6 +228,7 @@ templates:
         filename: eggs-transverse.jpg
 
   - name: crop
+    expect_success: false
     arguments: eggs.jpg -crop {{width}}x{{height}}{{x}}{{y}} eggs-cropped.jpg
     input_files:
       - source: input_files/eggs.jpg

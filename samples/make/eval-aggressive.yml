@@ -1,12 +1,13 @@
 name: make
-original: /usr/bin/make
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/make-4.2/binaries/64/make
 version: '4.2.1'
 debloaters:
-  original: /usr/bin/make
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/occam/make_occam
 
 templates:
   # make single target
   - name: low-single_target
+    expect_success: false
     summary: Make a single target without any dependencies
     arguments: file1
     input_files:
@@ -22,6 +23,7 @@ templates:
         filename: file1
 
   - name: low-multiple_targets
+    expect_success: false
     summary: Make multiple targets without any dependencies
     arguments: file1 file2
     input_files:
@@ -40,6 +42,7 @@ templates:
 
   # dependencies
   - name: low-deps
+    expect_success: false
     summary: Make a target that has a dependency
     arguments: file3
     input_files:
@@ -58,6 +61,7 @@ templates:
 
   # make update
   - name: low-deps-update
+    expect_success: false
     summary: Perform a partial make by only running targets that are out of date
     arguments: file3
     input_files:
@@ -96,6 +100,7 @@ templates:
 
   # make up to date (no-op)
   - name: low-deps-up_to_date
+    expect_success: false
     summary: Do not run any targets because they are all up to date
     arguments: file3
     input_files:
@@ -125,6 +130,7 @@ templates:
 
   # make default target
   - name: low-default_target
+    expect_success: false
     summary: Run the default target
     input_files:
       - source: input_files/low-single_target.mak
@@ -142,6 +148,7 @@ templates:
         exists: false
 
   - name: low-custom_default_target
+    expect_success: false
     summary: Run the custom default target
     input_files:
       - source: input_files/low-custom_default_target.mak
@@ -160,6 +167,7 @@ templates:
 
   # make stdin
   - name: low-args_file-stdin
+    expect_success: false
     summary: Load Makefile from stdin
     arguments: -f - file1
     input_files:
@@ -178,6 +186,7 @@ templates:
 
   # make -f
   - name: low-args_file
+    expect_success: false
     arguments: -f low-single_target.mak file1
     input_files:
       - input_files/low-single_target.mak
@@ -192,6 +201,7 @@ templates:
 
   # make phony
   - name: med_phony
+    expect_success: false
     summary: Make a phony target
     arguments: all
     input_files:
@@ -214,6 +224,7 @@ templates:
 
   # includes
   - name: high-includes
+    expect_success: false
     summary: Process include directives and make a target that depends on a separate Makefile
     arguments: file4
     input_files:
@@ -241,6 +252,7 @@ templates:
 
   # vars
   - name: high-vars
+    expect_success: true
     summary: Make a target that uses multiple variables
     arguments: install
     input_files:
@@ -269,6 +281,7 @@ templates:
   ##################
   # make invalid target
   - name: error-invalid_target
+    expect_success: false
     summary: Trigger an error when trying to make a target that does not exist
     arguments: does_not_exist
     input_files:
@@ -286,6 +299,7 @@ templates:
 
   # no makefile
   - name: error-no_makefile
+    expect_success: false
     summary: Trigger an error when no Makefile exists
     comparators:
       - stdout
@@ -295,6 +309,7 @@ templates:
 
   # -f file does not exist
   - name: error-file_does_not_exist
+    expect_success: false
     summary: Trigger an error when the specified Makefile does not exist
     arguments: -f does_not_exist
     comparators:

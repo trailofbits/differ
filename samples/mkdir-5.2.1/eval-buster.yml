@@ -1,0 +1,224 @@
+name: mkdir
+link_filename: mkdir.symlink
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/mkdir-5.2.1/binaries/buster/mkdir
+version: '5.2.1'
+debloaters:
+  chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/chisel/mkdir-5.2.1.reduced
+  razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/razor-results/mkdir.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/mkdir
+
+
+templates:
+  - name: absolute
+    arguments: "{{trace.cwd}}/d1"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - name: relative
+    arguments: d1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - name: relative-parent
+    arguments: -p d1/d2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2
+
+  - name: relative-parents
+    arguments: -p d1/d2/d3/d4
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2/d3/d4
+
+  - name: exists_ok
+    arguments: -p d1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+      mkdir d1
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - name: exists_ok-parent
+    arguments: -p d1/d2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+      mkdir d1
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2
+
+  - arguments: -m {{mode}} d1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    variables:
+      mode:
+        type: int
+        values:
+          - 400
+          - 644
+          - 610
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+        mode:
+          variable: mode
+
+  ###################
+  # Expected Errors #
+  ###################
+  - name: error-parent_does_not_exist
+    arguments: d1/d2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        exists: false
+        filename: d1
+
+  - name: error-invalid_mode
+    arguments: -m 12341234 d1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        exists: false
+        filename: d1
+
+  - name: error-missing_dirname
+    arguments: -m d1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        exists: false
+        filename: d1
+
+  - name: error-exists
+    arguments: d1
+    setup: |
+      mkdir d1
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - name: mode
+    arguments: --verbose -m {{mode}} d1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    expect_success: false
+    variables:
+      mode:
+        type: int
+        values:
+          - 400
+          - 644
+          - 610
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+        mode:
+          variable: mode
+
+  - name: help
+    arguments: --help
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  ######################
+  # Debloated Features #
+  ######################
+
+  - arguments: --verbose d1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - arguments: --verbose -p d1/d2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2
+
+  - arguments: --version
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/libfilter/_libfilter .
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code

@@ -1,0 +1,203 @@
+name: mkdir
+link_filename: mkdir.symlink
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/mkdir-5.2.1/binaries/64/mkdir
+version: '5.2.1'
+debloaters:
+  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/lmcas/mkdir_lmcas
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/mkdir/occam/mkdir_occam
+
+templates:
+  - name: absolute
+    expect_success: false
+    arguments: "{{trace.cwd}}/d1"
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - name: relative
+    expect_success: false
+    arguments: d1
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - name: relative-parent
+    expect_success: true
+    arguments: -p d1/d2
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2
+
+  - name: relative-parents
+    expect_success: true
+    arguments: -p d1/d2/d3/d4
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2/d3/d4
+
+  - name: exists_ok
+    expect_success: true
+    setup: mkdir d1
+    arguments: -p d1
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - name: exists_ok-parent
+    expect_success: true
+    setup: mkdir d1
+    arguments: -p d1/d2
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2
+
+  - arguments: -m {{mode}} d1
+    expect_success: false
+    variables:
+      mode:
+        type: int
+        values:
+          - 400
+          - 644
+          - 610
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+        mode:
+          variable: mode
+
+  ###################
+  # Expected Errors #
+  ###################
+  - name: error-parent_does_not_exist
+    expect_success: false
+    arguments: d1/d2
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        exists: false
+        filename: d1
+
+  - name: error-invalid_mode
+    expect_success: false
+    arguments: -m 12341234 d1
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        exists: false
+        filename: d1
+
+  - name: error-missing_dirname
+    expect_success: false
+    arguments: -m d1
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        exists: false
+        filename: d1
+
+  - name: error-exists
+    expect_success: false
+    setup: mkdir d1
+    arguments: d1
+    comparators:
+      - stdout
+      # - stderr  # chisel stderr output is incorrect
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - name: mode
+    expect_success: false
+    arguments: --verbose -m {{mode}} d1
+    expect_success: false
+    variables:
+      mode:
+        type: int
+        values:
+          - 400
+          - 644
+          - 610
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+        mode:
+          variable: mode
+
+  - name: help
+    expect_success: false
+    arguments: --help
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  ######################
+  # Debloated Features #
+  ######################
+
+  - arguments: --verbose d1
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1
+
+  - arguments: --verbose -p d1/d2
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        type: directory
+        filename: d1/d2
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code

@@ -1,0 +1,173 @@
+name: rm
+link_filename: rm.symlink
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/rm-8.4/binaries/64/rm
+version: '8.4'
+debloaters:
+  chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/chisel-2-binaries/rm
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/gtirb-dynamic/rm.reduced
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/gtirb-to-static/rm.reduced
+
+templates:
+  # remove file
+  - name: file
+    arguments: file
+    setup: |
+      touch file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file
+        exists: false
+
+  # -r (recursive remove directory)
+  - name: directory-recursive
+    arguments: -r dir
+    setup: |
+      mkdir dir
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  # -r -f (recursive remove directory force)
+  - name: directory-recursive-force
+    arguments: -r -f dir
+    setup: |
+      mkdir dir
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  # -y YES (prompt before removing)
+  - name: confirmation-yes
+    arguments: -i file
+    setup: |
+      touch file
+
+    stdin:
+      value: "Y\n"
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file
+        exists: false
+
+  # -y NO (prompt before removing)
+  - name: confirmation-no
+    arguments: -i file
+    setup: |
+      touch file
+
+    stdin:
+      value: "N\n"
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file
+        exists: true
+
+  ##################
+  # Error Handling #
+  ##################
+
+  # file does not exist
+  - name: error-file_not_exist
+    arguments: file
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # -f (force directory)
+  - name: error-directory
+    arguments: -f dir
+    setup: |
+      mkdir dir
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+      - id: file
+        filename: dir
+        type: directory
+
+  # missing operand
+  - name: error-no_file
+    arguments: ''
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -r -v dir
+    expect_success: false
+    setup: |
+      mkdir dir
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  - arguments: --recursive dir
+    expect_success: false
+    setup: |
+      mkdir dir
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  - arguments: -R dir
+    expect_success: false
+    setup: |
+      mkdir dir
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false

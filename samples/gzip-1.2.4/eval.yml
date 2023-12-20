@@ -1,0 +1,190 @@
+name: gzip
+link_filename: gzip.symlink
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/gzip-1.2.4/binaries/64/gzip
+version: '1.2.4'
+debloaters:
+  chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/chisel-2-binaries/gzip
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/gtirb-dynamic/gzip.reduced
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/gzip/gtirb-to-static/gzip.reduced
+
+templates:
+  # -c (compress to stdout)
+  - name: compress-stdin_stdout
+    arguments: -c
+    input_files:
+      - source: inputs
+        static: true
+
+    stdin:
+      file: inputs/sample1.ref
+
+    teardown: |
+      zcat $DIFFER_TRACE_STDOUT > sample1.extracted
+      cmp sample1.extracted inputs/sample1.ref
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+      - id: file
+        filename: sample1.extracted
+
+  # -d (decompress)
+  - name: decompress-stdin_stdout
+    arguments: -d
+    input_files:
+      - source: inputs
+        static: true
+
+    stdin:
+      file: inputs/sample1.gz.ref
+
+    teardown: |
+      cmp $DIFFER_TRACE_STDOUT inputs/sample1.ref
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+
+  # -f (overwrite)
+  - name: compress-overwrite
+    arguments: -f foo
+    setup: |
+      echo 1234 > foo
+      echo 4567 > foo.gz
+
+    input_files:
+      - source: inputs
+        static: true
+
+    teardown: |
+      zcat foo.gz > foo.orig
+      echo 1234 > foo
+      cmp foo foo.orig
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: teardown_script
+        exit_code:
+          expect: 0
+
+  # -t (test) invalid
+  - name: test-invalid
+    arguments: -t inputs/sample1.ref
+    input_files:
+      - source: inputs
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 1
+
+  # -t (test) valid
+  - name: test-valid
+    arguments: -t inputs/sample1.gz.ref
+    input_files:
+      - source: inputs
+        static: true
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+
+  #####################
+  # Expected Failures #
+  #####################
+
+  # File does not exist
+  - name: error-file_does_not_exist
+    arguments: foo
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # Invalid arguments (help or missing operand)
+  - name: error-missing_operand
+    summary: Trigger a usage error by not providing a required argument for a flag
+    arguments: '{{arg}}'
+    variables:
+      arg:
+        type: str
+        values:
+          - "--help"
+          - "-h"
+          - "-S"
+          - "--suffix"
+          - "-k"
+          - "--license"
+          - "-L"
+          - "-V"
+          - "--version"
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  # -l/--list -d (list contents of compressed archive)
+  - arguments: '-d {{arg}}'
+    expect_success: false
+    input_files:
+      - source: inputs
+        static: true
+
+    stdin:
+      file: inputs/sample1.gz.ref
+
+    variables:
+      arg:
+        type: str
+        values:
+          - "-l"
+          - "--list"
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  # -l/--list -c (list contents of compressed archive)
+  - arguments: '-c {{arg}}'
+    expect_success: false
+    input_files:
+      - source: inputs
+        static: true
+
+    stdin:
+      file: inputs/sample1.ref
+
+    variables:
+      arg:
+        type: str
+        values:
+          - "-l"
+          - "--list"
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+
+# spell-checker:ignore zcat

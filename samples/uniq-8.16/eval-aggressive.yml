@@ -1,0 +1,166 @@
+name: uniq
+link_filename: uniq.symlink
+version: '8.16'
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/uniq-8.16/binaries/64/uniq
+debloaters:
+  lmcas: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/lmcas/uniq_lmcas
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/occam/uniq_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/uniq/trimmer/uniq_trimmer
+
+templates:
+  ####################
+  # Desired Features #
+  ####################
+  - name: stdin
+    expect_success: false
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: stdin-count
+    expect_success: false
+    arguments: -c
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: stdin-repeated
+    expect_success: false
+    arguments: -d
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: stdin-only_unique
+    expect_success: false
+    arguments: -u
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: stdin-ignore_case
+    expect_success: true
+    arguments: -i
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: stdin-skip_fields
+    expect_success: false
+    arguments: -f 5
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: stdin-skip_chars
+    expect_success: false
+    arguments: -s 10
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: stdin-first_chars
+    expect_success: false
+    arguments: -w 10
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -D
+    expect_success: false
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -z
+    expect_success: false
+    input_files:
+      - source: input.txt
+        static: true
+
+    stdin:
+      file: input.txt
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code

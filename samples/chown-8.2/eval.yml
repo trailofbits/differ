@@ -1,10 +1,11 @@
 name: chown
-link_filename: chown
+link_filename: chown.symlink
 version: '8.2'
-original: bin/chown.original
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/chown-8.2/binaries/64/chown
 debloaters:
-  # The CHISEL debloated binary does not work properly so we compare the original against itself
-  original: bin/chown.original
+  chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/chisel-2-binaries/chown
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/gtirb-dynamic/chown.reduced
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/chown/gtirb-to-static/chown.reduced
 
 templates:
   - name: file

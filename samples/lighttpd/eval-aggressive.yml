@@ -1,0 +1,303 @@
+name: lighttpd
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/lighttpd-1.4/binaries/64/lighttpd
+version: '1.4.55'
+debloaters:
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/lighttpd/occam/lighttpd_occam
+
+templates:
+  # get index
+  - name: get-root_file
+    expect_success: true
+    arguments: -D -f static-all.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-all.conf
+
+    concurrent:
+      run: |
+        wget http://localhost:3000/index.html
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: index.html
+      - id: file
+        filename: index.html
+        target: serve/index.html
+
+  # get nested
+  - name: get-nested_file
+    expect_success: true
+    arguments: -D -f static-all.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-all.conf
+
+    concurrent:
+      run: |
+        wget http://localhost:3000/dir1/file1.html
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: file1.html
+      - id: file
+        filename: file1.html
+        target: serve/dir1/file1.html
+
+  # get index
+  - name: get-index
+    expect_success: true
+    arguments: -D -f static-all.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-all.conf
+
+    concurrent:
+      run: |
+        wget http://localhost:3000
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 8
+      - id: file
+        filename: index.html
+        exists: false
+
+  - name: get-exclude_ext
+    expect_success: true
+    arguments: -D -f static-all.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-all.conf
+
+    concurrent:
+      run: |
+        wget http://localhost:3000/run.php
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: run.php
+      - id: file
+        filename: run.php
+        target: serve/run.php
+
+  - name: get-vhost_1
+    expect_success: true
+    arguments: -D -f static-all.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-all.conf
+
+    setup: |
+      mkdir serve-vhost
+      echo hello world > serve-vhost/hello.txt
+
+    concurrent:
+      run: |
+        wget http://127.0.0.1:3000/index.html
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: index.html
+      - id: file
+        filename: index.html
+        target: serve/index.html
+
+  - name: get-vhost_2
+    expect_success: true
+    arguments: -D -f static-all.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-all.conf
+
+    setup: |
+      mkdir serve-vhost
+      echo hello world > serve-vhost/hello.txt
+
+    concurrent:
+      run: |
+        wget http://127.0.0.1:3000/hello.txt
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 8
+      - id: file
+        filename: hello.txt
+        exists: false
+
+  - name: get-vhost_3
+    expect_success: true
+    arguments: -D -f static-all.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-all.conf
+
+    setup: |
+      mkdir serve-vhost
+      echo hello world > serve-vhost/hello.txt
+
+    concurrent:
+      run: |
+        wget http://127.0.1.1:3000/hello.txt
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 8
+      - id: file
+        filename: hello.txt
+        exists: false
+
+  ##################
+  # Error Handling #
+  ##################
+  # 404
+  - name: get-404
+    expect_success: true
+    arguments: -D -f static-all.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-all.conf
+
+    concurrent:
+      run: |
+        wget http://localhost:3000/foo.html
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 8
+      - id: file
+        filename: foo.html
+        exists: false
+
+  ##################
+  # Test Debloated #
+  ##################
+  - name: unsupported-compile-features
+    expect_success: false
+    arguments: -V
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported-print-config
+    expect_success: false
+    arguments: -p -f static-all.conf
+    input_files:
+      - config/static-all.conf
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - name: unsupported-test-config
+    expect_success: false
+    arguments: -tt -f static-all.conf
+    input_files:
+      - config/static-all.conf
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  # keepalive off get index
+  - name: unsupported_keepalive-get-root_file
+    expect_success: false
+    arguments: -D -f static-keepalive.conf
+    input_files:
+      - source: serve
+        static: true
+      - config/static-keepalive.conf
+
+    concurrent:
+      run: |
+        wget http://localhost:3000/index.html
+
+      retries: 5
+      mode: client
+
+    comparators:
+      - stdout
+      - exit_code
+      - id: concurrent_script
+        output: false
+        exit_code:
+          expect: 0
+      - id: file
+        filename: index.html
+      - id: file
+        filename: index.html
+        target: serve/index.html
+
+# spell-checker:ignore lighttpd vhost keepalive

@@ -1,8 +1,8 @@
 name: nmap
 version: '7.80'
-original: /usr/bin/nmap
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/nmap-7.93/binaries/64/nmap
 debloaters:
-  original: /usr/bin/nmap
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nmap/gtirb-dynamic/nmap.reduced
 
 
 templates:

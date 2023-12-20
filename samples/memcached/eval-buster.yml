@@ -1,8 +1,9 @@
 name: memcached
-original: /usr/bin/memcached
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/memcached-1.6.18/binaries/buster/memcached
 version: '1.5.22'
 debloaters:
-  original: /usr/bin/memcached
+  chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/chisel/chisel-1-binaries/memcached
+  razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/memcached/razor-results/memcached.orig.debloated
 
 templates:
   # set and get command (store and retrieve value)

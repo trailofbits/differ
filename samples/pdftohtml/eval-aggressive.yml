@@ -1,0 +1,216 @@
+name: pdftohtml
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/poppler-0.60/binaries/64/pdftohtml
+version: '0.86.1'
+debloaters:
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/poppler/occam/pdftohtml_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/poppler/trimmer/pdftohtml_trimmer
+
+templates:
+  - name: markdown
+    expect_success: false
+    summary: Convert a relatively low complexity PDF that was generated from Markdown text
+    input_files:
+      - source: input_files/markdown.pdf
+        static: true
+
+    arguments: markdown.pdf
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: markdown.html
+      - id: file
+        filename: markdown_ind.html
+      - id: file
+        filename: markdowns.html
+
+  - name: opts-range
+    expect_success: false
+    input_files:
+      - source: input_files/markdown.pdf
+        static: true
+
+    arguments: -f 1 -l 1 markdown.pdf
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: markdown.html
+      - id: file
+        filename: markdown_ind.html
+      - id: file
+        filename: markdowns.html
+
+  - name: opts-single_doc
+    expect_success: false
+    input_files:
+      - source: input_files/markdown.pdf
+        static: true
+
+    arguments: -s markdown.pdf
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: markdown-html.html
+      - id: file
+        filename: markdown_ind.html
+        exists: false
+      - id: file
+        filename: markdowns.html
+
+  - name: opts-stdout
+    expect_success: false
+    input_files:
+      - source: input_files/markdown.pdf
+        static: true
+
+    arguments: -stdout markdown.pdf
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: markdown.html
+        exists: false
+      - id: file
+        filename: markdown_ind.html
+        exists: false
+      - id: file
+        filename: markdowns.html
+        exists: false
+
+  - name: images
+    expect_success: true
+    summary: Convert a more complex PDF that contains images
+    input_files:
+      - source: input_files/BinRec.pdf
+        static: true
+
+    arguments: BinRec.pdf
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: BinRec.html
+      - id: file
+        filename: BinRec_ind.html
+      - id: file
+        filename: BinRecs.html
+      - id: file
+        filename: BinRec-10_1.jpg
+      - id: file
+        filename: BinRec-10_2.jpg
+      - id: file
+        filename: BinRec-10_3.jpg
+
+  - name: openpdf-corpus
+    expect_success: false
+    summary: >
+      Run against the openpdf corpus produced by the SafeDocs DARPA program:
+      https://corpora.tika.apache.org/base/packaged/pdfs/archive/pdfs_202002/
+    input_files:
+      - source: input_files/openpdf.zip
+        static: true
+
+    arguments: '"{{filename}}" output.html'
+    setup: |
+      unzip openpdf.zip "{{filename}}"
+
+    variables:
+      filename:
+        type: str
+        values:
+          - OPENPDF-129-0.pdf
+          - OPENPDF-129-1.pdf
+          - OPENPDF-129-2.pdf
+          - OPENPDF-129-3.pdf
+          - OPENPDF-129-4.pdf
+          - OPENPDF-156-0.pdf
+          - OPENPDF-156-1.pdf
+          - OPENPDF-179-0.pdf
+          - OPENPDF-179-1.pdf
+          - OPENPDF-179-2.pdf
+          - OPENPDF-216-0.pdf
+          - OPENPDF-216-1.pdf
+          - OPENPDF-216-2.pdf
+          - OPENPDF-254-0.zip-0.pdf
+          - OPENPDF-254-0.zip-2.pdf
+          - OPENPDF-296-0.pdf
+          - OPENPDF-296-1.pdf
+          - OPENPDF-296-2.pdf
+          - OPENPDF-296-3.pdf
+          - OPENPDF-296-4.pdf
+          - OPENPDF-296-5.pdf
+          - OPENPDF-330-0.pdf
+          - OPENPDF-65-0.pdf
+          - OPENPDF-73-0.pdf
+          - OPENPDF-86-0.pdf
+          - OPENPDF-86-1.pdf
+          - OPENPDF-9-0.pdf
+          - OPENPDF-LINK-158-0.pdf
+          - OPENPDF-LINK-320-0.pdf
+          - OPENPDF-LINK-320-1.pdf
+          - OPENPDF-LINK-86-0.pdf
+
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+      - id: file
+        filename: output.html
+
+  - arguments: -h
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -v
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -xml markdown.pdf
+    expect_success: false
+    input_files:
+      - source: input_files/markdown.pdf
+        static: true
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: markdown.xml
+
+  - arguments: -i BinRec.pdf
+    expect_success: false
+    input_files:
+      - source: input_files/BinRec.pdf
+        static: true
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: BinRec.html
+      - id: file
+        filename: BinRec_ind.html
+      - id: file
+        filename: BinRecs.html
+
+# spell-checker:ignore openpdf pdftohtml DARPA

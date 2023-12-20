@@ -1,8 +1,9 @@
 name: objdump
-original: /usr/bin/objdump
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/binutils-2.40/binaries/64/objdump
 version: '2.34'
 debloaters:
-  original: /usr/bin/objdump
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/gtirb-dynamic/objdump.reduced
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/objdump/gtirb-to-static/objdump.reduced
 
 templates:
   - name: flag

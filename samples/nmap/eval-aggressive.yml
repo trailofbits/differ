@@ -1,12 +1,14 @@
 name: nmap
 version: '7.80'
-original: /usr/bin/nmap
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/high/nmap-7.93/binaries/64/nmap
 debloaters:
-  original: /usr/bin/nmap
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nmap/occam/nmap_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/high/nmap/trimmer/nmap_trimmer
 
 
 templates:
   - name: tcp-port_scan
+    expect_success: false
     arguments: '{{tcp_scan_flag}} 127.0.0.1'
     pcap:
       filename: capture.pcap
@@ -49,6 +51,7 @@ templates:
         protocol: tcp
 
   - name: tcp-port_scan-range
+    expect_success: true
     arguments: '-sT -p1-7080,8080 127.0.0.1'
     pcap:
       filename: capture.pcap
@@ -107,6 +110,7 @@ templates:
         exists: false
 
   - name: service-scan
+    expect_success: false
     arguments: '-sT -sV 127.0.0.1'
     input_files:
       - source: serve
@@ -137,6 +141,7 @@ templates:
         compare_payload: false
 
   - name: service-scan-output
+    expect_success: false
     arguments: '-sT -sV {{output_flag}} report 127.0.0.1'
     input_files:
       - source: serve

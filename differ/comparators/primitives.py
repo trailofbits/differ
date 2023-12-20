@@ -183,7 +183,7 @@ class ExitCodeComparator(Comparator):
             return ComparisonResult.error(
                 self,
                 debloated,
-                f'exit codes do not match: {original_code} != {debloated}',
+                f'exit codes do not match: {original_code} != {debloated_code}',
             )
 
         return ComparisonResult.success(self, debloated)

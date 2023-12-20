@@ -1,0 +1,180 @@
+name: rm
+link_filename: rm.symlink
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/rm-8.4/binaries/64/rm
+version: '8.4'
+debloaters:
+  occam: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/occam/rm_occam
+  trimmer: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/rm/trimmer/rm_trimmer
+
+templates:
+  # remove file
+  - name: file
+    expect_success: false
+    arguments: file
+    setup: |
+      touch file
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file
+        exists: false
+
+  # -r (recursive remove directory)
+  - name: directory-recursive
+    expect_success: false
+    arguments: -r dir
+    setup: |
+      mkdir dir
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  # -r -f (recursive remove directory force)
+  - name: directory-recursive-force
+    expect_success: true
+    arguments: -r -f dir
+    setup: |
+      mkdir dir
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  # -y YES (prompt before removing)
+  - name: confirmation-yes
+    expect_success: false
+    arguments: -i file
+    setup: |
+      touch file
+
+    stdin:
+      value: "Y\n"
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file
+        exists: false
+
+  # -y NO (prompt before removing)
+  - name: confirmation-no
+    expect_success: false
+    arguments: -i file
+    setup: |
+      touch file
+
+    stdin:
+      value: "N\n"
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: file
+        exists: true
+
+  ##################
+  # Error Handling #
+  ##################
+
+  # file does not exist
+  - name: error-file_not_exist
+    expect_success: false
+    arguments: file
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  # -f (force directory)
+  - name: error-directory
+    expect_success: false
+    arguments: -f dir
+    setup: |
+      mkdir dir
+
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+      - id: file
+        filename: dir
+        type: directory
+
+  # missing operand
+  - name: error-no_file
+    expect_success: false
+    arguments: ''
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: false
+
+  - arguments: --version
+    expect_success: false
+    comparators:
+      - stdout
+      - stderr
+      - exit_code
+
+  - arguments: -r -v dir
+    expect_success: false
+    setup: |
+      mkdir dir
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  - arguments: --recursive dir
+    expect_success: false
+    setup: |
+      mkdir dir
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false
+
+  - arguments: -R dir
+    expect_success: false
+    setup: |
+      mkdir dir
+    comparators:
+      - stdout
+      - stderr
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: dir
+        exists: false

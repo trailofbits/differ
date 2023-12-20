@@ -1,10 +1,11 @@
 name: bzip2
-link_filename: bzip2
-original: bin/bzip2.original
+link_filename: bzip2.symlink
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/bzip2-1.0.5/binaries/64/bzip2
 version: '1.0.5'
 debloaters:
-  # the chisel binary does not run, so we test against the original
-  original: bin/bzip2.original
+  chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/chisel-2-binaries/bzip2
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/gtirb-dynamic/bzip2.reduced
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/bzip2/gtirb-to-static/bzip2.reduced
 
 templates:
   # output to stdout

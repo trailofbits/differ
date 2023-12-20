@@ -1,9 +1,12 @@
 name: grep
-link_filename: grep
+link_filename: grep.symlink
 version: '2.19'
-original: bin/grep.original
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/grep-2.19/binaries/64/grep
 debloaters:
-  chisel: bin/grep.chisel
+  chisel-2: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/chisel-2-binaries/grep
+  gtirb-dynamic: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/gtirb-dynamic/grep.reduced
+  gtirb-static: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/gtirb-to-static/grep.reduced
+
 
 templates:
   - arguments: a input_dir/input

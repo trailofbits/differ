@@ -1,0 +1,142 @@
+name: wget
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/wget-1.20.3/binaries/buster/wget
+version: '1.20.3'
+debloaters:
+  chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/chisel/chisel-1-binaries/wget
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/wget
+
+templates:
+  - name: protocol-https
+    arguments: --no-config https://digg.com/robots.txt
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: robots.txt
+
+  - name: protocol-http
+    arguments: http://echo.jsontest.com/key/value
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: value
+
+  - name: protocol-ip
+    arguments: "--no-config  --header 'Host: echo.jsontest.com' http://{{'echo.jsontest.com'|gethostbyname}}/key/value"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: value
+
+  - name: opts-output
+    arguments: --no-config  -O data.json http://echo.jsontest.com/key/value/key2/value2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: data.json
+
+  - name: opts-timeout_ok
+    timeout: 5
+    arguments: --no-config -T 2 http://echoss.jsontest.com/
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 4
+
+  - name: get-param
+    arguments: --no-config -O data.json http://md5.jsontest.com/?text=hello_world
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    comparators:
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: data.json
+
+  - arguments: --help
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - exit_code
+
+  - arguments: --version
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - exit_code
+
+  - arguments: --debug -O data.json http://md5.jsontest.com/?text=hello_world
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: data.json
+
+  - arguments: --delete-after http://echo.jsontest.com/key/value
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: value.tmp
+        exists: false
+
+  - arguments: -S -O data.json http://md5.jsontest.com/?text=hello_world
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: data.json
+
+  - arguments: --spider http://echo.jsontest.com/key/value
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/wget/libfilter/_libfilter .
+    expect_success: false
+    comparators:
+      - stderr
+      - stdout
+      - id: exit_code
+        expect: 0
+      - id: file
+        filename: value
+        exists: false
+
+# spell-checker:ignore jsontest

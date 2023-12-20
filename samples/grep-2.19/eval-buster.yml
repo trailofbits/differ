@@ -1,12 +1,16 @@
 name: grep
-link_filename: grep
+link_filename: grep.symlink
 version: '2.19'
-original: bin/grep.original
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/low/grep-2.19/binaries/buster/grep
 debloaters:
-  chisel: bin/grep.chisel
+  chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/chisel/grep-2.19.reduced
+  razor: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/razor-results/grep.orig.debloated
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/grep
 
 templates:
   - arguments: a input_dir/input
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -17,6 +21,8 @@ templates:
       - exit_code
 
   - arguments: a -v -H -r input_dir
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -28,6 +34,8 @@ templates:
 
   # "1" -h -r input_dir
   - arguments: 1 -h -r input_dir
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -38,6 +46,8 @@ templates:
       - exit_code
 
   - arguments: -n si input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -48,6 +58,8 @@ templates:
       - exit_code
 
   - arguments: 1 -r input_dir -l
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -58,6 +70,8 @@ templates:
       - exit_code
 
   - arguments: 1 -r input_dir -L
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -68,6 +82,8 @@ templates:
       - exit_code
 
   - arguments: randomtext -r input_dir -c
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -78,6 +94,8 @@ templates:
       - exit_code
 
   - arguments: -o [r][a][n][d]* input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -88,6 +106,8 @@ templates:
       - exit_code
 
   - arguments: 1 -r input_dir -q
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -98,6 +118,8 @@ templates:
       - exit_code
 
   - arguments: 1 -r input_dir -s
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -108,6 +130,8 @@ templates:
       - exit_code
 
   - arguments: -v a input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -118,6 +142,8 @@ templates:
       - exit_code
 
   - arguments: -i Si input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -128,6 +154,8 @@ templates:
       - exit_code
 
   - arguments: -w Si input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -138,6 +166,8 @@ templates:
       - exit_code
 
   - arguments: "-x Don\\'t input_dir/input2"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -148,6 +178,8 @@ templates:
       - exit_code
 
   - arguments: -E randomtext* input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -158,6 +190,8 @@ templates:
       - exit_code
 
   - arguments: "'ye ' input_dir/input"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -168,6 +202,8 @@ templates:
       - exit_code
 
   - arguments: cold input_dir/input
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -178,6 +214,8 @@ templates:
       - exit_code
 
   - arguments: ^D input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -188,6 +226,8 @@ templates:
       - exit_code
 
   - arguments: .$ input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -198,6 +238,8 @@ templates:
       - exit_code
 
   - arguments: '\^  input_dir/input2'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -208,6 +250,8 @@ templates:
       - exit_code
 
   - arguments: '\^$ input_dir/input2'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -218,6 +262,8 @@ templates:
       - exit_code
 
   - arguments: ^[AEIOU] input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -228,6 +274,8 @@ templates:
       - exit_code
 
   - arguments: ^[^AEIOU] input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -238,6 +286,8 @@ templates:
       - exit_code
 
   - arguments: -F randomtext* input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -248,6 +298,8 @@ templates:
       - exit_code
 
   - arguments: "'not exist' input_dir/input"
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -258,6 +310,8 @@ templates:
       - exit_code
 
   - arguments: -E free[^[:space:]]+ input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -268,6 +322,8 @@ templates:
       - exit_code
 
   - arguments: '-E "\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" input_dir/input'
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -282,6 +338,8 @@ templates:
   ######################
 
   - arguments: -m 2 si input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true
@@ -294,6 +352,8 @@ templates:
       - exit_code
 
   - arguments: --line-buffered si input_dir/input2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/low/grep/libfilter/_libfilter .
     input_files:
       - source: input_dir
         static: true

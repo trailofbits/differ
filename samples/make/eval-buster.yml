@@ -1,14 +1,17 @@
 name: make
-original: /usr/bin/make
+original: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks/medium/make-4.2/binaries/buster/make
 version: '4.2.1'
 debloaters:
-  original: /usr/bin/make
+  chisel: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/chisel/chisel-1-binaries/make
+  libfilter: ../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/make
 
 templates:
   # make single target
   - name: low-single_target
     summary: Make a single target without any dependencies
     arguments: file1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/low-single_target.mak
         destination: Makefile
@@ -24,6 +27,8 @@ templates:
   - name: low-multiple_targets
     summary: Make multiple targets without any dependencies
     arguments: file1 file2
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/low-multi_targets.mak
         destination: Makefile
@@ -42,6 +47,8 @@ templates:
   - name: low-deps
     summary: Make a target that has a dependency
     arguments: file3
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/low-deps.mak
         destination: Makefile
@@ -65,6 +72,7 @@ templates:
         destination: Makefile
 
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
       # Goal: rebuild file3 but do not rebuild deps
       make file3
       cp file3 file3-original
@@ -103,6 +111,7 @@ templates:
         destination: Makefile
 
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
       make file3
       echo asdf >> file3
       cp file3 file3-expect
@@ -125,6 +134,8 @@ templates:
 
   # make default target
   - name: low-default_target
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     summary: Run the default target
     input_files:
       - source: input_files/low-single_target.mak
@@ -142,6 +153,8 @@ templates:
         exists: false
 
   - name: low-custom_default_target
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     summary: Run the custom default target
     input_files:
       - source: input_files/low-custom_default_target.mak
@@ -162,6 +175,8 @@ templates:
   - name: low-args_file-stdin
     summary: Load Makefile from stdin
     arguments: -f - file1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - input_files/low-single_target.mak
 
@@ -179,6 +194,8 @@ templates:
   # make -f
   - name: low-args_file
     arguments: -f low-single_target.mak file1
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - input_files/low-single_target.mak
 
@@ -194,6 +211,8 @@ templates:
   - name: med_phony
     summary: Make a phony target
     arguments: all
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/med-phony.mak
         destination: Makefile
@@ -216,6 +235,8 @@ templates:
   - name: high-includes
     summary: Process include directives and make a target that depends on a separate Makefile
     arguments: file4
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/high-includes.mak
         destination: Makefile
@@ -243,6 +264,8 @@ templates:
   - name: high-vars
     summary: Make a target that uses multiple variables
     arguments: install
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/high-vars.mak
         destination: Makefile
@@ -271,6 +294,8 @@ templates:
   - name: error-invalid_target
     summary: Trigger an error when trying to make a target that does not exist
     arguments: does_not_exist
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/low-single_target.mak
         destination: Makefile
@@ -286,6 +311,8 @@ templates:
 
   # no makefile
   - name: error-no_makefile
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     summary: Trigger an error when no Makefile exists
     comparators:
       - stdout
@@ -297,6 +324,8 @@ templates:
   - name: error-file_does_not_exist
     summary: Trigger an error when the specified Makefile does not exist
     arguments: -f does_not_exist
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -309,6 +338,8 @@ templates:
   - name: unsupported_help
     expect_success: false
     arguments: --help
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     comparators:
       - stdout
       - stderr
@@ -321,7 +352,9 @@ templates:
       - source: input_files/low-deps.mak
         destination: Makefile
 
+
     setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
       make file3
       cp file3 file3-expect
       echo asdf >> file3
@@ -345,6 +378,8 @@ templates:
   - name: unsupported_arguments
     expect_success: false
     arguments: file1 file2 {{opt}}
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/low-multi_targets.mak
         destination: Makefile
@@ -377,6 +412,8 @@ templates:
   - name: unsupported_arguments_no_file
     expect_success: false
     arguments: file1 file2 {{opt}}
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/low-multi_targets.mak
         destination: Makefile
@@ -398,6 +435,8 @@ templates:
   - name: unsupported_arguments_question
     expect_success: false
     arguments: file1 file2 {{opt}}
+    setup: |
+      cp -r ../../../../debloater-eval.batch2/debloater-eval-binaries/benchmarks-debloated/medium/make/libfilter/_libfilter .
     input_files:
       - source: input_files/low-multi_targets.mak
         destination: Makefile
